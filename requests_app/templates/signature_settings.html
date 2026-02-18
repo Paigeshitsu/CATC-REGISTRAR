@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-6">
+        <div class="card shadow border-0">
+            <div class="card-header bg-dark text-white py-3">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-pen me-2"></i>Handwritten Signature</h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" id="signatureForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Full Printed Name</label>
+                        <input type="text" name="printed_name" class="form-control" value="{{ profile.printed_name }}" placeholder="e.g. JUAN P. DELA CRUZ">
+                    </div>
+
+                    <label class="form-label fw-bold">Draw Your Signature Below:</label>
+                    <div class="border rounded bg-white mb-2" style="position: relative; height: 200px;">
+                        <canvas id="sig-canvas" style="width: 100%; height: 100%; cursor: crosshair; touch-action: none;"></canvas>
+                    </div>
+                    
+                    <input type="hidden" name="signature_data" id="signature_data">
+                    
+                    <div class="d-flex gap-2 mb-4">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="sig-clearBtn">Clear Drawing</button>
+                    </div>
+
+                    {% if profile.signature_data %}
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">Current Saved Signature:</small>
+                        <img src="{{ profile.signature_data }}" class="border rounded bg-light" style="max-height: 80px;">
+                    </div>
+                    {% endif %}
+
+                    <button type="submit" class="btn btn-primary w-100 fw-bold shadow">SAVE SIGNATURE & NAME</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const canvas = document.getElementById('sig-canvas');
+        const ctx = canvas.getContext('2d');
+        const clearBtn = document.getElementById('sig-clearBtn');
+        const form = document.getElementById('signatureForm');
+        const sigInput = document.getElementById('signature_data');
+
+        // Resize canvas for high resolution
+        const ratio = window.devicePixelRatio || 1;
+        canvas.width = canvas.offsetWidth * ratio;
+        canvas.height = canvas.offsetHeight * ratio;
+        ctx.scale(ratio, ratio);
+
+        let drawing = false;
+        ctx.strokeStyle = "#1a2a6c"; // Ink color
+        ctx.lineWidth = 2;
+
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: (e.clientX || e.touches[0].clientX) - rect.left,
+                y: (e.clientY || e.touches[0].clientY) - rect.top
+            };
+        }
+
+        canvas.addEventListener("mousedown", (e) => { drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); });
+        canvas.addEventListener("mousemove", (e) => { 
+            if(!drawing) return; 
+            const p = getPos(e); 
+            ctx.lineTo(p.x, p.y); 
+            ctx.stroke(); 
+        });
+        window.addEventListener("mouseup", () => { drawing = false; });
+
+        // Mobile Touch Support
+        canvas.addEventListener("touchstart", (e) => { e.preventDefault(); drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); });
+        canvas.addEventListener("touchmove", (e) => { e.preventDefault(); if(!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
+
+        clearBtn.addEventListener("click", () => { ctx.clearRect(0, 0, canvas.width, canvas.height); });
+
+        form.addEventListener("submit", (e) => {
+            // Convert drawing to image data string
+            const dataUrl = canvas.toDataURL();
+            // Only update if the user actually drew something (blank canvas check)
+            const blank = document.createElement('canvas');
+            blank.width = canvas.width; blank.height = canvas.height;
+            if (canvas.toDataURL() !== blank.toDataURL()) {
+                sigInput.value = dataUrl;
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <!-- Left Column: Request Form -->
+    <div class="col-md-5">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-primary text-white py-3">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-file-earmark-plus"></i> Request Documents</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" id="requestForm">
+                    {% csrf_token %}
+                    <p class="text-muted small mb-3">Select items and choose your preferred delivery method.</p>
+                    
+                    <!-- SCROLLABLE REQUEST TABLE -->
+                    <div class="table-responsive" style="max-height: 450px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px;">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead class="table-light sticky-top" style="z-index: 10;">
+                                <tr style="font-size: 0.75rem;">
+                                    <th class="ps-3">DOCUMENT</th>
+                                    <th>TYPE & DELIVERY</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for doc in grouped_docs %}
+                                <tr>
+                                    <td class="ps-3 py-2">
+                                        <div class="fw-bold small">{{ doc.name }}</div>
+                                        <div class="text-muted" style="font-size: 0.7rem;">Base: ₱{{ doc.price }}</div>
+                                        
+                                        {% if doc.is_blocked %}
+                                        <div class="text-danger fw-bold" style="font-size: 0.65rem;">
+                                            <i class="bi bi-exclamation-triangle"></i> Registrar review required
+                                        </div>
+                                        {% endif %}
+                                    </td>
+                                    <td class="pe-2">
+                                        <select name="selection_{{ doc.id }}" class="form-select form-select-sm mb-1" style="font-size: 0.75rem;">
+                                            <option value="none">-- Select Type --</option>
+                                            <option value="doc">Document Only</option>
+                                            {% if doc.has_auth %}
+                                            <option value="auth">Authentication Only</option>
+                                            <option value="both">Both Items</option>
+                                            {% endif %}
+                                        </select>
+
+                                        <select name="delivery_{{ doc.id }}" class="form-select form-select-sm" style="font-size: 0.75rem; background-color: #f8f9fa;">
+                                            <option value="PICKUP">In-Person Pickup</option>
+                                            <option value="LBC">LBC Delivery</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-3">
+                        <label class="form-label fw-bold small">Reason for Request</label>
+                        <textarea name="reason" class="form-control" rows="2" placeholder="e.g. For Employment, For Transfer..." required></textarea>
+                    </div>
+
+                    <button type="submit" name="action" value="submit_request" class="btn btn-primary w-100 fw-bold mt-3 shadow-sm">
+                        SUBMIT REQUEST
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Request History -->
+    <div class="col-md-7">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-dark text-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-clock-history"></i> My Request History</h5>
+                <span class="badge bg-secondary">{{ requests.count }} Total Items</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive" style="max-height: 585px; overflow-y: auto;">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light small text-uppercase sticky-top" style="z-index: 10;">
+                            <tr>
+                                <th class="ps-3">Document</th>
+                                <th>Status</th>
+                                <th>Method</th>
+                                <th class="text-end pe-3">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for req in requests %}
+                            <tr>
+                                <td class="ps-3">
+                                    <div class="fw-bold small">{{ req.document_type.name }}</div>
+                                    <div class="text-muted" style="font-size: 0.7rem;">{{ req.created_at|date:"M d, Y" }}</div>
+                                </td>
+                                <td>
+                                    {% if req.status == 'PENDING' %}
+                                        <span class="badge rounded-pill bg-secondary">Reviewing</span>
+                                    {% elif req.status == 'PAYMENT_REQUIRED' %}
+                                        <span class="badge rounded-pill bg-warning text-dark">Pay Now</span>
+                                    {% elif req.status == 'PAID' or req.status == 'PROCESSING' %}
+                                        <span class="badge rounded-pill bg-primary">Processing</span>
+                                    {% elif req.status == 'READY' %}
+                                        <span class="badge rounded-pill bg-success">Ready</span>
+                                    {% elif req.status == 'COMPLETED' %}
+                                        <span class="badge rounded-pill bg-dark">Claimed</span>
+                                    {% elif req.status == 'REJECTED' %}
+                                        <span class="badge rounded-pill bg-danger">Rejected</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if req.delivery_method == 'LBC' %}
+                                        <span class="small fw-bold text-info"><i class="bi bi-truck"></i> LBC</span>
+                                        <!-- LBC TRACKING DISPLAY -->
+                                        {% if req.tracking_number %}
+                                        <div class="mt-1">
+                                            <small class="d-block text-muted" style="font-size: 0.65rem;">Tracking:</small>
+                                            <span class="fw-bold text-dark" style="font-size: 0.7rem;">{{ req.tracking_number }}</span>
+                                        </div>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="small fw-bold text-muted"><i class="bi bi-person"></i> Pickup</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end pe-3">
+                                    <div class="d-flex justify-content-end gap-2 align-items-center">
+                                        
+                                        <!-- LBC TRACKING BUTTON -->
+                                        {% if req.tracking_number %}
+                                        <a href="https://www.lbcexpress.com/track/?tracking_no={{ req.tracking_number }}" target="_blank" class="btn btn-sm btn-outline-info py-1 px-2" style="font-size: 0.7rem;">
+                                            <i class="bi bi-box-seam"></i> Track
+                                        </a>
+                                        {% endif %}
+
+                                        <!-- PAYMENT BUTTON -->
+                                        {% if req.status == 'PAYMENT_REQUIRED' and req.batch_id %}
+                                        <a href="{% url 'pay_with_xendit' req.batch_id %}" class="btn btn-sm text-white fw-bold py-1 px-2" 
+                                           style="font-size: 0.7rem; background-color: #2b78b5; border-radius: 4px;">
+                                            PAY ONLINE
+                                        </a>
+                                        {% elif req.status == 'PAYMENT_REQUIRED' %}
+                                            <span class="badge bg-danger">Contact Registrar</span>
+                                        {% endif %}
+
+                                        <!-- SUMMARY BUTTON -->
+                                        {% if req.status != 'PENDING' and req.status != 'REJECTED' %}
+                                            <a href="{% url 'generate_receipt' req.id %}" target="_blank" class="btn btn-sm btn-info text-white py-0" style="font-size: 0.75rem;">
+                                                <i class="bi bi-file-text"></i> Summary
+                                            </a>
+                                        {% endif %}
+
+                                        <!-- DELETE BUTTON -->
+                                        {% if req.status == 'PENDING' or req.status == 'COMPLETED' or req.status == 'REJECTED' %}
+                                        <form method="POST" style="display:inline;" class="m-0">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="request_id" value="{{ req.id }}">
+                                            <button type="submit" name="action" value="delete_request" class="btn btn-link text-danger p-0" onclick="return confirm('Remove this record?')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5">
+                                    <i class="bi bi-inbox fs-2 text-muted d-block mb-2"></i>
+                                    <p class="text-muted m-0">No history found.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .table-responsive::-webkit-scrollbar { width: 6px; }
+    .table-responsive::-webkit-scrollbar-track { background: #f1f1f1; }
+    .table-responsive::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+    .table-responsive::-webkit-scrollbar-thumb:hover { background: #999; }
+</style>
+{% endblock %}

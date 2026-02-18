@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-4">
+        <h2 class="fw-bold m-0">Cashier Payment Terminal</h2>
+        <a href="{% url 'signature_settings' %}" class="btn btn-outline-dark btn-sm fw-bold">
+            <i class="bi bi-pen"></i> Update My Signature
+        </a>
+    </div>
+
+    <!-- SECTION 1: PENDING COLLECTION (UNPAID) -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-danger text-white py-3">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-cash"></i> 1. Pending Collection (Unpaid)</h5>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light small text-uppercase">
+                    <tr>
+                        <th class="ps-4">Student ID</th>
+                        <th>Documents</th>
+                        <th>Amount</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in requests %}
+                    <tr>
+                        <td class="ps-4 fw-bold">{{ r.student.username }}</td>
+                        <td>{{ r.document_type.name }}</td>
+                        <td class="fw-bold">₱{{ r.document_type.price }}</td>
+                        <td class="text-center">
+                            <form method="POST">
+                                {% csrf_token %}
+                                <input type="hidden" name="request_id" value="{{ r.id }}">
+                                <button name="action" value="confirm_payment" class="btn btn-success btn-sm px-4">Confirm Payment</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-center py-4 text-muted">No unpaid requests.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- SECTION 2: AWAITING ISSUANCE (PAID BUT NO RECEIPT YET) -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-warning text-dark py-3">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-printer"></i> 2. Awaiting Receipt Issuance</h5>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light small text-uppercase">
+                    <tr>
+                        <th class="ps-4">Receipt №</th>
+                        <th>Student</th>
+                        <th>Status</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in awaiting_issuance %}
+                    <tr>
+                        <td class="ps-4"><span class="badge bg-dark">№ {{ r.receipt_number }}</span></td>
+                        <td>{{ r.student.username }}</td>
+                        <td><span class="text-success fw-bold small">PAID</span></td>
+                        <td class="text-center">
+                            <div class="d-flex justify-content-center gap-2">
+                                <!-- Opens printable receipt in new tab -->
+                                <a href="{% url 'generate_receipt' r.id %}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-eye"></i> View/Print
+                                </a>
+                                <!-- Moves it to history -->
+                                <form method="POST">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="request_id" value="{{ r.id }}">
+                                    <button name="action" value="issue_receipt" class="btn btn-primary btn-sm">
+                                        Issue & Finalize
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-center py-4 text-muted">All paid receipts have been issued.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- SECTION 3: COLLECTION HISTORY (BACKLOG) -->
+    <div class="accordion shadow-sm" id="historyAcc">
+        <div class="accordion-item border-0">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed bg-light fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseHistory">
+                    <i class="bi bi-clock-history me-2"></i> 3. Collection History (Backlog)
+                </button>
+            </h2>
+            <div id="collapseHistory" class="accordion-collapse collapse">
+                <div class="accordion-body p-0">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-dark small text-uppercase">
+                            <tr>
+                                <th class="ps-4">Receipt №</th>
+                                <th>Student</th>
+                                <th>Amount</th>
+                                <th>Issued On</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for h in history %}
+                            <tr>
+                                <td class="ps-4">№ {{ h.receipt_number }}</td>
+                                <td>{{ h.student.username }}</td>
+                                <td>₱{{ h.document_type.price }}</td>
+                                <td class="small">{{ h.created_at|date:"M d, Y" }}</td>
+                                <td class="text-center">
+                                    <a href="{% url 'generate_receipt' h.id %}" target="_blank" class="btn btn-link btn-sm text-primary">Re-print</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-center py-3">No history records yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
