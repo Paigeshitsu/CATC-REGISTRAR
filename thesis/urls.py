@@ -2,10 +2,11 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from thesis.admin import custom_admin_site
 
 urlpatterns = [
-    # The default Django Admin panel (where you create Roles/Groups)
-    path('admin/', admin.site.urls),
+    # Custom Django Admin panel with blue gradient theme
+    path('admin/', custom_admin_site.urls),
 
     # This connects the main website to your requests_app
     # Empty string '' means the home page will use your app's URLs

@@ -2,59 +2,76 @@
 {% block content %}
 <div class="row justify-content-center mt-5">
     <div class="col-md-5 col-lg-4">
-        <div class="card shadow-sm border-2 text-center">
-            <!-- 1. Header changed from bg-success to bg-primary (Blue) -->
-            <div class="card-header bg-primary text-white py-3">
-                <h4 class="mb-0 fw-bold">Verify Identity</h4>
+        <div class="card shadow-lg border-0 text-center animate__animated animate__fadeInRight animate__faster" style="border-radius: 20px;">
+            <div class="card-header bg-primary text-white py-4" style="border-radius: 20px 20px 0 0; border: none;">
+                <i class="bi bi-shield-lock-fill fs-1 mb-2"></i>
+                <h4 class="mb-0 fw-bold">Verification</h4>
+                <p class="small opacity-75 mb-0">Two-Step Security</p>
             </div>
+
             <div class="card-body p-4">
-                <p class="text-muted small">A 6-digit code was sent to:<br><strong>{{ email }}</strong></p>
-                
+                <!-- MESSAGE SECTION (RESTORED) -->
                 {% if messages %}
                     {% for message in messages %}
-                        <div class="alert alert-danger py-2 small">{{ message }}</div>
+                        <div class="alert alert-danger py-2 small border-0 shadow-sm animate__animated animate__shakeX">
+                            <i class="bi bi-exclamation-circle-fill me-2"></i>{{ message }}
+                        </div>
                     {% endfor %}
                 {% endif %}
 
-                <form method="post">
+                <p class="text-muted small mb-3">A 6-digit code has been sent to your registered contact details.</p>
+                
+                <form method="post" id="otpForm">
                     {% csrf_token %}
                     <div class="mb-4">
+                        <label class="form-label fw-bold small text-uppercase text-muted" style="letter-spacing: 2px;">Enter Code</label>
                         {{ form.otp_code }}
                     </div>
-                    <!-- 2. Button changed from btn-success to btn-primary (Blue) -->
-                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">
-                        VERIFY & ACCESS DASHBOARD
+                    
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-lg" id="verifyBtn">
+                        <span id="btnText">VERIFY & ENTER</span>
+                        <span id="btnSpinner" class="spinner-border spinner-border-sm d-none"></span>
                     </button>
                 </form>
-                <div class="form-text text-xs">OTP may be sent to Spam Messages/Emails</div>
                 
-                <a href="{% url 'login' %}" class="btn btn-link mt-3 text-decoration-none text-muted small">
-                    ← Use different ID
-                </a>
+                <div class="mt-4 pt-3 border-top">
+                    <a href="{% url 'login' %}" class="btn btn-link btn-sm text-decoration-none text-secondary fw-bold">
+                        <i class="bi bi-arrow-left"></i> USE A DIFFERENT ID
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
+<script>
+    document.getElementById('otpForm').addEventListener('submit', function() {
+        document.getElementById('btnText').innerText = "Checking...";
+        document.getElementById('btnSpinner').classList.remove('d-none');
+        document.getElementById('verifyBtn').classList.add('disabled');
+    });
+</script>
+
 <style>
-    /* This makes the OTP input look nice and centered */
+    /* Professional OTP Input Styling */
     input[name="otp_code"] {
         text-align: center;
-        letter-spacing: 8px;
-        font-size: 2rem;
-        font-weight: bold;
-        /* 3. Border color changed from Green (#198754) to Primary Blue (#0d6efd) */
-        border: 2px solid #0d6efd;
-        border-radius: 8px;
+        letter-spacing: 12px;
+        font-size: 2.2rem;
+        font-weight: 800;
+        border: 2px solid #e0e0e0;
+        border-radius: 15px;
         width: 100%;
+        background-color: #fdfdfd;
+        color: #0d6efd;
+        padding: 12px 0;
     }
-
-    /* Adds a blue glow when the student clicks the box to type */
     input[name="otp_code"]:focus {
-        outline: none;
         border-color: #0d6efd;
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        outline: none;
+        box-shadow: 0 10px 20px rgba(13, 110, 253, 0.1);
     }
 </style>
 {% endblock %}
+
 {% block footer %}{% endblock %}

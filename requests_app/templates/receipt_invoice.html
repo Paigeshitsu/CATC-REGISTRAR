@@ -2,59 +2,90 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Payment Summary - {{ doc.student.username }}</title>
+    <title>Payment Summary - {{ student.student_id }}</title>
     <style>
-        body { font-family: sans-serif; padding: 40px; color: #333; line-height: 1.6; }
-        .container { max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px; border-radius: 8px; }
-        .header { border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #333; line-height: 1.6; background-color: #f8f9fa; }
+        .container { max-width: 600px; margin: auto; border: 1px solid #dee2e6; padding: 30px; border-radius: 12px; background-color: #ffffff; shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .header { border-bottom: 3px solid #0d6efd; padding-bottom: 15px; margin-bottom: 25px; }
+        .header h2 { color: #0d6efd; margin: 0; font-weight: bold; }
         table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #ddd; }
-        .total-row { font-size: 1.2rem; font-weight: bold; background: #f9f9f9; }
-        .no-print { margin-bottom: 20px; text-align: center; }
-        @media print { .no-print { display: none; } }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; }
+        th { background-color: #f8f9fa; font-size: 0.85rem; text-transform: uppercase; color: #666; }
+        .total-row { font-size: 1.2rem; font-weight: bold; color: #198754; background: #fdfdfd; }
+        
+        /* THE BLUE BUTTON STYLE */
+        .btn-back {
+            display: inline-block;
+            padding: 12px 25px;
+            background-color: #0d6efd; /* Primary Blue */
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-back:hover { background-color: #0b5ed7; }
+        
+        .no-print { margin-bottom: 30px; text-align: center; }
+        
+        @media print { 
+            .no-print { display: none; } 
+            body { background-color: white; padding: 0; }
+            .container { border: none; }
+        }
     </style>
 </head>
 <body>
     <div class="no-print">
-        <button onclick="window.print()" style="padding: 10px 20px; cursor: pointer;">Print Summary</button>
-        <button onclick="window.history.back()" style="padding: 10px 20px; cursor: pointer;">Go Back</button>
-    </div>
+    <!-- Changed from <a> to <button> with window.close() logic -->
+    <button onclick="window.close()" class="btn-back" style="border: none; cursor: pointer;">
+        &larr; CLOSE AND RETURN TO DASHBOARD
+    </button>
+</div>
 
     <div class="container">
         <div class="header">
-            <h2>Document Request Summary</h2>
-            <p><strong>Student ID:</strong> {{ student.student_id }}<br>
-               <strong>Name:</strong> {{ student.full_name }}<br>
-               <strong>Date:</strong> {{ today|date:"M d, Y" }}</p>
+            <h2>Payment Summary</h2>
+            <p style="margin-top: 10px;">
+                <strong>Student ID:</strong> {{ student.student_id }}<br>
+                <strong>Name:</strong> {{ student.full_name }}<br>
+                <strong>Date:</strong> {{ today|date:"M d, Y" }}
+            </p>
         </div>
 
-        <p>The following items have been requested and paid for:</p>
+        <p>This is a digital record of your document request and successful payment.</p>
 
         <table>
             <thead>
                 <tr>
-                    <th>Document</th>
-                    <th>Cost</th>
+                    <th>Document Description</th>
+                    <th style="text-align: right;">Amount</th>
                 </tr>
             </thead>
             <tbody>
                 {% for item in batch_items %}
                 <tr>
                     <td>{{ item.document_type.name }}</td>
-                    <td>₱{{ item.document_type.price }}</td>
+                    <td style="text-align: right;">₱{{ item.document_type.price }}</td>
                 </tr>
                 {% endfor %}
                 <tr class="total-row">
-                    <td>Total Paid</td>
-                    <td>₱{{ total_amount }}</td>
+                    <td>TOTAL PAID</td>
+                    <td style="text-align: right;">₱{{ total_amount }}</td>
                 </tr>
             </tbody>
         </table>
 
-        <div style="margin-top: 30px; font-size: 0.9rem; color: #666;">
-            <p><strong>Status:</strong> PAID<br>
-               <strong>Transaction Reference:</strong> {{ display_receipt_no }}</p>
-            <p><em>Note: This is a system-generated summary of your request and payment. Please present your ID to the Registrar's Office to claim your physical documents.</em></p>
+        <div style="margin-top: 30px; padding: 15px; background-color: #e7f3ff; border-radius: 8px; font-size: 0.85rem; color: #084298;">
+            <p style="margin: 0;"><strong>Status:</strong> VERIFIED PAID<br>
+               <strong>Reference:</strong> {{ display_receipt_no }}</p>
+        </div>
+        
+        <div style="margin-top: 20px; font-size: 0.75rem; color: #999; text-align: center;">
+            <em>Note: This is a system-generated summary. Please present your student ID to the Registrar's Office for document claiming.</em>
         </div>
     </div>
 </body>

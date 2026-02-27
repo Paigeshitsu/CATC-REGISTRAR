@@ -1,21 +1,82 @@
 {% extends 'base.html' %}
 {% block content %}
+<style>
+.bulk-actions-toolbar { background: linear-gradient(135deg, #0d6efd, #004fb8); border-radius: 12px; padding: 12px 20px; margin-bottom: 20px; display: none; animation: slideDown 0.3s ease-out; }
+.bulk-actions-toolbar.active { display: flex; align-items: center; justify-content: space-between; }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+.bulk-count { color: white; font-weight: 600; }
+.stats-card-mini { border-radius: 12px; transition: all 0.3s; }
+.stats-card-mini:hover { transform: translateY(-3px); }
+</style>
+
 <div class="container-fluid mt-4">
     <!-- HEADER -->
     <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
         <div>
-            <h2 class="fw-bold m-0 text-primary">Registrar Control Panel</h2>
-            <p class="text-muted small m-0">Review requests, approve batches, and track document status for offline processing.</p>
+            <h2 class="fw-bold m-0 text-primary"><i class="bi bi-person-badge me-2"></i>Registrar Control Panel</h2>
+            <p class="text-muted small m-0">Review requests, book LBC shipments, and manage document dispatch.</p>
         </div>
-        <a href="{% url 'signature_settings' %}" class="btn btn-outline-dark btn-sm fw-bold shadow-sm">
-            <i class="bi bi-pen"></i> Update My Signature
-        </a>
+        <div class="d-flex gap-2">
+            <a href="{% url 'staff_inbox' %}" class="btn btn-outline-primary btn-sm fw-bold shadow-sm">
+                <i class="bi bi-chat-dots-fill"></i> Messages
+            </a>
+            <a href="{% url 'signature_settings' %}" class="btn btn-outline-dark btn-sm fw-bold shadow-sm">
+                <i class="bi bi-pen"></i> Update My Signature
+            </a>
+        </div>
     </div>
 
-    <!-- PENDING REQUESTS -->
+    <!-- STATS CARDS -->
+    <div class="row mb-4 g-3">
+        <div class="col-6 col-lg-3">
+            <div class="card stats-card-mini border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="stats-icon bg-warning-subtle text-warning me-3"><i class="bi bi-hourglass-split"></i></div>
+                    <div><div class="fw-bold text-warning" style="font-size: 1.5rem;">{{ active_requests|length }}</div><div class="text-muted small">Pending</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card stats-card-mini border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="stats-icon bg-success-subtle text-success me-3"><i class="bi bi-check-circle"></i></div>
+                    <div><div class="fw-bold text-success" style="font-size: 1.5rem;">{{ ready_count|default:0 }}</div><div class="text-muted small">Ready</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card stats-card-mini border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="stats-icon bg-info-subtle text-info me-3"><i class="bi bi-truck"></i></div>
+                    <div><div class="fw-bold text-info" style="font-size: 1.5rem;">{{ lbc_count|default:0 }}</div><div class="text-muted small">LBC</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card stats-card-mini border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="stats-icon bg-primary-subtle text-primary me-3"><i class="bi bi-archive"></i></div>
+                    <div><div class="fw-bold text-primary" style="font-size: 1.5rem;">{{ history|length }}</div><div class="text-muted small">Completed</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BULK ACTIONS TOOLBAR -->
+    <div class="bulk-actions-toolbar" id="bulkToolbar">
+        <div class="bulk-count"><i class="bi bi-check2-square me-2"></i><span id="selectedCount">0</span> selected</div>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-light btn-sm fw-bold" onclick="bulkApprove()"><i class="bi bi-check-all me-1"></i> Approve</button>
+            <button type="button" class="btn btn-warning btn-sm fw-bold" onclick="bulkMarkReady()"><i class="bi bi-box-seam me-1"></i> Ready</button>
+            <button type="button" class="btn btn-danger btn-sm fw-bold" onclick="bulkReject()"><i class="bi bi-x-circle me-1"></i> Reject</button>
+            <button type="button" class="btn btn-outline-light btn-sm" onclick="clearSelection()"><i class="bi bi-x-lg"></i></button>
+        </div>
+    </div>
+
+    <!-- ACTIVE REQUESTS QUEUE -->
     <div class="row">
         <div class="col-12">
-            <h5 class="fw-bold mb-3"><i class="bi bi-stack me-2"></i>Active Document Queue</h5>
+            <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-stack me-2 text-primary"></i>Active Document Queue</h5>
             
             {% regroup active_requests by batch_id as batch_list %}
 
@@ -24,56 +85,74 @@
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
                         <div>
-                            <span class="badge bg-secondary me-2">BATCH: {{ batch.grouper }}</span>
+                            {% if batch.grouper %}
+                                <span class="badge bg-secondary me-2">BATCH ID: {{ batch.grouper }}</span>
+                            {% else %}
+                                <span class="badge bg-danger me-2">NO BATCH ID (LEGACY)</span>
+                            {% endif %}
                             <strong class="text-uppercase text-dark">{{ first_item.get_student_name }}</strong>
-                            <span class="badge bg-info-subtle text-info ms-2">{{ batch.list|length }} Items</span>
-                            <div class="text-muted" style="font-size: 0.75rem;">Requested on {{ first_item.created_at|date:"M d, Y | h:i A" }}</div>
+                            <span class="badge bg-primary-subtle text-primary ms-2">{{ batch.list|length }} Items</span>
+                            <div class="text-muted mt-1" style="font-size: 0.75rem;">
+                                <i class="bi bi-clock"></i> Requested: {{ first_item.created_at|date:"M d, Y | h:i A" }}
+                            </div>
                         </div>
                         
-                        <!-- UPDATED FORM FOR LBC TRACKING -->
                         <form method="POST" class="d-flex align-items-center gap-2">
                             {% csrf_token %}
                             <input type="hidden" name="batch_id" value="{{ batch.grouper }}">
                             
                             {% if first_item.status == 'PENDING' %}
-                                <button name="action" value="approve" class="btn btn-success btn-sm fw-bold px-3">APPROVE BATCH</button>
-                                <button name="action" value="reject" class="btn btn-outline-danger btn-sm" onclick="return confirm('Reject this entire batch?')">REJECT</button>
+                                <button name="action" value="approve" class="btn btn-success btn-sm fw-bold px-3">APPROVE FOR PAYMENT</button>
+                            
                             {% elif first_item.status == 'PAYMENT_REQUIRED' %}
-                                <span class="badge bg-warning text-dark p-2 border border-warning-subtle"><i class="bi bi-hourglass-split"></i> AWAITING PAYMENT</span>
+                                <span class="badge bg-warning text-dark p-2 border border-warning-subtle shadow-sm me-2">
+                                    <i class="bi bi-hourglass-split me-1"></i> AWAITING STUDENT PAYMENT
+                                </span>
+
                             {% elif first_item.status == 'PAID' or first_item.status == 'PROCESSING' %}
-                                
-                                <!-- START LBC TRACKING INPUT INTEGRATION -->
+                                <!-- LBC TRACKING INPUT -->
                                 {% if first_item.delivery_method == 'LBC' %}
-                                <div class="input-group input-group-sm" style="width: 220px;">
-                                    <span class="input-group-text bg-info text-white" title="Enter LBC Tracking Number">
-                                        <i class="bi bi-truck"></i>
-                                    </span>
-                                    <input type="text" name="tracking_number_input" class="form-control" placeholder="LBC Tracking #" required>
+                                <div class="d-flex flex-column align-items-end me-1">
+                                    <div class="input-group input-group-sm" style="width: 250px;">
+                                        <span class="input-group-text bg-info text-white"><i class="bi bi-truck"></i></span>
+                                        <input type="text" name="tracking_number_input" class="form-control border-info" 
+                                               placeholder="12-digit LBC Tracking #" 
+                                               required minlength="12" maxlength="15" pattern="\d*">
+                                    </div>
+                                    <small class="text-info fw-bold mt-1" style="font-size: 0.6rem;">Required for LBC Shipping</small>
                                 </div>
                                 {% endif %}
-                                <!-- END LBC TRACKING INPUT INTEGRATION -->
 
-                                <button name="action" value="mark_ready" class="btn btn-primary btn-sm fw-bold shadow-sm">
+                                <button name="action" value="mark_ready" class="btn btn-primary btn-sm fw-bold shadow-sm px-3">
                                     MARK AS READY
                                 </button>
+                            
                             {% elif first_item.status == 'READY' %}
-                                <div class="d-flex flex-column align-items-end me-2">
-                                    <span class="badge bg-success mb-1">READY FOR DISPATCH</span>
+                                <div class="text-end me-2">
+                                    <span class="badge bg-success shadow-sm mb-1 px-3">READY FOR PICKUP/SHIP</span>
                                     {% if first_item.tracking_number %}
-                                    <small class="text-primary fw-bold" style="font-size: 0.65rem;">LBC: {{ first_item.tracking_number }}</small>
+                                    <div class="text-primary fw-bold" style="font-size: 0.7rem;">LBC: {{ first_item.tracking_number }}</div>
                                     {% endif %}
                                 </div>
-                                <button name="action" value="mark_completed" class="btn btn-dark btn-sm fw-bold shadow-sm">MARK AS CLAIMED/SHIPPED</button>
+                                <button name="action" value="mark_completed" class="btn btn-dark btn-sm fw-bold shadow-sm">MARK COMPLETED</button>
                             {% endif %}
+
+                            <!-- REJECT BUTTON: Now always visible for any active batch to prevent getting "stuck" -->
+                            <button name="action" value="reject" class="btn btn-outline-danger btn-sm px-3" 
+                                    onclick="return confirm('Reject this entire batch? This will remove it from the active queue.')"
+                                    title="Reject and clear this batch">
+                                <i class="bi bi-x-circle"></i> REJECT
+                            </button>
                         </form>
                     </div>
                     
                     <div class="card-body p-0">
                         <table class="table table-hover align-middle mb-0">
                             <thead class="table-light">
-                                <tr style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">
-                                    <th class="ps-4">Document Type & Delivery</th>
-                                    <th>Status Detail</th>
+                                <tr class="small text-uppercase text-muted" style="letter-spacing: 0.5px;">
+                                    <th class="ps-4">Document & Shipping Details</th>
+                                    <th>Method</th>
+                                    <th>Status</th>
                                     <th class="text-center">Processing Instruction</th>
                                 </tr>
                             </thead>
@@ -81,42 +160,62 @@
                                 {% for item in batch.list %}
                                 <tr>
                                     <td class="ps-4 py-3">
-                                        <div class="fw-bold text-primary">{{ item.document_type.name }}</div>
+                                        <div class="fw-bold text-dark">{{ item.document_type.name }}</div>
+                                        <div class="small text-muted italic mb-2">"{{ item.reason|truncatechars:60 }}"</div>
                                         
-                                        <!-- DELIVERY METHOD BADGE -->
-                                        <div class="mt-1">
-                                            {% if item.delivery_method == 'LBC' %}
-                                                <span class="badge bg-info text-dark" style="font-size: 0.65rem;">
-                                                    <i class="bi bi-truck me-1"></i> LBC DELIVERY
-                                                </span>
-                                            {% else %}
-                                                <span class="badge bg-light text-dark border" style="font-size: 0.65rem;">
-                                                    <i class="bi bi-person-walking me-1"></i> IN-PERSON PICKUP
-                                                </span>
-                                            {% endif %}
+                                        <!-- DETAILED LBC RECEIVER DATA -->
+                                        {% if item.delivery_method == 'LBC' and item.shipping_first_name %}
+                                        <div class="p-3 bg-light border-start border-info border-4 rounded shadow-sm" style="max-width: 450px;">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <small class="fw-bold text-info text-uppercase"><i class="bi bi-geo-alt-fill"></i> LBC Receiver Details</small>
+                                                <a href="https://lbconline.lbcexpress.com/booknow" target="_blank" class="btn btn-dark btn-xs py-0 px-2 fw-bold" style="font-size: 0.65rem;">
+                                                    BOOK SHIPMENT <i class="bi bi-box-arrow-up-right"></i>
+                                                </a>
+                                            </div>
+                                            
+                                            <div class="small text-dark lh-sm mb-2" id="addr_text_{{ item.id }}">
+                                                <strong>Name:</strong> {{ item.shipping_first_name }} {{ item.shipping_last_name }}<br>
+                                                <strong>Phone:</strong> {{ item.shipping_phone }}<br>
+                                                <strong>Address:</strong> {{ item.shipping_floor }}, {{ item.shipping_street }}, {{ item.shipping_barangay }}, {{ item.shipping_city }}, {{ item.shipping_province }}, {{ item.shipping_zip }}<br>
+                                                <strong>Landmark:</strong> {{ item.shipping_landmark }}
+                                            </div>
+
+                                            <button type="button" class="btn btn-outline-info btn-sm w-100 fw-bold" style="font-size: 0.65rem;"
+                                                    onclick="copyLbcDetails('{{ item.shipping_first_name|escapejs }}', '{{ item.shipping_last_name|escapejs }}', '{{ item.shipping_phone|escapejs }}', '{{ item.shipping_floor|escapejs }} {{ item.shipping_street|escapejs }}, {{ item.shipping_barangay|escapejs }}, {{ item.shipping_city|escapejs }}, {{ item.shipping_province|escapejs }}')">
+                                                <i class="bi bi-clipboard"></i> COPY ALL DETAILS FOR BOOKING
+                                            </button>
                                         </div>
-                                        
-                                        <div class="small text-muted mt-1">Reason: {{ item.reason|truncatechars:50 }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if item.delivery_method == 'LBC' %}
+                                            <span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1">
+                                                <i class="bi bi-truck me-1"></i> LBC EXPRESS
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-light text-secondary border px-2 py-1">
+                                                <i class="bi bi-person-walking me-1"></i> OFFICE PICKUP
+                                            </span>
+                                        {% endif %}
                                     </td>
                                     <td>
                                         {% if item.status == 'PAID' %}
-                                            <span class="badge bg-success-subtle text-success border border-success-subtle">PAID - TO BE PROCESSED</span>
+                                            <span class="text-success small fw-bold"><i class="bi bi-check-circle-fill"></i> PAID</span>
                                         {% elif item.status == 'READY' %}
-                                            <span class="badge bg-primary">READY</span>
+                                            <span class="badge bg-primary px-2">DOC READY</span>
                                         {% else %}
                                             <span class="small text-muted">{{ item.get_status_display }}</span>
                                         {% endif %}
                                     </td>
                                     <td class="text-center">
-                                        {% if item.status == 'PAID' or item.status == 'PROCESSING' or item.status == 'READY' %}
-                                            <span class="text-muted smaller">
-                                                <i class="bi bi-file-earmark-lock me-1"></i> Prepare Offline Document
-                                                {% if item.delivery_method == 'LBC' %}
-                                                    <br><strong class="text-info"><i class="bi bi-mailbox me-1"></i> Requires Shipping Label</strong>
-                                                {% endif %}
+                                        {% if item.status == 'PAID' or item.status == 'PROCESSING' %}
+                                            <span class="text-muted smaller fw-bold">
+                                                <i class="bi bi-info-circle me-1"></i> Prepare Physical Document Offline
                                             </span>
+                                        {% elif item.status == 'READY' %}
+                                            <span class="text-primary smaller fw-bold">Awaiting Release</span>
                                         {% else %}
-                                            <span class="text-muted smaller italic">Awaiting Payment Approval</span>
+                                            <span class="text-muted smaller italic opacity-50">Pending Stage</span>
                                         {% endif %}
                                     </td>
                                 </tr>
@@ -127,78 +226,96 @@
                 </div>
                 {% endwith %}
             {% empty %}
-                <div class="text-center py-5 bg-white rounded shadow-sm border">
-                    <i class="bi bi-inbox fs-1 text-muted"></i>
-                    <p class="mt-2 text-muted">No pending document requests at this time.</p>
+                <div class="text-center py-5 bg-white rounded shadow-sm border mt-3">
+                    <i class="bi bi-inbox fs-1 text-muted opacity-25"></i>
+                    <p class="mt-2 text-muted fw-bold">No active requests in the queue.</p>
                 </div>
             {% endfor %}
         </div>
     </div>
 
-    <!-- HISTORY SECTION -->
-    <div class="accordion border-0 shadow-sm mt-5" id="historyAcc">
-        <div class="accordion-item border-0">
+    <!-- TRANSACTION HISTORY SECTION (KEEPING ENTIRELY AS IS) -->
+    <div class="accordion border-0 shadow-sm mt-5 mb-5" id="historyAcc">
+        <div class="accordion-item border-0 rounded">
             <h2 class="accordion-header">
-                <button class="accordion-button collapsed bg-dark text-white fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseHistory">
-                    <i class="bi bi-clock-history me-2"></i> Transaction History (Claimed, Shipped & Rejected)
+                <button class="accordion-button collapsed bg-dark text-white fw-bold py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseHistory">
+                    <i class="bi bi-clock-history me-2"></i> Finished Transaction History (Last 30 Days)
                 </button>
             </h2>
             <div id="collapseHistory" class="accordion-collapse collapse">
                 <div class="accordion-body p-0">
-                    <table class="table table-hover mb-0">
-                        <thead class="table-secondary small">
-                            <tr>
-                                <th class="ps-4">Student Name</th>
-                                <th>Document</th>
-                                <th>Method</th>
-                                <th>Tracking #</th>
-                                <th>Result</th>
-                                <th class="text-center">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for h in history %}
-                            <tr>
-                                <td class="ps-4 py-2">{{ h.get_student_name }}</td>
-                                <td>{{ h.document_type.name }}</td>
-                                <td><small class="fw-bold">{{ h.get_delivery_method_display }}</small></td>
-                                <td>
-                                    {% if h.tracking_number %}
-                                    <code class="small fw-bold">{{ h.tracking_number }}</code>
-                                    {% else %}
-                                    <span class="text-muted small">N/A</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if h.status == 'COMPLETED' %}
-                                        <span class="text-success fw-bold">FINISHED</span>
-                                    {% else %}
-                                        <span class="text-danger fw-bold">REJECTED</span>
-                                    {% endif %}
-                                </td>
-                                <td class="text-center">
-                                    <form method="POST">{% csrf_token %}
-                                        <input type="hidden" name="request_id" value="{{ h.id }}">
-                                        <button name="action" value="delete" class="btn btn-link text-danger p-0 small" onclick="return confirm('Remove this from history?')">Delete Record</button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="table-secondary small text-uppercase">
+                                <tr>
+                                    <th class="ps-4">Student</th>
+                                    <th>Document</th>
+                                    <th>Method</th>
+                                    <th>Tracking #</th>
+                                    <th>Result</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for h in history %}
+                                <tr>
+                                    <td class="ps-4 py-2">
+                                        <div class="fw-bold text-dark">{{ h.get_student_name }}</div>
+                                        <small class="text-muted">{{ h.student.username }}</small>
+                                    </td>
+                                    <td><span class="small">{{ h.document_type.name }}</span></td>
+                                    <td><small class="fw-bold text-muted">{{ h.get_delivery_method_display }}</small></td>
+                                    <td>
+                                        {% if h.tracking_number %}
+                                        <code class="text-primary fw-bold">{{ h.tracking_number }}</code>
+                                        {% else %}
+                                        <span class="text-muted small">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if h.status == 'COMPLETED' %}
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle px-3">CLAIMED</span>
+                                        {% else %}
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3">REJECTED</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <form method="POST">{% csrf_token %}
+                                            <input type="hidden" name="request_id" value="{{ h.id }}">
+                                            <button name="action" value="delete" class="btn btn-link text-danger p-0 small text-decoration-none" onclick="return confirm('Permanently remove this record?')">
+                                                <i class="bi bi-trash"></i> Delete
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<style>
-    .smaller { font-size: 0.75rem; }
-    .italic { font-style: italic; }
-    .table th { font-size: 0.7rem; }
-    /* Ensure the tracking input doesn't look too bulky in the header */
-    .input-group-sm > .form-control {
-        font-size: 0.75rem;
+<!-- SCRIPTS (KEEPING ENTIRELY AS IS) -->
+<script>
+    function copyLbcDetails(fname, lname, phone, address) {
+        const fullDetails = `RECEIVER: ${fname} ${lname}\nPHONE: ${phone}\nADDRESS: ${address}`;
+        navigator.clipboard.writeText(fullDetails).then(function() {
+            alert("Receiver details copied to clipboard!");
+        });
     }
+</script>
+
+<style>
+    .smaller { font-size: 0.7rem; }
+    .italic { font-style: italic; }
+    .table th { font-size: 0.65rem; font-weight: 800; }
+    .input-group-sm > .form-control { font-size: 0.75rem; border-color: #0dcaf0; }
+    .btn-sm { font-size: 0.7rem; letter-spacing: 0.3px; }
+    .card-header { border-left: 4px solid #0d6efd; }
+    .bg-info-subtle { background-color: #e1f5fe !important; }
+    .btn-xs { padding: 1px 5px; font-size: 0.6rem; }
 </style>
 {% endblock %}

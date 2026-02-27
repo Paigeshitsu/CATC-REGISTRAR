@@ -1,4 +1,3 @@
-# requests_app/urls.py
 from django.urls import path
 from . import views
 
@@ -11,7 +10,6 @@ urlpatterns = [
     path('dashboard/', views.student_dashboard, name='student_dashboard'),
     path('registrar/inbox/', views.registrar_dashboard, name='registrar_dashboard'),
     
-    # Check these two specifically:
     path('cashier/terminal/', views.cashier_dashboard, name='cashier_dashboard'),
     path('cashier/receipt/<int:req_id>/', views.generate_receipt, name='generate_receipt'),
     
@@ -20,4 +18,8 @@ urlpatterns = [
     path('settings/signature/', views.signature_settings, name='signature_settings'),
     path('payment/xendit/<str:batch_id>/', views.pay_with_xendit, name='pay_with_xendit'),
     path('payment/success/', views.payment_success, name='payment_success'),
+    path('login/', views.api_login_request),
+    path('verify/', views.api_verify_otp),
+    path('payment/webhook/', views.xendit_webhook, name='xendit_webhook'),
+    path('accounting/export/csv/', views.export_collection_csv, name='export_collection_csv'),
 ]

@@ -3,9 +3,14 @@
 <div class="container-fluid mt-4">
     <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-4">
         <h2 class="fw-bold m-0">Cashier Payment Terminal</h2>
-        <a href="{% url 'signature_settings' %}" class="btn btn-outline-dark btn-sm fw-bold">
-            <i class="bi bi-pen"></i> Update My Signature
-        </a>
+        <div class="d-flex gap-2">
+            <a href="{% url 'staff_inbox' %}" class="btn btn-outline-primary btn-sm fw-bold">
+                <i class="bi bi-chat-dots-fill"></i> Messages
+            </a>
+            <a href="{% url 'signature_settings' %}" class="btn btn-outline-dark btn-sm fw-bold">
+                <i class="bi bi-pen"></i> Update My Signature
+            </a>
+        </div>
     </div>
 
     <!-- SECTION 1: PENDING COLLECTION (UNPAID) -->

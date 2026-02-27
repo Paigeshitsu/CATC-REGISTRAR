@@ -1,188 +1,261 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="row">
-    <!-- Left Column: Request Form -->
-    <div class="col-md-5">
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-header bg-primary text-white py-3">
-                <h5 class="mb-0 fw-bold"><i class="bi bi-file-earmark-plus"></i> Request Documents</h5>
-            </div>
-            <div class="card-body">
-                <form method="post" id="requestForm">
-                    {% csrf_token %}
-                    <p class="text-muted small mb-3">Select items and choose your preferred delivery method.</p>
-                    
-                    <!-- SCROLLABLE REQUEST TABLE -->
-                    <div class="table-responsive" style="max-height: 450px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px;">
-                        <table class="table table-sm align-middle mb-0">
-                            <thead class="table-light sticky-top" style="z-index: 10;">
-                                <tr style="font-size: 0.75rem;">
-                                    <th class="ps-3">DOCUMENT</th>
-                                    <th>TYPE & DELIVERY</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for doc in grouped_docs %}
-                                <tr>
-                                    <td class="ps-3 py-2">
-                                        <div class="fw-bold small">{{ doc.name }}</div>
-                                        <div class="text-muted" style="font-size: 0.7rem;">Base: ₱{{ doc.price }}</div>
-                                        
-                                        {% if doc.is_blocked %}
-                                        <div class="text-danger fw-bold" style="font-size: 0.65rem;">
-                                            <i class="bi bi-exclamation-triangle"></i> Registrar review required
-                                        </div>
-                                        {% endif %}
-                                    </td>
-                                    <td class="pe-2">
-                                        <select name="selection_{{ doc.id }}" class="form-select form-select-sm mb-1" style="font-size: 0.75rem;">
-                                            <option value="none">-- Select Type --</option>
-                                            <option value="doc">Document Only</option>
-                                            {% if doc.has_auth %}
-                                            <option value="auth">Authentication Only</option>
-                                            <option value="both">Both Items</option>
-                                            {% endif %}
-                                        </select>
+<style>
+    .badge-blink { animation: status-blink 1.2s linear infinite; }
+    @keyframes status-blink { 50% { opacity: 0.1; } }
+    .doc-row:hover { background-color: #f8f9fa; }
+    .history-row:hover { transform: translateX(8px); background-color: #f0f7ff !important; transition: all 0.3s; }
+    .banner-text { color: #ffffff !important; } 
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+    
+    .stats-card {
+        border-radius: 16px;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        overflow: hidden;
+    }
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.15) !important;
+    }
+</style>
 
-                                        <select name="delivery_{{ doc.id }}" class="form-select form-select-sm" style="font-size: 0.75rem; background-color: #f8f9fa;">
-                                            <option value="PICKUP">In-Person Pickup</option>
-                                            <option value="LBC">LBC Delivery</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+<div class="animate__animated animate__fadeIn">
+    <!-- BANNER -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg bg-primary overflow-hidden" style="border-radius: 20px; background: linear-gradient(135deg, #0d6efd, #003399);">
+                <div class="card-body p-4 position-relative">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h3 class="fw-bold mb-1 banner-text">Hello, {{ student.full_name }}!</h3>
+                            <p class="mb-0 small banner-text opacity-90"><i class="bi bi-stars me-1"></i> {{ random_greeting }}</p>
+                        </div>
                     </div>
-
-                    <div class="mt-3">
-                        <label class="form-label fw-bold small">Reason for Request</label>
-                        <textarea name="reason" class="form-control" rows="2" placeholder="e.g. For Employment, For Transfer..." required></textarea>
-                    </div>
-
-                    <button type="submit" name="action" value="submit_request" class="btn btn-primary w-100 fw-bold mt-3 shadow-sm">
-                        SUBMIT REQUEST
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Right Column: Request History -->
-    <div class="col-md-7">
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-dark text-white py-3 d-flex justify-content-between align-items-center">
-                <h5 class="mb-0 fw-bold"><i class="bi bi-clock-history"></i> My Request History</h5>
-                <span class="badge bg-secondary">{{ requests.count }} Total Items</span>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive" style="max-height: 585px; overflow-y: auto;">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light small text-uppercase sticky-top" style="z-index: 10;">
-                            <tr>
-                                <th class="ps-3">Document</th>
-                                <th>Status</th>
-                                <th>Method</th>
-                                <th class="text-end pe-3">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for req in requests %}
-                            <tr>
-                                <td class="ps-3">
-                                    <div class="fw-bold small">{{ req.document_type.name }}</div>
-                                    <div class="text-muted" style="font-size: 0.7rem;">{{ req.created_at|date:"M d, Y" }}</div>
-                                </td>
-                                <td>
-                                    {% if req.status == 'PENDING' %}
-                                        <span class="badge rounded-pill bg-secondary">Reviewing</span>
-                                    {% elif req.status == 'PAYMENT_REQUIRED' %}
-                                        <span class="badge rounded-pill bg-warning text-dark">Pay Now</span>
-                                    {% elif req.status == 'PAID' or req.status == 'PROCESSING' %}
-                                        <span class="badge rounded-pill bg-primary">Processing</span>
-                                    {% elif req.status == 'READY' %}
-                                        <span class="badge rounded-pill bg-success">Ready</span>
-                                    {% elif req.status == 'COMPLETED' %}
-                                        <span class="badge rounded-pill bg-dark">Claimed</span>
-                                    {% elif req.status == 'REJECTED' %}
-                                        <span class="badge rounded-pill bg-danger">Rejected</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if req.delivery_method == 'LBC' %}
-                                        <span class="small fw-bold text-info"><i class="bi bi-truck"></i> LBC</span>
-                                        <!-- LBC TRACKING DISPLAY -->
-                                        {% if req.tracking_number %}
-                                        <div class="mt-1">
-                                            <small class="d-block text-muted" style="font-size: 0.65rem;">Tracking:</small>
-                                            <span class="fw-bold text-dark" style="font-size: 0.7rem;">{{ req.tracking_number }}</span>
-                                        </div>
-                                        {% endif %}
-                                    {% else %}
-                                        <span class="small fw-bold text-muted"><i class="bi bi-person"></i> Pickup</span>
-                                    {% endif %}
-                                </td>
-                                <td class="text-end pe-3">
-                                    <div class="d-flex justify-content-end gap-2 align-items-center">
-                                        
-                                        <!-- LBC TRACKING BUTTON -->
-                                        {% if req.tracking_number %}
-                                        <a href="https://www.lbcexpress.com/track/?tracking_no={{ req.tracking_number }}" target="_blank" class="btn btn-sm btn-outline-info py-1 px-2" style="font-size: 0.7rem;">
-                                            <i class="bi bi-box-seam"></i> Track
-                                        </a>
-                                        {% endif %}
-
-                                        <!-- PAYMENT BUTTON -->
-                                        {% if req.status == 'PAYMENT_REQUIRED' and req.batch_id %}
-                                        <a href="{% url 'pay_with_xendit' req.batch_id %}" class="btn btn-sm text-white fw-bold py-1 px-2" 
-                                           style="font-size: 0.7rem; background-color: #2b78b5; border-radius: 4px;">
-                                            PAY ONLINE
-                                        </a>
-                                        {% elif req.status == 'PAYMENT_REQUIRED' %}
-                                            <span class="badge bg-danger">Contact Registrar</span>
-                                        {% endif %}
-
-                                        <!-- SUMMARY BUTTON -->
-                                        {% if req.status != 'PENDING' and req.status != 'REJECTED' %}
-                                            <a href="{% url 'generate_receipt' req.id %}" target="_blank" class="btn btn-sm btn-info text-white py-0" style="font-size: 0.75rem;">
-                                                <i class="bi bi-file-text"></i> Summary
-                                            </a>
-                                        {% endif %}
-
-                                        <!-- DELETE BUTTON -->
-                                        {% if req.status == 'PENDING' or req.status == 'COMPLETED' or req.status == 'REJECTED' %}
-                                        <form method="POST" style="display:inline;" class="m-0">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="request_id" value="{{ req.id }}">
-                                            <button type="submit" name="action" value="delete_request" class="btn btn-link text-danger p-0" onclick="return confirm('Remove this record?')">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
-                                        {% endif %}
-                                    </div>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="4" class="text-center py-5">
-                                    <i class="bi bi-inbox fs-2 text-muted d-block mb-2"></i>
-                                    <p class="text-muted m-0">No history found.</p>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
                 </div>
             </div>
         </div>
     </div>
+
+    <div class="row">
+        <!-- FORM COLUMN -->
+        <div class="col-md-5">
+            <div class="card shadow-lg border-0 mb-4">
+                <div class="card-header bg-dark text-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-file-earmark-plus-fill text-warning me-2"></i>Request Documents</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="requestForm">
+                        {% csrf_token %}
+                        <p class="text-muted small mb-3">Welcome to the Online Document Request Portal</p>
+                        
+                        <div class="table-responsive custom-scrollbar" style="max-height: 480px; overflow-y: auto; border: 1px solid #f1f1f1; border-radius: 12px;">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light sticky-top">
+                                    <tr><th class="ps-3">Document Type</th><th>Configuration</th></tr>
+                                </thead>
+                                <tbody>
+                                    {% for doc in grouped_docs %}
+                                    <tr id="row_{{ doc.id }}" class="doc-row {% if doc.is_blocked %}opacity-75{% endif %}">
+                                        <td class="ps-3 py-3">
+                                            <div class="fw-bold text-dark">{{ doc.name }}</div>
+                                            <div class="text-success fw-bold small">₱{{ doc.price }}</div>
+                                            {% if doc.is_blocked %}
+                                            <div class="text-danger fw-bold mt-1" style="font-size: 0.65rem;">
+                                                <i class="bi bi-exclamation-triangle-fill"></i> BLOCKED: SETTLE BALANCE FIRST
+                                            </div>
+                                            {% endif %}
+                                        </td>
+                                        <td class="pe-2">
+                                            <!-- FIX: Added disabled logic per row based on is_blocked -->
+                                            <select name="selection_{{ doc.id }}" 
+                                                    class="form-select form-select-sm mb-1 selection-box" 
+                                                    onchange="toggleDelivery(this, '{{ doc.id }}')"
+                                                    {% if doc.is_blocked %}disabled title="Locked due to balance"{% endif %}>
+                                                <option value="none">-- Select --</option>
+                                                <option value="doc">Document Only</option>
+                                                {% if doc.has_auth %}<option value="auth">Authentication Only</option><option value="both">Both Items</option>{% endif %}
+                                            </select>
+
+                                            <div id="delivery_wrapper_{{ doc.id }}" style="display: none;">
+                                                <select name="delivery_{{ doc.id }}" class="form-select form-select-sm mb-1" onchange="handleDeliveryChange(this, '{{ doc.id }}')">
+                                                    <option value="PICKUP">Office Pickup</option>
+                                                    <option value="LBC">LBC Delivery</option>
+                                                </select>
+                                                <button type="button" id="lbc_btn_{{ doc.id }}" class="btn btn-outline-primary btn-sm w-100 fw-bold" style="font-size: 0.65rem; display: none;" data-bs-toggle="modal" data-bs-target="#lbcModal_{{ doc.id }}">
+                                                    DELIVERY DETAILS
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="mt-3">
+                            <label class="form-label fw-bold small text-muted">PURPOSE</label>
+                            <textarea name="reason" class="form-control" rows="2" required placeholder="e.g. Job Application"></textarea>
+                        </div>
+
+                        <button type="submit" name="action" value="submit_request" class="btn btn-primary w-100 fw-bold mt-3 py-3 shadow" id="submitRequestBtn">
+                            <span id="submitBtnText">SUBMIT SELECTED REQUESTS</span>
+                            <span id="submitBtnSpinner" class="spinner-border spinner-border-sm d-none"></span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- HISTORY COLUMN -->
+        <div class="col-md-7">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-dark text-white py-3">
+                    <h5 class="mb-0 fw-bold">My Request History</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive custom-scrollbar" style="max-height: 585px; overflow-y: auto;">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light small text-uppercase sticky-top">
+                                <tr>
+                                    <th style="width: 40%;">Requested Items</th>
+                                    <th style="width: 25%;">Status</th>
+                                    <th style="width: 15%;">Method</th>
+                                    <th style="width: 20%;" class="text-end pe-3">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% regroup requests by batch_id as batch_list %}
+                                {% for batch in batch_list %}
+                                    {% with first_item=batch.list.0 %}
+                                    <tr class="history-row">
+                                        <td class="ps-3 py-3">
+                                            <div class="small text-muted mb-1">{{ first_item.created_at|date:"M d, Y" }}</div>
+                                            <div class="fw-bold text-dark">
+                                                {% if batch.list|length > 1 %}
+                                                    <i class="bi bi-layers-half text-primary me-1"></i>
+                                                    {% for item in batch.list %}
+                                                        {% if "Authentication" not in item.document_type.name %}
+                                                            {{ item.document_type.name }} (+ Authentication)
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <i class="bi bi-file-earmark-text text-primary me-1"></i>
+                                                    {{ first_item.document_type.name }}
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if first_item.status == 'READY' %}
+                                                <span class="badge rounded-pill bg-success badge-blink">READY</span>
+                                            {% elif first_item.status == 'PAYMENT_REQUIRED' %}
+                                                <span class="badge rounded-pill bg-warning text-dark badge-blink">NEEDS PAYMENT</span>
+                                            {% elif first_item.status == 'PAID' %}
+                                                <span class="badge rounded-pill bg-info text-dark">VERIFYING...</span>
+                                            {% elif first_item.status == 'COMPLETED' %}
+                                                <span class="badge rounded-pill bg-success">CLAIMED</span>
+                                            {% elif first_item.status == 'REJECTED' %}
+                                                <span class="badge rounded-pill bg-danger">REJECTED</span>
+                                            {% else %}
+                                                <span class="badge rounded-pill bg-secondary">{{ first_item.get_status_display }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if first_item.delivery_method == 'LBC' %}
+                                                <span class="small fw-bold text-info">LBC</span>
+                                            {% else %}
+                                                <span class="small fw-bold text-muted">PICKUP</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end pe-3">
+                                            {% if first_item.status == 'PAYMENT_REQUIRED' %}
+                                                <a href="{% url 'pay_with_xendit' batch.grouper %}" class="btn btn-primary btn-sm fw-bold">PAY</a>
+                                            {% endif %}
+                                            {% if first_item.status != 'PENDING' and first_item.status != 'REJECTED' %}
+                                                <a href="{% url 'generate_receipt' first_item.id %}" target="_blank" class="btn btn-outline-dark btn-sm"><i class="bi bi-file-text"></i></a>
+                                            {% endif %}
+                                            {% if first_item.status == 'PENDING' or first_item.status == 'PAYMENT_REQUIRED' %}
+                                            <form method="POST" class="d-inline">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="batch_id" value="{{ batch.grouper }}">
+                                                <button type="submit" name="action" value="delete_request" class="btn btn-link text-danger p-0 ms-1" onclick="return confirm('Cancel?')"><i class="bi bi-trash3"></i></button>
+                                            </form>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endwith %}
+                                {% empty %}
+                                    <tr><td colspan="4" class="text-center py-4 text-muted">No requests found.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> 
 </div>
 
-<style>
-    .table-responsive::-webkit-scrollbar { width: 6px; }
-    .table-responsive::-webkit-scrollbar-track { background: #f1f1f1; }
-    .table-responsive::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
-    .table-responsive::-webkit-scrollbar-thumb:hover { background: #999; }
-</style>
+{% for doc in grouped_docs %}
+<div class="modal fade" id="lbcModal_{{ doc.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 20px;">
+            <div class="modal-header bg-primary text-white border-0">
+                <h6 class="modal-title fw-bold">LBC Delivery Configuration</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-2 mb-4">
+                    <div class="col-6">
+                        <input type="radio" class="btn-check" name="lbc_type_{{ doc.id }}" id="rider_{{ doc.id }}" value="RIDER" checked onchange="toggleLbcFields('{{ doc.id }}')" form="requestForm">
+                        <label class="btn btn-outline-primary w-100 p-3" for="rider_{{ doc.id }}"><i class="bi bi-bicycle fs-3"></i><br><strong>Rider Delivery</strong></label>
+                    </div>
+                    <div class="col-6">
+                        <input type="radio" class="btn-check" name="lbc_type_{{ doc.id }}" id="branch_{{ doc.id }}" value="BRANCH" onchange="toggleLbcFields('{{ doc.id }}')" form="requestForm">
+                        <label class="btn btn-outline-primary w-100 p-3" for="branch_{{ doc.id }}"><i class="bi bi-shop fs-3"></i><br><strong>Branch Pick Up</strong></label>
+                    </div>
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col-6"><input type="text" name="sfname_{{ doc.id }}" class="form-control" placeholder="First Name" form="requestForm"></div>
+                    <div class="col-6"><input type="text" name="slname_{{ doc.id }}" class="form-control" placeholder="Last Name" form="requestForm"></div>
+                    <div class="col-12"><input type="text" name="sphone_{{ doc.id }}" class="form-control" placeholder="Mobile Number" form="requestForm"></div>
+                </div>
+                <div id="home_fields_{{ doc.id }}">
+                    <input type="text" name="sfloor_{{ doc.id }}" class="form-control mb-2" placeholder="Floor/Unit" form="requestForm">
+                    <input type="text" name="sstreet_{{ doc.id }}" class="form-control mb-2" placeholder="Street Address" form="requestForm">
+                </div>
+                <div id="branch_fields_{{ doc.id }}" style="display:none;">
+                    <input type="text" name="lbc_branch_{{ doc.id }}" class="form-control mb-2" placeholder="LBC Branch Name" form="requestForm">
+                </div>
+                <div class="row g-2">
+                    <div class="col-4"><input type="text" name="sprovince_{{ doc.id }}" class="form-control" placeholder="Province" form="requestForm"></div>
+                    <div class="col-4"><input type="text" name="scity_{{ doc.id }}" class="form-control" placeholder="City" form="requestForm"></div>
+                    <div class="col-4"><input type="text" name="sbarangay_{{ doc.id }}" class="form-control" placeholder="Barangay" form="requestForm"></div>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-primary fw-bold w-100 py-2" data-bs-dismiss="modal">SAVE AND APPLY</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<script>
+    function toggleDelivery(selectElement, docId) {
+        const wrapper = document.getElementById('delivery_wrapper_' + docId);
+        const row = document.getElementById('row_' + docId);
+        if (selectElement.value !== 'none') { wrapper.style.display = 'block'; row.classList.add('table-primary'); } 
+        else { wrapper.style.display = 'none'; row.classList.remove('table-primary'); }
+    }
+    function handleDeliveryChange(selectElement, docId) {
+        document.getElementById('lbc_btn_' + docId).style.display = (selectElement.value === 'LBC') ? 'block' : 'none';
+    }
+    function toggleLbcFields(id) {
+        const isBranch = document.getElementById('branch_' + id).checked;
+        document.getElementById('home_fields_' + id).style.display = isBranch ? 'none' : 'block';
+        document.getElementById('branch_fields_' + id).style.display = isBranch ? 'block' : 'none';
+    }
+</script>
 {% endblock %}

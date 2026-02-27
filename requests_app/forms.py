@@ -36,8 +36,8 @@ class StudentRequestForm(forms.ModelForm):
             'reason': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
 
-class RegistrarProcessForm(forms.Form):
-    content = forms.CharField(
-        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 10, 'placeholder': 'Type the certification text here...'}),
-        label="Document Content"
-    )
+#class RegistrarProcessForm(forms.Form):
+    #content = forms.CharField(
+     #   widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 10, 'placeholder': 'Type the certification text here...'}),
+   #     label="Document Content"
+   # )
