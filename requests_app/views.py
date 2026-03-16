@@ -30,6 +30,8 @@ from .models import (
 )
 from .forms import StudentRequestForm, StudentIDLoginForm, OTPVerifyForm
 from .decorators import role_required
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
 
 # --- 1. HELPERS ---
 
@@ -294,24 +296,48 @@ def accounting_dashboard(request):
 @role_required(allowed_roles=['Cashier'])
 def cashier_dashboard(request):
     unpaid = DocumentRequest.objects.filter(is_deleted=False, status='PAYMENT_REQUIRED').order_by('-created_at')
+    online_pending = DocumentRequest.objects.filter(is_deleted=False, status='PENDING_CASHIER_APPROVAL').order_by('-created_at')
     awaiting = DocumentRequest.objects.filter(is_deleted=False, status='PAID').order_by('-created_at')
     history = DocumentRequest.objects.filter(is_deleted=False, status__in=['PROCESSING', 'READY', 'COMPLETED']).order_by('-created_at')
     if request.method == 'POST':
         action, req_id = request.POST.get('action'), request.POST.get('request_id')
         doc_req = get_object_or_404(DocumentRequest, id=req_id)
+        
         if action == 'confirm_payment':
-            batch = DocumentRequest.objects.filter(batch_id=doc_req.batch_id, status='PAYMENT_REQUIRED')
+            # Updated filter: Find the batch by ID and include PENDING_CASHIER_APPROVAL
+            batch = DocumentRequest.objects.filter(
+                batch_id=doc_req.batch_id, 
+                status__in=['PAYMENT_REQUIRED', 'PENDING_CASHIER_APPROVAL']
+            )
+            
+            # Identify if this was an online payment for the log
+            was_online = any(item.status == 'PENDING_CASHIER_APPROVAL' for item in batch)
+            
             new_no = SystemCounter.get_next_receipt_no()
             total = batch.aggregate(Sum('document_type__price'))['document_type__price__sum']
+            
+            # Update all items in the batch to PAID
             batch.update(status='PAID', receipt_number=new_no)
+            
             CollectionLog.objects.create(
-                receipt_number=new_no, student_id=doc_req.student.username, student_name=doc_req.get_student_name(), 
-                amount_paid=total, documents_included=", ".join([i.document_type.name for i in batch]),
-                collected_by=request.user, payment_method='CASH'
+                receipt_number=new_no,
+                student_id=doc_req.student.username,
+                student_name=doc_req.get_student_name(),
+                amount_paid=total,
+                documents_included=", ".join([i.document_type.name for i in batch]),
+                collected_by=request.user,
+                # Set payment method dynamically
+                payment_method='ONLINE' if was_online else 'CASH'
             )
-            log_audit(request.user, 'UPDATE', 'DocumentRequest', doc_req.batch_id, "Cash payment confirmed.")
-        return redirect('cashier_dashboard')
-    return render(request, 'cashier_dashboard.html', {'requests': unpaid, 'awaiting_issuance': awaiting, 'history': history})
+            
+            log_audit(request.user, 'UPDATE', 'DocumentRequest', doc_req.batch_id, "Payment confirmed by Cashier.")
+            return redirect('cashier_dashboard')
+    return render(request, 'cashier_dashboard.html', {
+        'requests': unpaid, 
+        'online_requests': online_pending, # Add this
+        'awaiting_issuance': awaiting, 
+        'history': history
+    })
 
 # --- 7. PAYMENTS & MISC ---
 
@@ -327,7 +353,9 @@ def xendit_webhook(request):
         if items.exists():
             new_no = SystemCounter.get_next_receipt_no()
             total = items.aggregate(Sum('document_type__price'))['document_type__price__sum']
-            items.update(status='PAID', receipt_number=new_no)
+            # Change status to your "Pending" value. 
+# Also, remove receipt_number if you want the cashier to assign it later.
+            items.update(status='PENDING_CASHIER_APPROVAL')
             CollectionLog.objects.create(
                 receipt_number=new_no, student_id=items.first().student.username, 
                 student_name=items.first().get_student_name(), amount_paid=total, 
@@ -424,3 +452,10 @@ def pay_with_xendit(request, batch_id):
         if res.status_code in [200, 201]: return redirect(res.json().get("invoice_url"))
     except: messages.error(request, "Xendit connection failed.")
     return redirect('student_dashboard')
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_document_types(request):
+    docs = DocumentType.objects.filter(is_active=True).values('id', 'name', 'price')
+    return Response(list(docs))

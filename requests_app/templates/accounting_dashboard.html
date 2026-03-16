@@ -9,9 +9,6 @@
         </div>
         
         <div class="d-flex gap-2 align-items-center">
-            <a href="{% url 'staff_inbox' %}" class="btn btn-outline-primary btn-sm fw-bold">
-                <i class="bi bi-chat-dots-fill"></i> Messages
-            </a>
             <div class="text-end d-none d-md-block">
                 <label class="small fw-bold text-muted text-uppercase d-block" style="font-size: 0.65rem;">Switch View</label>
             <select class="form-select form-select-sm shadow-sm fw-bold" style="width: 250px; border-color: #0d6efd;" id="viewSelector" onchange="switchView()">
@@ -23,6 +20,7 @@
             </select>
         </div>
     </div>
+</div>
 
     <!-- RECONCILIATION CARDS -->
     <div class="row mb-4 no-print view-section" id="cards-transactions">

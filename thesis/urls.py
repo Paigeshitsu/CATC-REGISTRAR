@@ -7,7 +7,7 @@ from thesis.admin import custom_admin_site
 urlpatterns = [
     # Custom Django Admin panel with blue gradient theme
     path('admin/', custom_admin_site.urls),
-
+    path('api/', include('requests_app.urls')),
     # This connects the main website to your requests_app
     # Empty string '' means the home page will use your app's URLs
     path('', include('requests_app.urls')),

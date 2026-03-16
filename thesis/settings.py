@@ -14,7 +14,11 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 # Pull list from env, split by comma
+# This tells Django to split the string by the comma
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
 
 # 3. Application definition
 INSTALLED_APPS = [
@@ -46,6 +50,9 @@ CORS_ALLOWED_ORIGINS = [
     "http://76.13.220.96",
     "https://catcreg.online",
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -82,11 +89,15 @@ if os.getenv('DATABASE_URL'): # If you provide a DB URL in .env
 else:
     # Standard SQLite for Development
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'catc_db',
+        'USER': 'catc_user',
+        'PASSWORD': 'shu_buu1',
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
     }
+}
 
 # Internationalization
 LANGUAGE_CODE = 'en-us'
@@ -95,9 +106,18 @@ USE_I18N = True
 USE_TZ = True
 
 # Static and Media Files
+# THIS MUST BE A STRING (TEXT), NOT BASE_DIR / 'static/'
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [BASE_DIR / "static"]
-MEDIA_URL = '/media/'
+
+# These two are folders, so BASE_DIR / is okay here
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
+
+# Media settings (for signatures/receipts)
+MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -143,7 +163,7 @@ SEMAPHORE_SENDER_NAME = os.getenv('SEMAPHORE_SENDER_NAME', 'CATC Portal')
 XENDIT_SECRET_KEY = os.getenv('XENDIT_SECRET_KEY')
 # IMPORTANT: The verification logic in your webhook requires this token from Xendit dashboard
 XENDIT_CALLBACK_TOKEN = os.getenv('XENDIT_CALLBACK_TOKEN') 
-XENDIT_REDIRECT_URL = "https://catcreg.online/payment/success/" if not DEBUG else "http://127.0.0.1:8000/payment/success/"
+XENDIT_REDIRECT_URL = "https://catcreg.online/payment/success/" 
 
 # 8. Site Configuration (Used for QR code generation)
 SITE_URL = "https://catcreg.online" if not DEBUG else "http://127.0.0.1:8000"
@@ -153,3 +173,12 @@ SITE_URL = "https://catcreg.online" if not DEBUG else "http://127.0.0.1:8000"
 ADMIN_SITE = 'thesis.admin.custom_admin_site'
 ADMIN_SITE_TITLE = 'CATC Admin'
 ADMIN_SITE_HEADER = 'CATC Administrator'
+# Add these at the bottom of settings.py
+CSRF_TRUSTED_ORIGINS = [
+    'https://catcreg.online',
+    'https://www.catcreg.online',
+    'http://76.13.220.96',
+]
+
+# This is required if you are using Nginx with HTTPS
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

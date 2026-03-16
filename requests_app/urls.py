@@ -6,7 +6,7 @@ urlpatterns = [
     path('verify-otp/', views.verify_otp, name='verify_otp'),
     path('staff/login/', views.staff_login, name='staff_login'),
     path('logout/', views.logout_view, name='logout'),
-    
+    path('api/document-types/', views.get_document_types, name='get_document_types'),
     path('dashboard/', views.student_dashboard, name='student_dashboard'),
     path('registrar/inbox/', views.registrar_dashboard, name='registrar_dashboard'),
     

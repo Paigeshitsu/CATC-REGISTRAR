@@ -4,9 +4,6 @@
     <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-4">
         <h2 class="fw-bold m-0">Cashier Payment Terminal</h2>
         <div class="d-flex gap-2">
-            <a href="{% url 'staff_inbox' %}" class="btn btn-outline-primary btn-sm fw-bold">
-                <i class="bi bi-chat-dots-fill"></i> Messages
-            </a>
             <a href="{% url 'signature_settings' %}" class="btn btn-outline-dark btn-sm fw-bold">
                 <i class="bi bi-pen"></i> Update My Signature
             </a>
@@ -49,11 +46,51 @@
             </table>
         </div>
     </div>
+<!-- SECTION 2: ONLINE PAYMENTS TO VERIFY -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-primary text-white py-3">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-globe"></i> 2. Pendig Payments (Payment Verification)</h5>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light small text-uppercase">
+                <tr>
+                    <th class="ps-4">Student ID</th>
+                    <th>Documents</th>
+                    <th>Amount</th>
+                    <th class="text-center">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in online_requests %}
+                <tr>
+                    <td class="ps-4 fw-bold">{{ r.student.username }}</td>
+                    <td>{{ r.document_type.name }}</td>
+                    <td class="fw-bold">₱{{ r.document_type.price }}</td>
+                    <td class="text-center">
+                        <form method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="request_id" value="{{ r.id }}">
+                            <button type="submit" name="action" value="confirm_payment" class="btn btn-success btn-sm fw-bold">
+                                <i class="bi bi-check-circle"></i> Verify & Approve
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center py-4 text-muted">No pending online payments found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 
     <!-- SECTION 2: AWAITING ISSUANCE (PAID BUT NO RECEIPT YET) -->
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-header bg-warning text-dark py-3">
-            <h5 class="mb-0 fw-bold"><i class="bi bi-printer"></i> 2. Awaiting Receipt Issuance</h5>
+            <h5 class="mb-0 fw-bold"><i class="bi bi-printer"></i> 3. Awaiting Receipt Issuance</h5>
         </div>
         <div class="card-body p-0">
             <table class="table table-hover align-middle mb-0">
@@ -101,7 +138,7 @@
         <div class="accordion-item border-0">
             <h2 class="accordion-header">
                 <button class="accordion-button collapsed bg-light fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseHistory">
-                    <i class="bi bi-clock-history me-2"></i> 3. Collection History (Backlog)
+                    <i class="bi bi-clock-history me-2"></i> 4. Collection History (Backlog)
                 </button>
             </h2>
             <div id="collapseHistory" class="accordion-collapse collapse">
