@@ -7,7 +7,11 @@ urlpatterns = [
     path('staff/login/', views.staff_login, name='staff_login'),
     path('logout/', views.logout_view, name='logout'),
     path('api/document-types/', views.get_document_types, name='get_document_types'),
+    path('api/track/<str:tracking_num>/', views.track_lbc_shipment, name='track_lbc_shipment'),
+    path('api/track/notify/<str:tracking_num>/', views.track_and_notify, name='track_and_notify'),
     path('dashboard/', views.student_dashboard, name='student_dashboard'),
+    path('tor/dashboard/', views.tor_dashboard, name='tor_dashboard'),
+    path('tor/submit-count/', views.submit_tor_page_count, name='submit_tor_page_count'),
     path('registrar/inbox/', views.registrar_dashboard, name='registrar_dashboard'),
     
     path('cashier/terminal/', views.cashier_dashboard, name='cashier_dashboard'),
