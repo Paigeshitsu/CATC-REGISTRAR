@@ -16,6 +16,7 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 # Pull list from env, split by comma
 # This tells Django to split the string by the comma
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
+ALLOWED_HOSTS.append('127.0.0.1')  # Ensure localhost is always allowed
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
@@ -89,15 +90,11 @@ if os.getenv('DATABASE_URL'): # If you provide a DB URL in .env
 else:
     # Standard SQLite for Development
     DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'catc_db',
-        'USER': 'catc_user',
-        'PASSWORD': 'shu_buu1',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
 
 # Internationalization
 LANGUAGE_CODE = 'en-us'
@@ -147,7 +144,9 @@ if not DEBUG:
     SECURE_CONTENT_TYPE_NOSNIFF = True
 
 # 5. Secure Email Configuration
+# Email settings - Use SMTP for Gmail
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Uncomment for testing only
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
@@ -159,11 +158,19 @@ DEFAULT_FROM_EMAIL = f'CATC Portal <{EMAIL_HOST_USER}>'
 SEMAPHORE_API_KEY = os.getenv('SEMAPHORE_API_KEY')
 SEMAPHORE_SENDER_NAME = os.getenv('SEMAPHORE_SENDER_NAME', 'CATC Portal')
 
+# 6b. iProg SMS API
+IPROG_SMS_API_TOKEN = os.getenv('IPROG_SMS_API_TOKEN', '0f00f99e0ed2eb37be04627a929f4b5075f20616')
+IPROG_SMS_API_URL = os.getenv('IPROG_SMS_API_URL', 'https://www.iprogsms.com/api/v1/sms_messages')
+
+# 6c. SMS API (Primary)
+SMS_API_KEY = os.getenv('SMS_API_KEY')
+SMS_API_URL = os.getenv('SMS_API_URL', 'https://smsapiph.onrender.com/api/v1/send/sms')
+
 # 7. Secure Xendit Configuration
 XENDIT_SECRET_KEY = os.getenv('XENDIT_SECRET_KEY')
 # IMPORTANT: The verification logic in your webhook requires this token from Xendit dashboard
 XENDIT_CALLBACK_TOKEN = os.getenv('XENDIT_CALLBACK_TOKEN') 
-XENDIT_REDIRECT_URL = "https://catcreg.online/payment/success/" 
+XENDIT_REDIRECT_URL = os.getenv('XENDIT_REDIRECT_URL', 'https://catcreg.online/payment/success/') 
 
 # 8. Site Configuration (Used for QR code generation)
 SITE_URL = "https://catcreg.online" if not DEBUG else "http://127.0.0.1:8000"
@@ -173,12 +180,11 @@ SITE_URL = "https://catcreg.online" if not DEBUG else "http://127.0.0.1:8000"
 ADMIN_SITE = 'thesis.admin.custom_admin_site'
 ADMIN_SITE_TITLE = 'CATC Admin'
 ADMIN_SITE_HEADER = 'CATC Administrator'
-# Add these at the bottom of settings.py
-CSRF_TRUSTED_ORIGINS = [
-    'https://catcreg.online',
-    'https://www.catcreg.online',
-    'http://76.13.220.96',
-]
 
-# This is required if you are using Nginx with HTTPS
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# 10. LBC CBIP Track and Trace API Configuration
+LBC_API_KEY = os.getenv('LBC_API_KEY')
+LBC_SUBSCRIPTION_KEY = os.getenv('LBC_SUBSCRIPTION_KEY')
+
+# 11. LBC API Host Configuration (for VPS deployment)
+LBC_API_HOST = os.getenv('LBC_API_HOST', 'localhost')
+LBC_API_PORT = os.getenv('LBC_API_PORT', '3000')

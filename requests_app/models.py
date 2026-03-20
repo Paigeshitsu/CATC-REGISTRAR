@@ -20,7 +20,8 @@ class StudentMasterList(models.Model):
     major = models.CharField(max_length=100, blank=True, null=True)
     email = models.EmailField(unique=True)
     phone_number = models.CharField(max_length=15)
-
+    is_graduated = models.BooleanField(default=False, help_text="Whether the student has graduated")
+    
     @property
     def masked_email(self):
         try:
@@ -35,6 +36,24 @@ class StudentMasterList(models.Model):
             return f"{self.phone_number[:2]}*******{self.phone_number[-2:]}"
         except:
             return "your registered phone"
+    
+    def get_tor_request_count(self):
+        """Get the count of TOR requests for this student."""
+        # Get the user associated with this student
+        from django.contrib.auth.models import User
+        user = User.objects.filter(username=self.student_id).first()
+        if not user:
+            return 0
+        from .models import DocumentRequest, DocumentType
+        # Count TOR requests (both completed and in-progress)
+        tor_type = DocumentType.objects.filter(name__icontains='TOR').first()
+        if not tor_type:
+            return 0
+        return DocumentRequest.objects.filter(
+            student=user, 
+            document_type=tor_type,
+            is_deleted=False
+        ).exclude(status='REJECTED').count()
 
 class OTPToken(models.Model):
     """Temporary storage for OTP codes"""
@@ -42,15 +61,58 @@ class OTPToken(models.Model):
     otp_code = models.CharField(max_length=6)
     created_at = models.DateTimeField(auto_now_add=True)
     is_verified = models.BooleanField(default=False)
+    # Google Authenticator (TOTP) secret key
+    google_auth_secret = models.CharField(max_length=32, blank=True, null=True)
+    # Track if user has set up Google Authenticator
+    google_auth_enabled = models.BooleanField(default=False)
 
     def generate_code(self):
+        # Generate a random 6-digit code as fallback
         self.otp_code = str(random.randint(100000, 999999))
+        
+        # Try to generate Google Authenticator secret if pyotp is available
+        try:
+            import pyotp
+            if not self.google_auth_secret:
+                self.google_auth_secret = pyotp.random_base32()
+                # Enable Google Auth when secret is generated
+                self.google_auth_enabled = True
+        except ImportError:
+            # If pyotp is not installed, just skip Google Auth setup
+            pass
+        
         self.save()
 
-    def is_valid(self):
-        """Returns True if the OTP is unverified and less than 10 minutes old."""
-        expiration_time = self.created_at + timedelta(minutes=10)
-        return not self.is_verified and timezone.now() < expiration_time
+    def get_google_auth_uri(self):
+        """Get the Google Authenticator provisioning URI"""
+        if not self.google_auth_secret:
+            return None
+        try:
+            import pyotp
+            totp = pyotp.TOTP(self.google_auth_secret)
+            return totp.provisioning_uri(name=self.user.username, issuer_name='CATC Portal')
+        except ImportError:
+            return None
+
+    def verify_google_auth_code(self, code):
+        """Verify a Google Authenticator TOTP code"""
+        if not self.google_auth_secret or not self.google_auth_enabled:
+            return False
+        try:
+            import pyotp
+            totp = pyotp.TOTP(self.google_auth_secret)
+            return totp.verify(code)
+        except ImportError:
+            return False
+
+    def verify_otp_code(self, code):
+        """Verify either Google Auth code or regular OTP code"""
+        # First try Google Authenticator
+        if self.google_auth_enabled and self.google_auth_secret:
+            if self.verify_google_auth_code(code):
+                return True
+        # Fall back to regular OTP code
+        return self.otp_code == code and self.is_valid()
 
 class DocumentType(models.Model):
     name = models.CharField(max_length=100)
@@ -62,6 +124,8 @@ class DocumentType(models.Model):
 class DocumentRequest(models.Model):
     STATUS_CHOICES = [
         ('PENDING', 'Pending Review'),
+        ('PENDING_TOR_COUNT', 'Pending TOR Page Count'),
+        ('APPROVED', 'Approved - Awaiting Payment'),
         ('REJECTED', 'Rejected'),
         ('PAYMENT_REQUIRED', 'Awaiting Payment'),
         ('PAID', 'Paid - To be Processed'),
@@ -105,7 +169,31 @@ class DocumentRequest(models.Model):
     shipping_barangay = models.CharField(max_length=100, blank=True, null=True)
     shipping_zip = models.CharField(max_length=10, blank=True, null=True)
     shipping_landmark = models.CharField(max_length=255, blank=True, null=True)
-
+    
+    # TOR-specific fields
+    tor_page_count = models.PositiveIntegerField(null=True, blank=True, help_text="Number of pages for TOR (Transcript of Records)")
+    tor_price_override = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Custom price for TOR based on page count")
+    
+    # Rush processing field
+    rush_processing = models.BooleanField(default=False, help_text="If true, processing is rushed (1 day) at double price")
+    
+    # Processing days field
+    processing_days = models.PositiveIntegerField(null=True, blank=True, help_text="Number of days to process the document")
+    
+    # TOR price per page
+    TOR_PRICE_PER_PAGE = 100
+    
+    def get_price(self):
+        """Calculate the price for this document request, considering TOR special pricing and rush processing."""
+        # Get base price
+        base_price = self.tor_price_override if self.tor_price_override is not None else self.document_type.price
+        
+        # Apply rush processing multiplier (double the price)
+        if self.rush_processing:
+            base_price = base_price * 2
+        
+        return base_price
+    
     def get_student_name(self):
         student_record = StudentMasterList.objects.filter(student_id=self.student.username).first()
         return student_record.full_name if student_record else self.student.username
@@ -133,6 +221,11 @@ class StudentBalance(models.Model):
 
     def __str__(self):
         return f"{self.student.student_id} - ₱{self.outstanding_amount}"
+    
+    def clear_balance(self):
+        """Clear the outstanding balance by setting it to 0."""
+        self.outstanding_amount = 0
+        self.save()
 
 class Notification(models.Model):
     SENDER_CHOICES = [

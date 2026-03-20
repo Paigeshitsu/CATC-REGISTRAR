@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Payment Summary - {{ student.student_id }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #333; line-height: 1.6; background-color: #f8f9fa; }
         .container { max-width: 600px; margin: auto; border: 1px solid #dee2e6; padding: 30px; border-radius: 12px; background-color: #ffffff; shadow: 0 4px 6px rgba(0,0,0,0.1); }
@@ -83,6 +84,16 @@
             <p style="margin: 0;"><strong>Status:</strong> VERIFIED PAID<br>
                <strong>Reference:</strong> {{ display_receipt_no }}</p>
         </div>
+        
+        {% if is_lbc_delivery %}
+        <div style="margin-top: 20px; padding: 15px; background-color: #fff3cd; border-radius: 8px; font-size: 0.85rem; color: #856404;">
+            <p style="margin: 0;"><strong><i class="bi bi-truck"></i> LBC Delivery Details:</strong><br>
+               <strong>Method:</strong> LBC Express Delivery<br>
+               {% if doc.shipping_barangay %}<strong>Shipping Address:</strong> {{ doc.shipping_barangay }}, {{ doc.shipping_municipality }}, {{ doc.shipping_province }}{% endif %}<br>
+               {% if doc.tracking_number %}<strong>Tracking Number:</strong> {{ doc.tracking_number }}{% else %}<em>Tracking number pending</em>{% endif %}
+            </p>
+        </div>
+        {% endif %}
         
         <div style="margin-top: 20px; font-size: 0.75rem; color: #999; text-align: center;">
             <em>Note: This is a system-generated summary. Please present your student ID to the Registrar's Office for document claiming.</em>
