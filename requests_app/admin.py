@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib import messages
 from django.utils.html import format_html
-from .models import StudentMasterList, DocumentRequest, DocumentType, OTPToken, Profile, CollectionLog
+from .models import StudentMasterList, DocumentRequest, DocumentType, OTPToken, Profile, CollectionLog, TORRequestHistory
 
 @admin.action(description='⚠️ Delete ALL students in Master List')
 def wipe_entire_master_list(modeladmin, request, queryset):
@@ -40,3 +40,10 @@ class ProfileAdmin(admin.ModelAdmin):
 class CollectionLogAdmin(admin.ModelAdmin):
     list_display = ('receipt_number', 'student_id', 'amount_paid', 'created_at')
     readonly_fields = ('created_at',)
+
+@admin.register(TORRequestHistory)
+class TORRequestHistoryAdmin(admin.ModelAdmin):
+    list_display = ('student', 'document_type', 'is_free', 'price', 'requested_at', 'completed_at')
+    list_filter = ('is_free', 'requested_at')
+    search_fields = ('student__student_id', 'student__full_name', 'document_type')
+    readonly_fields = ('requested_at',)

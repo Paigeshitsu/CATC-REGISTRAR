@@ -11,7 +11,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.core.exceptions import PermissionDenied
 from django.http import JsonResponse, HttpResponse
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django.core.cache import cache 
 from django.views.decorators.csrf import csrf_exempt
 
@@ -26,7 +26,7 @@ from .tracking_service import LBCTracker
 from .models import (
     DocumentRequest, StudentMasterList, OTPToken, 
     DocumentType, StudentBalance, Notification, SystemCounter,
-    CollectionLog, Profile, AuditLog, random 
+    CollectionLog, Profile, AuditLog, TORRequestHistory, random 
 )
 from .forms import StudentRequestForm, StudentIDLoginForm, OTPVerifyForm
 from .decorators import role_required
@@ -530,6 +530,7 @@ def registrar_dashboard(request):
     processing_count = active_requests.filter(status='PROCESSING').count()
     if request.method == 'POST':
         action, batch_id = request.POST.get('action'), request.POST.get('batch_id')
+        print(f"[DEBUG] Registrar POST - action: {action}, batch_id: {batch_id}")
         batch = DocumentRequest.objects.filter(batch_id=batch_id)
         if action == 'approve':
             # Approve non-TOR requests for payment
@@ -552,8 +553,10 @@ def registrar_dashboard(request):
                 messages.info(request, "No non-TOR requests to approve in this batch.")
         elif action == 'send_to_tor':
             # Directly send TOR requests to TOR dashboard for page counting
-            # Only update TOR items in the batch
-            tor_items = batch.filter(document_type__name__icontains='TOR')
+            # Only update TOR/Transcript items in the batch
+            tor_items = batch.filter(
+                Q(document_type__name__icontains='TOR') | Q(document_type__name__icontains='TRANSCRIPT')
+            )
             tor_items.update(status='PENDING_TOR_COUNT')
             log_audit(request.user, 'UPDATE', 'DocumentRequest', batch_id, "Sent to TOR Desk for page counting.")
             # Notify TOR desk and student
@@ -628,6 +631,37 @@ def registrar_dashboard(request):
             
             # Explicit redirect with success message
             messages.success(request, f"Success! {ready_count} document(s) updated.")
+            return redirect('registrar_dashboard')
+        elif action == 'mark_done':
+            # Mark as DONE - for office pickup when student has collected the document
+            # This moves the request to history
+            print(f"[DEBUG] mark_done action received. Batch ID: {batch_id}, Items in batch: {batch.count()}")
+            for item in batch:
+                # Check if this is a TOR/Transcript request - create permanent history record
+                is_tor_request = 'TOR' in str(item.document_type.name).upper() or 'TRANSCRIPT' in str(item.document_type.name).upper()
+                
+                if is_tor_request:
+                    # Create permanent TORRequestHistory record (cannot be deleted by students)
+                    TORRequestHistory.objects.create(
+                        student=item.student,
+                        document_type=item.document_type.name,
+                        page_count=item.tor_page_count,
+                        price=item.price or 0,
+                        is_free=(item.price == 0),
+                        requested_at=item.created_at,
+                        completed_at=timezone.now(),
+                        batch_id=item.batch_id
+                    )
+                    print(f"[DEBUG] Created TORRequestHistory for student {item.student.student_id}, is_free: {item.price == 0}")
+                
+                item.status = 'COMPLETED'
+                item.save()
+                create_notification(item.student, 'Registrar', 
+                    f"Your {item.document_type.name} has been marked as COMPLETED. Thank you!")
+            
+            done_count = batch.count()
+            messages.success(request, f"{done_count} document(s) marked as DONE and moved to history.")
+            log_audit(request.user, 'UPDATE', 'DocumentRequest', batch_id, "Marked as DONE (completed). Moved to history.")
             return redirect('registrar_dashboard')
         elif action == 'mark_completed': 
             batch.update(status='COMPLETED')
@@ -1260,8 +1294,13 @@ def submit_tor_page_count(request):
             if doc_request.rush_processing:
                 tor_price = tor_price * 2
             
-            # Check if this is a FREE TOR request (tor_price_override = 0)
-            is_free_tor = doc_request.tor_price_override is not None and doc_request.tor_price_override == 0
+            # Check if student has any previous TOR/Transcript requests in the permanent TORRequestHistory
+            # This cannot be deleted by students, so it serves as a permanent record
+            student = doc_request.student
+            has_previous_tor = TORRequestHistory.objects.filter(student=student).exists()
+            
+            # Check if this is a FREE TOR request (tor_price_override = 0 OR first TOR request)
+            is_free_tor = (doc_request.tor_price_override is not None and doc_request.tor_price_override == 0) or (not has_previous_tor)
             
             # Check if there's a batch with other requests
             if doc_request.batch_id:
@@ -1281,18 +1320,24 @@ def submit_tor_page_count(request):
                 
                 # If this is a FREE TOR and there are other paid items in batch, 
                 # keep the batch as APPROVED so student can pay for other items
-                # If this is FREE TOR and it's the ONLY item in batch, mark as PAID directly
+                # If this is FREE TOR and it's the ONLY item in batch, mark as PROCESSING directly
                 if is_free_tor and batch_items.count() == 1:
                     # This is a FREE TOR request - no payment needed
                     doc_request.price = 0
-                    doc_request.status = 'PAID'
+                    doc_request.status = 'PAID'  # Free TOR is considered paid immediately
                     doc_request.save()
                     
                     # Create notification for student
+                    if has_previous_tor:
+                        # This shouldn't happen since we set is_free_tor based on history, but just in case
+                        message = f'Your TOR request ({doc_request.document_type.name}) has been processed. {page_count} pages. Total: ₱{tor_price}. Please proceed to payment.'
+                    else:
+                        message = f'Your TOR request ({doc_request.document_type.name}) has been processed. {page_count} pages. Your first TOR request is FREE!'
+                    
                     Notification.objects.create(
                         user=doc_request.student,
                         sender_role='TOR Desk',
-                        message=f'Your TOR request ({doc_request.document_type.name}) has been processed. {page_count} pages. Your first TOR request as a graduate is FREE!'
+                        message=message
                     )
                     
                     # Log the action
@@ -1302,7 +1347,7 @@ def submit_tor_page_count(request):
                 else:
                     # Regular paid TOR or batch with other items
                     doc_request.price = total_price
-                    doc_request.status = 'APPROVED'
+                    doc_request.status = 'APPROVED'  # Set to APPROVED so student can see PAY button
                     doc_request.save()
                     
                     # Create notification for student
@@ -1320,24 +1365,24 @@ def submit_tor_page_count(request):
                 # No batch - single TOR request
                 if is_free_tor:
                     doc_request.price = 0
-                    doc_request.status = 'PAID'
+                    doc_request.status = 'PROCESSING'  # Changed from 'PAID' to show 'Mark as Ready' in registrar dashboard
                     doc_request.save()
                     
                     # Create notification for student
                     Notification.objects.create(
                         user=doc_request.student,
                         sender_role='TOR Desk',
-                        message=f'Your TOR request ({doc_request.document_type.name}) has been processed. {page_count} pages. Your first TOR request as a graduate is FREE!'
+                        message=f'Your TOR request ({doc_request.document_type.name}) has been processed. {page_count} pages. Your first TOR request as a graduate is FREE! Please wait for it to be ready.'
                     )
                     
-                    log_audit(request.user, 'UPDATE', 'DocumentRequest', str(doc_request.id), f"TOR page count set to {page_count}. FREE request - marked as PAID.")
+                    log_audit(request.user, 'UPDATE', 'DocumentRequest', str(doc_request.id), f"TOR page count set to {page_count}. FREE request - marked as PROCESSING.")
                     
-                    return JsonResponse({'success': True, 'message': f'Page count submitted. FREE TOR - marked as PAID.'})
+                    return JsonResponse({'success': True, 'message': f'Page count submitted. FREE TOR - marked as PROCESSING.'})
                 else:
                     total_price = tor_price
                     doc_request.price = total_price
-                    # Set to APPROVED so student can proceed to pay
-                    doc_request.status = 'APPROVED'
+                    # Set to PROCESSING so 'Mark as Ready' shows in registrar dashboard
+                    doc_request.status = 'PROCESSING'  # Changed from 'APPROVED' to show 'Mark as Ready' button
                     doc_request.save()
                     
                     # Create notification for student
@@ -1362,7 +1407,7 @@ def submit_tor_page_count(request):
 @login_required
 @role_required(allowed_roles=['Student'])
 def pay_with_xendit(request, batch_id):
-    batch = DocumentRequest.objects.filter(batch_id=batch_id, status__in=['APPROVED', 'PAYMENT_REQUIRED'])
+    batch = DocumentRequest.objects.filter(batch_id=batch_id, status__in=['APPROVED', 'PAYMENT_REQUIRED', 'PROCESSING'])
     if not batch.exists(): 
         # Debug: check what status the batch has
         existing = DocumentRequest.objects.filter(batch_id=batch_id).first()
