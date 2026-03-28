@@ -287,3 +287,27 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.user.username
+
+
+class TORRequestHistory(models.Model):
+    """
+    Permanent TOR request history that cannot be deleted by students.
+    This tracks all TOR requests regardless of whether the student
+    deletes their request history in the dashboard.
+    """
+    student = models.ForeignKey(StudentMasterList, on_delete=models.CASCADE, related_name='tor_history')
+    document_type = models.CharField(max_length=255)
+    page_count = models.IntegerField(null=True, blank=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    is_free = models.BooleanField(default=False, help_text="Whether this was a free TOR request")
+    requested_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    batch_id = models.CharField(max_length=50, null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-requested_at']
+        verbose_name = "TOR Request History"
+        verbose_name_plural = "TOR Request Histories"
+    
+    def __str__(self):
+        return f"{self.student.student_id} - {self.document_type} - {'FREE' if self.is_free else 'PAID'}"
