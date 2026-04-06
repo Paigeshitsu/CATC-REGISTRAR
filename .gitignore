@@ -5,3 +5,9 @@ __pycache__/
 *.pyc
 media/
 staticfiles/
+lbc-api/node_modules/
+lbc-api/package-lock.json
+*.pyc
+thesis/__pycache__/
+requests_app/__pycache__/
+requests_app/migrations/
