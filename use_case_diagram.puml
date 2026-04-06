@@ -1,0 +1,41 @@
+@startuml CATC Document Request Portal - Use Case Diagram
+!theme plain
+left to right direction
+
+actor "Student" as Student
+actor "Registrar" as Registrar
+actor "Accounting" as Accounting
+actor "Cashier" as Cashier
+actor "Admin" as Admin
+
+package "CATC Document Request Portal" {
+    usecase "Login & OTP Verification" as UC1
+    usecase "Submit Document Request" as UC2
+    usecase "Make Payment" as UC3
+    usecase "Track Request Status" as UC4
+    usecase "Process Request\n(Approve/Mark Ready/Complete)" as UC5
+    usecase "Manage Finances\n(Transactions/Balances)" as UC6
+    usecase "Manage System\n(Document Prices/Users)" as UC7
+}
+
+actor "iProg SMS API" as SMS
+actor "LBC Express" as LBC
+
+Student --> UC1
+Student --> UC2
+Student --> UC3
+Student --> UC4
+
+Registrar --> UC5
+
+Accounting --> UC6
+
+Cashier --> UC3
+Cashier --> UC6
+
+Admin --> UC7
+
+UC1 --> SMS : sends/verifies OTP
+UC4 --> LBC : provides tracking
+
+@enduml
