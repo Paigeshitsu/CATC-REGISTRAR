@@ -63,18 +63,36 @@
             <thead>
                 <tr>
                     <th>Document Description</th>
+                    <th style="text-align: right;">Unit Price</th>
+                    <th style="text-align: right;">Qty</th>
                     <th style="text-align: right;">Amount</th>
                 </tr>
             </thead>
             <tbody>
-                {% for item in batch_items %}
+                {% for item in summary_items %}
                 <tr>
-                    <td>{{ item.document_type.name }}</td>
-                    <td style="text-align: right;">₱{{ item.document_type.price }}</td>
+                    <td>
+                        {{ item.name }}
+                        <br><span style="font-size: 0.75rem; color: #6c757d;">{{ item.display_label }}: ₱{{ item.base_amount }}</span>
+                        {% if item.unit_label %}<br><span style="font-size: 0.75rem; color: #6c757d;">{{ item.unit_label }}</span>{% endif %}
+                    </td>
+                    <td style="text-align: right;">₱{{ item.unit_price }}</td>
+                    <td style="text-align: right;">{{ item.quantity }}</td>
+                    <td style="text-align: right;">₱{{ item.base_amount }}</td>
                 </tr>
+                {% if item.rush_fee %}
+                <tr>
+                    <td style="padding-left: 30px;"><span style="font-size: 0.75rem; color: #dc3545;">Rush Processing</span></td>
+                    <td style="text-align: right;"><span style="font-size: 0.75rem; color: #dc3545;">₱{{ item.unit_price }}</span></td>
+                    <td style="text-align: right;"><span style="font-size: 0.75rem; color: #dc3545;">1</span></td>
+                    <td style="text-align: right;"><span style="font-size: 0.75rem; color: #dc3545;">₱{{ item.rush_fee }}</span></td>
+                </tr>
+                {% endif %}
                 {% endfor %}
                 <tr class="total-row">
                     <td>TOTAL PAID</td>
+                    <td></td>
+                    <td></td>
                     <td style="text-align: right;">₱{{ total_amount }}</td>
                 </tr>
             </tbody>
