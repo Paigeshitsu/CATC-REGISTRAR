@@ -1,0 +1,28 @@
+@startuml Submit Document Request Sequence
+!theme plain
+
+actor Student
+participant ":StudentDashboardView" as Dashboard
+participant ":DocumentRequest" as Request
+participant ":DocumentType" as DocType
+participant ":LBCTracker" as LBC
+actor Registrar
+
+Student -> Dashboard: Select Document Type(s)
+Student -> Dashboard: Select Delivery Method
+alt LBC Delivery
+    Student -> Dashboard: Enter Shipping Address
+    Dashboard -> LBC: Create LBC Shipment
+    LBC --> Dashboard: Tracking Number
+end
+Student -> Dashboard: Submit Request
+Dashboard -> Request: Create DocumentRequest(s)
+alt TOR Request (Graduate First Time)
+    Request -> Request: Set price = 0 (FREE)
+else TOR Request (Subsequent)
+    Request -> Request: Set status = PENDING_TOR_COUNT
+end
+Request --> Student: Show Success Message
+Registrar -> Dashboard: View New Request
+
+@enduml

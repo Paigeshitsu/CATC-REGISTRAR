@@ -1,0 +1,31 @@
+@startuml Manage System Sequence
+!theme plain
+
+actor Admin
+participant ":AdminDashboardView" as Dashboard
+participant ":DocumentType" as DocType
+participant ":User" as User
+participant ":Group" as Group
+actor Student
+
+Admin -> Dashboard: Access Admin Panel
+
+alt Update Document Prices
+    Admin -> Dashboard: Select Document Type
+    Admin -> Dashboard: Enter New Price
+    Dashboard -> DocType: Update price
+    DocType -> Audit: Log Price Change
+end
+
+alt Manage Users
+    Admin -> Dashboard: Create/Edit/Deactivate User
+    Dashboard -> User: Save User
+    Dashboard -> Group: Assign User to Group
+end
+
+alt View System Settings
+    Dashboard -> Dashboard: Load Settings
+    Dashboard --> Admin: Display Settings
+end
+
+@enduml
