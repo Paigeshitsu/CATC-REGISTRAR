@@ -503,7 +503,6 @@
                         <p class="small text-muted mb-1">DELIVERY TYPE</p>
                         <h6 class="fw-bold text-info mb-0" id="savedDeliveryType{{ batch.grouper }}">--</h6>
                     </div>
-                    <p class="small text-muted">This window will close in 1 minute.</p>
                 </div>
                 <div class="modal-footer border-0 justify-content-center">
                     <button type="button" class="btn btn-success fw-bold" id="trackNowBtn{{ batch.grouper }}" data-bs-dismiss="modal">
@@ -542,9 +541,26 @@ function submitTrackingForm(batchId) {
         body: formData,
         headers: {
             'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value
-        }
+        },
+        redirect: 'manual'
     })
     .then(function(response) {
+        // Check if we got a redirect (which means Django processed and redirected)
+        if (response.type === 'opaqueredirect' || response.status === 302 || response.status === 301) {
+            // Page is about to redirect - don't show modal, let it redirect
+            // Show a brief message before redirect
+            document.getElementById('trackingInputForm' + batchId).style.display = 'none';
+            document.getElementById('trackingSuccess' + batchId).style.display = 'block';
+            document.getElementById('savedTrackingNum' + batchId).textContent = trackingNum;
+            document.getElementById('savedDeliveryType' + batchId).textContent = 'Processing...';
+            
+            // Redirect after showing the tracking number briefly
+            setTimeout(function() {
+                window.location.reload();
+            }, 2000);
+            return;
+        }
+        
         if (response.ok) {
             // Show success message
             document.getElementById('trackingInputForm' + batchId).style.display = 'none';
@@ -565,16 +581,18 @@ function submitTrackingForm(batchId) {
             }
             
             // Hide the X close button to force using CLOSE button
-            document.getElementById('closeTrackingBtn' + batchId).style.display = 'none';
+            var closeBtn = document.getElementById('closeTrackingBtn' + batchId);
+            if (closeBtn) {
+                closeBtn.style.display = 'none';
+            }
             
-            // NOTE: Modal stays open until user clicks CLOSE or X button
-            // Removed auto-close timer so user has time to copy tracking number
+            // NOTE: Modal stays open until user clicks CLOSE button
         } else {
             alert('Error saving tracking number. Please try again.');
         }
     })
     .catch(function(error) {
-        alert('Error saving tracking number. Please try again.');
+        alert('Error saving tracking number. Please try again: ' + error);
     });
 }
 
