@@ -1807,23 +1807,27 @@ def tor_dashboard(request):
     tor_requests = tor_requests | transcript_processed
 
     # Also get TOR requests that are PENDING_TOR_COUNT (new requests waiting for page count)
+    # EXCLUDE Authentication documents - they will be bundled with their parent TOR/Transcript request
     processing_tor = (
         DocumentRequest.objects.filter(
             document_type__name__icontains="TOR",
             status="PENDING_TOR_COUNT",
             is_deleted=False,
         )
+        .exclude(document_type__name__icontains="Authentication")
         .select_related("document_type", "student")
         .order_by("-created_at")
     )
 
     # Also get TRANSCRIPT requests in PENDING_TOR_COUNT status
+    # EXCLUDE Authentication documents
     transcript_requests = (
         DocumentRequest.objects.filter(
             document_type__name__icontains="TRANSCRIPT",
             status="PENDING_TOR_COUNT",
             is_deleted=False,
         )
+        .exclude(document_type__name__icontains="Authentication")
         .select_related("document_type", "student")
         .order_by("-created_at")
     )
