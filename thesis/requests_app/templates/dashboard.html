@@ -888,7 +888,7 @@ function copyTrackingNumber(batchId) {
                 <div class="text-center mt-4">
                     <button type="button" class="btn btn-outline-primary me-2" onclick="refreshModalTracking()"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
                     <button type="button" class="btn btn-success me-2" onclick="saveTrackingNotification()"><i class="bi bi-bell-fill"></i> Save to Notifications</button>
-                    <button type="button" class="btn btn-warning me-2" id="markDeliveredBtn" onclick="markAsDelivered()"><i class="bi bi-check-circle-fill"></i> Mark as Delivered</button>
+                    <button type="button" class="btn btn-warning me-2" id="markDeliveredBtn" onclick="markAsDelivered()" style="display: none;"><i class="bi bi-check-circle-fill"></i> Mark as Delivered</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
@@ -1247,21 +1247,26 @@ function copyTrackingNumber(batchId) {
                 
                 // Update status
                 var statusBadge = document.getElementById('modal-tracking-status');
+                var markDeliveredBtn = document.getElementById('markDeliveredBtn');
                 if (trackingData && trackingData.status) {
                     var statusLower = trackingData.status.toLowerCase();
                     if (statusLower.includes('delivered')) {
                         statusBadge.textContent = 'DELIVERED';
                         statusBadge.className = 'badge bg-success';
+                        markDeliveredBtn.style.display = 'none';
                     } else if (statusLower.includes('transit') || statusLower.includes('shipment')) {
                         statusBadge.textContent = 'IN TRANSIT';
                         statusBadge.className = 'badge bg-primary';
+                        markDeliveredBtn.style.display = 'inline-block';
                     } else {
                         statusBadge.textContent = trackingData.status;
                         statusBadge.className = 'badge bg-info';
+                        markDeliveredBtn.style.display = 'inline-block';
                     }
                 } else {
                     statusBadge.textContent = 'UNKNOWN';
                     statusBadge.className = 'badge bg-secondary';
+                    markDeliveredBtn.style.display = 'inline-block';
                 }
                 
                 // Update timeline
@@ -1361,7 +1366,22 @@ function copyTrackingNumber(batchId) {
                     var statusBadge = document.getElementById('modal-tracking-status');
                     statusBadge.textContent = 'DELIVERED';
                     statusBadge.className = 'badge bg-success fs-6';
+                    
+                    // Hide Mark as Delivered button
+                    var markDeliveredBtn = document.getElementById('markDeliveredBtn');
+                    markDeliveredBtn.style.display = 'none';
+                    
                     alert('✓ Package marked as delivered!');
+                    
+                    // Close the modal after a short delay
+                    setTimeout(function() {
+                        var modal = bootstrap.Modal.getInstance(document.getElementById('liveTrackingModal'));
+                        if (modal) {
+                            modal.hide();
+                        }
+                        // Reload page to update the dashboard
+                        window.location.reload();
+                    }, 1500);
                 } else {
                     alert('Error: ' + (data.error || 'Unknown error'));
                 }

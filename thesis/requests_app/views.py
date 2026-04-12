@@ -1834,8 +1834,11 @@ def mark_as_delivered(request):
     if not doc_requests.exists():
         return JsonResponse({"success": False, "error": "No request found with this tracking number"}, status=404)
     
-    # Update status to COMPLETED for all matching requests
-    updated_count = doc_requests.update(status="COMPLETED")
+    # Update status to COMPLETED and clear tracking number
+    updated_count = doc_requests.update(
+        status="COMPLETED",
+        tracking_number=""
+    )
     
     # Create notification
     create_notification(
