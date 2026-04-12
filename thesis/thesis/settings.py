@@ -185,10 +185,9 @@ ADMIN_SITE = 'thesis.admin.custom_admin_site'
 ADMIN_SITE_TITLE = 'CATC Admin'
 ADMIN_SITE_HEADER = 'CATC Administrator'
 
-# 10. LBC CBIP Track and Trace API Configuration
-LBC_API_KEY = os.getenv('LBC_API_KEY')
-LBC_SUBSCRIPTION_KEY = os.getenv('LBC_SUBSCRIPTION_KEY')
+# 10. TrackingMore API Configuration
+TRACKINGMORE_API_KEY = os.getenv('TRACKINGMORE_API_KEY')
 
-# 11. LBC API Host Configuration (for VPS deployment)
+# 11. LBC API Host Configuration (for VPS deployment) - Deprecated
 LBC_API_HOST = os.getenv('LBC_API_HOST', 'localhost')
 LBC_API_PORT = os.getenv('LBC_API_PORT', '3000')
