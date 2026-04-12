@@ -390,7 +390,7 @@
                                                 </button>
                                             {% elif first_item.status == 'PROCESSING' or first_item.status == 'PAID' %}
                                                 {% if first_item.delivery_method == 'LBC' %}
-                                                <button type="button" class="btn btn-info btn-sm fw-bold" onclick="openLBCBookingModal()">
+                                                <button type="button" class="btn btn-info btn-sm fw-bold" onclick="openLBCBookingModal('{{ batch.grouper }}')">
                                                     <i class="bi bi-truck"></i> BOOK SHIPPING
                                                 </button>
                                                 {% endif %}
@@ -536,7 +536,8 @@ function submitTrackingForm(batchId) {
     var form = modal.querySelector('form');
     var formData = new FormData(form);
     
-    // Use fetch without redirect:manual to get JSON response
+    console.log('Submitting tracking form for batch:', batchId);
+    
     fetch('', {
         method: 'POST',
         body: formData,
@@ -546,9 +547,12 @@ function submitTrackingForm(batchId) {
         }
     })
     .then(function(response) {
+        console.log('Response status:', response.status);
+        console.log('Response type:', response.type);
         return response.json();
     })
     .then(function(data) {
+        console.log('Response data:', data);
         if (data.success) {
             // Show success message
             document.getElementById('trackingInputForm' + batchId).style.display = 'none';
@@ -568,21 +572,20 @@ function submitTrackingForm(batchId) {
                 };
             }
             
-            // Hide the X close button to force using CLOSE button
+            // Hide the X close button
             var closeBtn = document.getElementById('closeTrackingBtn' + batchId);
             if (closeBtn) {
                 closeBtn.style.display = 'none';
             }
             
-            // NOTE: Modal stays open until user clicks CLOSE button
-            // No auto-reload - page stays on current view
+            console.log('Success modal shown');
         } else {
             alert('Error: ' + (data.message || 'Unknown error'));
         }
     })
     .catch(function(error) {
         console.error('Error:', error);
-        alert('Error saving tracking number. Please try again.');
+        alert('Error saving tracking number: ' + error.message);
     });
 }
 
@@ -895,8 +898,10 @@ function copyTrackingNumber(batchId) {
 <!-- Hidden form for LBC booking submission -->
 <form id="lbcBookingForm" method="post" style="display: none;">
     {% csrf_token %}
-    <input type="hidden" name="action" value="book_lbc">
-    <input type="hidden" name="lbc_tracking" id="lbc_tracking_input">
+    <input type="hidden" name="action" value="update_tracking">
+    <input type="hidden" name="batch_id" id="lbc_batch_id_input">
+    <input type="hidden" name="student_tracking_number" id="lbc_tracking_input">
+    <input type="hidden" name="lbc_delivery_type" value="door_to_door">
     <input type="hidden" name="lbc_sender" id="lbc_sender_input">
     <input type="hidden" name="lbc_receiver" id="lbc_receiver_input">
     <input type="hidden" name="lbc_package" id="lbc_package_input">
@@ -928,6 +933,7 @@ function copyTrackingNumber(batchId) {
     // LBC Booking Functions
     let currentLBCStep = 1;
     let currentTrackingNumber = '';
+    let currentLBCBatchId = '';
     
     function lbcNextStep(step) {
         // Validate current step before moving
@@ -1016,12 +1022,17 @@ function copyTrackingNumber(batchId) {
     
     function lbcBookShipment() {
         // Generate a tracking number (simulated for now)
+        // NOTE: In production, this should come from actual LBC API booking
         var trackingNum = 'LBC' + Date.now().toString().slice(-10);
         currentTrackingNumber = trackingNum;
         
-        // Update tracking display
+        // Use the batch ID from the modal opener
+        var batchId = currentLBCBatchId;
+        
+        // Update form fields
         document.getElementById('tracking-number-display').textContent = trackingNum;
         document.getElementById('lbc_tracking_input').value = trackingNum;
+        document.getElementById('lbc_batch_id_input').value = batchId || '';
         
         // Store the booking info
         var bookingData = {
@@ -1062,8 +1073,29 @@ function copyTrackingNumber(batchId) {
         // Initialize tracking timeline with sample data
         initializeTrackingTimeline(trackingNum);
         
-        // Submit booking to backend
-        document.getElementById('lbcBookingForm').submit();
+        // Submit booking via AJAX to save tracking number
+        var form = document.getElementById('lbcBookingForm');
+        var formData = new FormData(form);
+        
+        fetch('', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            console.log('LBC Booking response:', data);
+            if (data.success) {
+                // Show success - tracking saved
+                console.log('Tracking number saved successfully');
+            }
+        })
+        .catch(function(error) {
+            console.error('Error saving booking:', error);
+        });
     }
     
     function initializeTrackingTimeline(trackingNum) {
@@ -1298,8 +1330,9 @@ function copyTrackingNumber(batchId) {
         }
     }
     
-    function openLBCBookingModal() {
+    function openLBCBookingModal(batchId) {
         currentLBCStep = 1;
+        currentLBCBatchId = batchId || '';
         lbcNextStep(1);
         var modal = new bootstrap.Modal(document.getElementById('lbcBookingModal'));
         modal.show();
