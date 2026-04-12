@@ -162,7 +162,7 @@ def get_payment_summary(items):
                 "unit_price": 0,
                 "quantity": 1,
                 "base_amount": doc_base_price + auth_base_price,
-                "rush_fee": item.rush_fee if item.rush_processing else 0,
+                "rush_fee": item.get_rush_fee() if item.rush_processing else 0,
                 "total_amount": total_item_price,
                 "is_authentication": False,
                 "is_combined": True,
