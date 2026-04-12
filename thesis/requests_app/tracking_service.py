@@ -1,93 +1,94 @@
 import logging
+import requests
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
-try:
-    import trackingmore
-    from trackingmore.exception import TrackingMoreException
-    SDK_AVAILABLE = True
-except ImportError:
-    SDK_AVAILABLE = False
-    TrackingMoreException = Exception
-
 
 class TrackingMoreTracker:
-    """TrackingMore API integration using official SDK."""
+    """TrackingMore API v4 integration using direct HTTP requests."""
     
     def __init__(self):
         self.api_key = getattr(settings, 'TRACKINGMORE_API_KEY', None)
+        self.base_url = "https://api.trackingmore.com/v4"
         self.use_api = bool(self.api_key)
-        
-        if self.use_api and SDK_AVAILABLE:
-            trackingmore.api_key = self.api_key
+    
+    def _get_headers(self):
+        return {
+            "Content-Type": "application/json",
+            "Trackingmore-Api-Key": self.api_key or ""
+        }
     
     def detect_courier(self, tracking_number):
         """Detect which courier a tracking number belongs to."""
         if not self.use_api:
+            logger.warning("TrackingMore API key not configured")
             return {"meta": {"code": 400, "message": "API key not configured"}}
         
-        if not SDK_AVAILABLE:
-            return {"meta": {"code": 500, "message": "TrackingMore SDK not installed"}}
-        
         try:
-            params = {"tracking_number": tracking_number}
-            result = trackingmore.courier.detect(params)
-            return {"meta": {"code": 200, "message": "OK"}, "data": result}
-        except TrackingMoreException as e:
-            logger.error(f"TrackingMore SDK error: {e}")
-            return {"meta": {"code": 400, "message": str(e)}}
+            response = requests.post(
+                f"{self.base_url}/couriers/detect",
+                json={"tracking_number": tracking_number},
+                headers=self._get_headers(),
+                timeout=30
+            )
+            return response.json()
         except Exception as e:
-            logger.error(f"TrackingMore error: {e}")
+            logger.error(f"TrackingMore detect error: {e}")
             return {"meta": {"code": 500, "message": str(e)}}
     
     def create_tracking(self, tracking_number, courier_code, title=None):
         """
         Create/import a tracking number to TrackingMore.
-        Uses V4 API - create & get results in one call.
+        Uses V4 API - creates tracking and gets results in real-time.
         """
         if not self.use_api:
+            logger.warning("TrackingMore API key not configured")
             return {"meta": {"code": 400, "message": "API key not configured"}}
         
-        if not SDK_AVAILABLE:
-            return {"meta": {"code": 500, "message": "TrackingMore SDK not installed"}}
-        
         try:
-            params = {
+            data = {
                 "tracking_number": tracking_number,
                 "courier_code": courier_code
             }
             if title:
-                params["title"] = title
+                data["title"] = title
             
-            result = trackingmore.tracking.create_tracking(params)
-            return {"meta": {"code": 201, "message": "Created"}, "data": result}
-        except TrackingMoreException as e:
-            logger.error(f"TrackingMore SDK error: {e}")
-            return {"meta": {"code": 400, "message": str(e)}}
+            response = requests.post(
+                f"{self.base_url}/trackings/create",
+                json=data,
+                headers=self._get_headers(),
+                timeout=30
+            )
+            result = response.json()
+            logger.info(f"TrackingMore create response: {result}")
+            return result
         except Exception as e:
-            logger.error(f"TrackingMore error: {e}")
+            logger.error(f"TrackingMore create error: {e}")
             return {"meta": {"code": 500, "message": str(e)}}
     
     def get_tracking(self, courier_code, tracking_number):
-        """Get tracking results (V2 API)."""
+        """
+        Get tracking results using V4 API.
+        """
         if not self.use_api:
+            logger.warning("TrackingMore API key not configured")
             return {"meta": {"code": 400, "message": "API key not configured"}}
         
-        if not SDK_AVAILABLE:
-            return {"meta": {"code": 500, "message": "TrackingMore SDK not installed"}}
-        
         try:
-            result = trackingmore.tracking.get_tracking_results({
+            params = {
                 "tracking_numbers": tracking_number,
                 "courier_code": courier_code
-            })
-            return {"meta": {"code": 200, "message": "OK"}, "data": result}
-        except TrackingMoreException as e:
-            logger.error(f"TrackingMore SDK error: {e}")
-            return {"meta": {"code": 400, "message": str(e)}}
+            }
+            response = requests.get(
+                f"{self.base_url}/trackings/get",
+                params=params,
+                headers=self._get_headers(),
+                timeout=30
+            )
+            return response.json()
         except Exception as e:
-            logger.error(f"TrackingMore error: {e}")
+            logger.error(f"TrackingMore get error: {e}")
             return {"meta": {"code": 500, "message": str(e)}}
     
     def get_realtime_tracking(self, courier_code, tracking_number):
@@ -95,75 +96,19 @@ class TrackingMoreTracker:
         if not self.use_api:
             return {"meta": {"code": 400, "message": "API key not configured"}}
         
-        if not SDK_AVAILABLE:
-            return {"meta": {"code": 500, "message": "TrackingMore SDK not installed"}}
-        
         try:
-            params = {
-                "tracking_number": tracking_number,
-                "carrier_code": courier_code
-            }
-            result = trackingmore.tracking.get_realtime_tracking(params)
-            return {"meta": {"code": 200, "message": "OK"}, "data": result}
-        except TrackingMoreException as e:
-            logger.error(f"TrackingMore SDK error: {e}")
-            return {"meta": {"code": 400, "message": str(e)}}
+            response = requests.post(
+                f"{self.base_url}/trackings/realtime",
+                json={
+                    "tracking_number": tracking_number,
+                    "carrier_code": courier_code
+                },
+                headers=self._get_headers(),
+                timeout=30
+            )
+            return response.json()
         except Exception as e:
-            logger.error(f"TrackingMore error: {e}")
-            return {"meta": {"code": 500, "message": str(e)}}
-    
-    def update_tracking(self, tracking_id, params):
-        """Update tracking by ID."""
-        if not self.use_api:
-            return {"meta": {"code": 400, "message": "API key not configured"}}
-        
-        if not SDK_AVAILABLE:
-            return {"meta": {"code": 500, "message": "TrackingMore SDK not installed"}}
-        
-        try:
-            result = trackingmore.tracking.update_tracking_by_id(tracking_id, params)
-            return {"meta": {"code": 200, "message": "OK"}, "data": result}
-        except TrackingMoreException as e:
-            logger.error(f"TrackingMore SDK error: {e}")
-            return {"meta": {"code": 400, "message": str(e)}}
-        except Exception as e:
-            logger.error(f"TrackingMore error: {e}")
-            return {"meta": {"code": 500, "message": str(e)}}
-    
-    def delete_tracking(self, tracking_id):
-        """Delete tracking by ID."""
-        if not self.use_api:
-            return {"meta": {"code": 400, "message": "API key not configured"}}
-        
-        if not SDK_AVAILABLE:
-            return {"meta": {"code": 500, "message": "TrackingMore SDK not installed"}}
-        
-        try:
-            result = trackingmore.tracking.delete_tracking_by_id(tracking_id)
-            return {"meta": {"code": 200, "message": "OK"}, "data": result}
-        except TrackingMoreException as e:
-            logger.error(f"TrackingMore SDK error: {e}")
-            return {"meta": {"code": 400, "message": str(e)}}
-        except Exception as e:
-            logger.error(f"TrackingMore error: {e}")
-            return {"meta": {"code": 500, "message": str(e)}}
-    
-    def retrack(self, tracking_id):
-        """Retrack expired tracking by ID."""
-        if not self.use_api:
-            return {"meta": {"code": 400, "message": "API key not configured"}}
-        
-        if not SDK_AVAILABLE:
-            return {"meta": {"code": 500, "message": "TrackingMore SDK not installed"}}
-        
-        try:
-            result = trackingmore.tracking.retrack_tracking_by_id(tracking_id)
-            return {"meta": {"code": 200, "message": "OK"}, "data": result}
-        except TrackingMoreException as e:
-            logger.error(f"TrackingMore SDK error: {e}")
-            return {"meta": {"code": 400, "message": str(e)}}
-        except Exception as e:
-            logger.error(f"TrackingMore error: {e}")
+            logger.error(f"TrackingMore realtime error: {e}")
             return {"meta": {"code": 500, "message": str(e)}}
     
     def get_account_info(self):
@@ -171,22 +116,20 @@ class TrackingMoreTracker:
         if not self.use_api:
             return {"meta": {"code": 400, "message": "API key not configured"}}
         
-        if not SDK_AVAILABLE:
-            return {"meta": {"code": 500, "message": "TrackingMore SDK not installed"}}
-        
         try:
-            result = trackingmore.tracking.get_user_info()
-            return {"meta": {"code": 200, "message": "OK"}, "data": result}
-        except TrackingMoreException as e:
-            logger.error(f"TrackingMore SDK error: {e}")
-            return {"meta": {"code": 400, "message": str(e)}}
+            response = requests.get(
+                f"{self.base_url}/trackings/getuserinfo",
+                headers=self._get_headers(),
+                timeout=30
+            )
+            return response.json()
         except Exception as e:
-            logger.error(f"TrackingMore error: {e}")
+            logger.error(f"TrackingMore user info error: {e}")
             return {"meta": {"code": 500, "message": str(e)}}
 
 
 class LBCTracker:
-    """LBC Tracker - uses TrackingMore SDK internally."""
+    """LBC Tracker - uses TrackingMore API v4."""
     
     def __init__(self):
         self.tracking_more = TrackingMoreTracker()
@@ -197,27 +140,35 @@ class LBCTracker:
         Register LBC tracking number with TrackingMore.
         Uses V4 API - creates tracking and gets results in real-time.
         """
-        return self.tracking_more.create_tracking(
+        logger.info(f"Registering LBC tracking: {tracking_number}")
+        result = self.tracking_more.create_tracking(
             tracking_number=tracking_number,
             courier_code=self.courier_code,
             title="CATC Student Document Request"
         )
+        logger.info(f"LBC registration result: {result}")
+        return result
     
     def get_status(self, tracking_number):
         """Get tracking status from TrackingMore."""
-        result = self.tracking_more.get_tracking(self.courier_code, tracking_number)
+        logger.info(f"Getting LBC status for: {tracking_number}")
         
-        if result.get("meta", {}).get("code") == 200:
+        # Try realtime tracking first (more accurate)
+        result = self.tracking_more.get_realtime_tracking(self.courier_code, tracking_number)
+        logger.info(f"LBC realtime response: {result}")
+        
+        # If realtime fails, try get tracking
+        if result.get("meta", {}).get("code") != 200:
+            result = self.tracking_more.get_tracking(self.courier_code, tracking_number)
+            logger.info(f"LBC get response: {result}")
+        
+        if result.get("meta", {}).get("code") in [200, 201]:
             data = result.get("data", {})
             
-            # Handle V2 get_tracking_results response format
-            # Response contains 'data' array with tracking items
-            tracking_items = data.get("data", []) if isinstance(data, dict) else []
-            
-            if tracking_items:
-                item = tracking_items[0]  # Get first tracking result
+            # Handle V4 response format - data is the tracking object directly
+            if isinstance(data, dict):
+                item = data
                 
-                # Extract status
                 status = item.get("delivery_status", "Unknown")
                 substatus = item.get("substatus", "")
                 status_info = item.get("status_info", "")
@@ -228,19 +179,28 @@ class LBCTracker:
                 origin_info = item.get("origin_info", {})
                 dest_info = item.get("destination_info", {})
                 
-                origin_checkpoints = origin_info.get("trackinfo", []) if origin_info else []
-                dest_checkpoints = dest_info.get("trackinfo", []) if dest_info else []
-                all_checkpoints = origin_checkpoints + dest_checkpoints
-                
-                # Build tracking details
+                # Build tracking details from checkpoints
                 tracking_details = []
-                for cp in all_checkpoints:
-                    tracking_details.append({
-                        "status": cp.get("status", ""),
-                        "location": cp.get("location", ""),
-                        "datetime": cp.get("datetime", ""),
-                        "description": cp.get("status_description", ""),
-                    })
+                
+                # Get checkpoints from origin_info
+                if origin_info and "trackinfo" in origin_info:
+                    for cp in origin_info["trackinfo"]:
+                        tracking_details.append({
+                            "status": cp.get("status", ""),
+                            "location": cp.get("location", ""),
+                            "datetime": cp.get("datetime", ""),
+                            "description": cp.get("status_description", ""),
+                        })
+                
+                # Get checkpoints from destination_info
+                if dest_info and "trackinfo" in dest_info:
+                    for cp in dest_info["trackinfo"]:
+                        tracking_details.append({
+                            "status": cp.get("status", ""),
+                            "location": cp.get("location", ""),
+                            "datetime": cp.get("datetime", ""),
+                            "description": cp.get("status_description", ""),
+                        })
                 
                 # If no checkpoints, use status_info
                 if not tracking_details and status_info:
