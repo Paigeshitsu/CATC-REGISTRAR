@@ -133,20 +133,53 @@ def get_payment_summary(items):
         if is_authentication_document(item):
             continue
 
-        summary_item = build_summary_item(item)
-        display_items.append(summary_item)
-        total_amount += summary_item["total_amount"]
-
         base_name = get_base_document_name(item.document_type.name)
+        
+        # Check if this document has an authentication item in the same batch
         if base_name in auth_item_map:
             auth_item = auth_item_map[base_name]
             used_auth_keys.add(base_name)
-            auth_summary_item = build_summary_item(auth_item)
-            auth_summary_item["unit_price"] = summary_item["unit_price"]
-            display_items.append(auth_summary_item)
-            total_amount += auth_summary_item["total_amount"]
+            
+            # Create a combined item for Document + Auth
+            doc_base_price = item.get_base_price()
+            auth_base_price = auth_item.get_base_price()  # Auth price without rush
+            
+            # Calculate totals - rush only applies to the document, not auth
+            total_item_price = item.get_price() + auth_base_price
+            
+            is_tor = "TOR" in item.document_type.name.upper() or "TRANSCRIPT" in item.document_type.name.upper()
+            
+            if is_tor and item.tor_page_count:
+                unit_label = f"{item.tor_page_count} pages x ₱{item.TOR_PRICE_PER_PAGE}/page"
+            else:
+                unit_label = f"₱{doc_base_price} + ₱{auth_base_price} (Auth)"
+            
+            summary_item = {
+                "name": f"{item.document_type.name} + Authentication",
+                "display_label": "Combined Document + Auth",
+                "document_price": doc_base_price,
+                "auth_price": auth_base_price,
+                "unit_price": 0,
+                "quantity": 1,
+                "base_amount": doc_base_price + auth_base_price,
+                "rush_fee": item.rush_fee if item.rush_processing else 0,
+                "total_amount": total_item_price,
+                "is_authentication": False,
+                "is_combined": True,
+                "is_tor": is_tor,
+                "is_rush": item.rush_processing,
+                "page_count": item.tor_page_count,
+                "unit_label": unit_label,
+            }
+            display_items.append(summary_item)
+            total_amount += total_item_price
+        else:
+            # No authentication - create normal summary item
+            summary_item = build_summary_item(item)
+            display_items.append(summary_item)
+            total_amount += summary_item["total_amount"]
 
-    # Add remaining standalone authentication items
+    # Add remaining standalone authentication items (not paired with any document)
     remaining_auth_items = [
         item
         for item in items
@@ -1952,14 +1985,10 @@ def submit_tor_page_count(request):
                 # Add other items' price if exists (Authentication, etc.)
                 for item in batch_items:
                     if item.id != doc_request.id:
-                        # For Authentication or other paid items
+                        # For Authentication or other paid items - use base price (no rush multiplier)
+                        # Only the main document (TOR/Transcript/Diploma) gets rush multiplier
                         if "Authentication" in str(item.document_type.name):
-                            # Apply rush multiplier if the main TOR/Transcript is rush
-                            item_price = item.get_price()
-                            if doc_request.rush_processing:
-                                # The Authentication fee should also be doubled for rush
-                                # since it's attached to the rush TOR request
-                                item_price = item_price * 2
+                            item_price = item.get_base_price()
                             total_price += item_price
                         # Set all other items to APPROVED
                         if item.status != "APPROVED":

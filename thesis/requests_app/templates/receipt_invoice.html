@@ -72,22 +72,29 @@
                 {% for item in summary_items %}
                 <tr>
                     <td>
-                        {{ item.name }}
-                        <br><span style="font-size: 0.75rem; color: #6c757d;">{{ item.display_label }}: ₱{{ item.base_amount }}</span>
-                        {% if item.unit_label %}<br><span style="font-size: 0.75rem; color: #6c757d;">{{ item.unit_label }}</span>{% endif %}
+                        {% if item.is_combined %}
+                            {{ item.name }}
+                            <br><span style="font-size: 0.75rem; color: #6c757d;">
+                                {% if item.document_price > 0 and item.auth_price > 0 %}
+                                    Document: ₱{{ item.document_price }} + Auth: ₱{{ item.auth_price }}
+                                {% elif item.document_price > 0 %}
+                                    Document: ₱{{ item.document_price }}
+                                {% else %}
+                                    Auth: ₱{{ item.auth_price }}
+                                {% endif %}
+                            </span>
+                            {% if item.is_rush %}<br><span style="font-size: 0.75rem; color: #dc3545;">Rush Processing (x2): ₱{{ item.rush_fee }}</span>{% endif %}
+                        {% else %}
+                            {{ item.name }}
+                            <br><span style="font-size: 0.75rem; color: #6c757d;">{{ item.display_label }}: ₱{{ item.base_amount }}</span>
+                            {% if item.unit_label %}<br><span style="font-size: 0.75rem; color: #6c757d;">{{ item.unit_label }}</span>{% endif %}
+                            {% if item.rush_fee %}<br><span style="font-size: 0.75rem; color: #dc3545;">Rush Processing (x2): ₱{{ item.rush_fee }}</span>{% endif %}
+                        {% endif %}
                     </td>
-                    <td style="text-align: right;">₱{{ item.unit_price }}</td>
+                    <td style="text-align: right;">{% if not item.is_combined %}₱{{ item.unit_price }}{% else %}--{% endif %}</td>
                     <td style="text-align: right;">{{ item.quantity }}</td>
-                    <td style="text-align: right;">₱{{ item.base_amount }}</td>
+                    <td style="text-align: right;">₱{{ item.total_amount }}</td>
                 </tr>
-                {% if item.rush_fee %}
-                <tr>
-                    <td style="padding-left: 30px;"><span style="font-size: 0.75rem; color: #dc3545;">Rush Processing</span></td>
-                    <td style="text-align: right;"><span style="font-size: 0.75rem; color: #dc3545;">₱{{ item.unit_price }}</span></td>
-                    <td style="text-align: right;"><span style="font-size: 0.75rem; color: #dc3545;">1</span></td>
-                    <td style="text-align: right;"><span style="font-size: 0.75rem; color: #dc3545;">₱{{ item.rush_fee }}</span></td>
-                </tr>
-                {% endif %}
                 {% endfor %}
                 <tr class="total-row">
                     <td>TOTAL PAID</td>
