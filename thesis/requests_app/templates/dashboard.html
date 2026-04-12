@@ -383,16 +383,13 @@
                                                 <button type="button" class="btn btn-success btn-sm fw-bold" onclick="viewLiveTracking('{{ first_item.tracking_number }}')">
                                                     <i class="bi bi-geo-alt-fill"></i> TRACK
                                                 </button>
-                                            {% endif %}
-                                            
-                                            {% if first_item.status == 'PROCESSING' or first_item.status == 'PAID' %}
+                                            {% elif first_item.status == 'PROCESSING' or first_item.status == 'PAID' %}
                                                 {% if first_item.delivery_method == 'LBC' %}
                                                 <button type="button" class="btn btn-info btn-sm fw-bold" onclick="openLBCBookingModal()">
                                                     <i class="bi bi-truck"></i> BOOK SHIPPING
                                                 </button>
                                                 {% endif %}
-                                            {% endif %}
-                                            {% if first_item.status == 'READY' and first_item.delivery_method == 'LBC' %}
+                                            {% elif first_item.status == 'READY' and first_item.delivery_method == 'LBC' %}
                                                 <button type="button" class="btn btn-info btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#enterTrackingModal{{ batch.grouper }}">
                                                     ENTER TRACKING #
                                                 </button>
