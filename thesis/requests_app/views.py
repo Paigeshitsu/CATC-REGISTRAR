@@ -1954,7 +1954,13 @@ def submit_tor_page_count(request):
                     if item.id != doc_request.id:
                         # For Authentication or other paid items
                         if "Authentication" in str(item.document_type.name):
-                            total_price += item.get_price()
+                            # Apply rush multiplier if the main TOR/Transcript is rush
+                            item_price = item.get_price()
+                            if doc_request.rush_processing:
+                                # The Authentication fee should also be doubled for rush
+                                # since it's attached to the rush TOR request
+                                item_price = item_price * 2
+                            total_price += item_price
                         # Set all other items to APPROVED
                         if item.status != "APPROVED":
                             item.status = "APPROVED"
