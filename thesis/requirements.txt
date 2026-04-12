@@ -1,3 +1,4 @@
 Django>=4.2,<5.0
 requests>=2.31.0
 trackingmore-sdk-python>=0.1.4
+pyotp>=2.9.0
