@@ -377,17 +377,17 @@
                                                 <a href="{% url 'pay_with_xendit' batch.grouper %}" class="btn btn-primary btn-sm fw-bold">PAY</a>
                                             {% endif %}
                                             <!-- View Summary Button - Available for all processed requests -->
-                                            {% if first_item.status == 'PROCESSING' or first_item.status == 'PAID' or first_item.status == 'READY' or first_item.status == 'COMPLETED' %}
-                                                <a href="{% url 'generate_receipt' first_item.id %}" target="_blank" class="btn btn-primary btn-sm fw-bold">
-                                                    <i class="bi bi-receipt"></i> SUMMARY
-                                                </a>
-                                            {% endif %}
-                                            
-                                            <!-- Track Button - Shows whenever tracking number exists -->
-                                            {% if first_item.tracking_number %}
-                                                <button type="button" class="btn btn-success btn-sm fw-bold" onclick="viewLiveTracking('{{ first_item.tracking_number }}')">
-                                                    <i class="bi bi-geo-alt-fill"></i> TRACK
-                                                </button>
+                                             {% if first_item.status == 'PROCESSING' or first_item.status == 'PAID' or first_item.status == 'READY' or first_item.status == 'COMPLETED' %}
+                                                 <a href="{% url 'generate_receipt' first_item.id %}" target="_blank" class="btn btn-primary btn-sm fw-bold me-1">
+                                                     <i class="bi bi-receipt"></i> SUMMARY
+                                                 </a>
+                                             {% endif %}
+                                             
+                                             <!-- Tracking Number Button - Shows tracking number, click to view live tracking -->
+                                             {% if first_item.tracking_number %}
+                                                 <button type="button" class="btn btn-success btn-sm fw-bold" onclick="setTrackingNumber('{{ first_item.tracking_number }}')">
+                                                     Tracking No. {{ first_item.tracking_number }}
+                                                 </button>
                                             {% elif first_item.status == 'PROCESSING' or first_item.status == 'PAID' %}
                                                 {% if first_item.delivery_method == 'LBC' %}
                                                 <button type="button" class="btn btn-info btn-sm fw-bold" onclick="openLBCBookingModal('{{ batch.grouper }}')">
