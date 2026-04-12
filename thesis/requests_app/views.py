@@ -1647,27 +1647,43 @@ logger = logging.getLogger(__name__)
 
 def _get_tracking_data(tracking_num):
     """
-    Fetch tracking data from LBC API.
+    Fetch tracking data from TrackingMore API.
     Returns tuple: (success: bool, data: dict, error: str or None)
     """
-    lbc_api_host = os.getenv("LBC_API_HOST", "localhost")
-    lbc_api_port = os.getenv("LBC_API_PORT", "3000")
-    api_url = f"http://{lbc_api_host}:{lbc_api_port}/api/track/{tracking_num}"
-
     try:
-        req = urllib.request.Request(api_url)
-        with urllib.request.urlopen(req, timeout=10) as response:
-            data = json.loads(response.read().decode())
-            return (True, data.get("data", {}), None)
-    except urllib.error.HTTPError as e:
-        logger.error(f"LBC API HTTP error: {e.code} - {e.reason}")
-        return (False, None, f"HTTP Error: {e.code}")
-    except urllib.error.URLError as e:
-        logger.error(f"LBC API connection error: {e.reason}")
-        return (False, None, "Connection failed")
-    except json.JSONDecodeError as e:
-        logger.error(f"LBC API JSON decode error: {e}")
-        return (False, None, "Invalid response format")
+        from requests_app.tracking_service import LBCTracker
+        
+        tracker = LBCTracker()
+        result = tracker.get_status(tracking_num)
+        
+        if result.get("meta", {}).get("code") == 200:
+            data = result.get("data", {})
+            
+            # Transform TrackingMore format to our format
+            tracking_details = data.get("tracking_details", [])
+            timeline = []
+            for detail in tracking_details:
+                timeline.append({
+                    "dateTime": detail.get("datetime", ""),
+                    "location": detail.get("location", ""),
+                    "status": detail.get("status", detail.get("description", "")),
+                })
+            
+            return (True, {
+                "trackingNumber": tracking_num,
+                "status": data.get("delivery_status", "UNKNOWN"),
+                "origin": data.get("origin", ""),
+                "destination": data.get("destination", ""),
+                "substatus": data.get("substatus", ""),
+                "lastEvent": data.get("last_event", ""),
+                "transitTime": data.get("transit_time", 0),
+                "timeline": timeline,
+            }, None)
+        else:
+            error_msg = result.get("meta", {}).get("message", "Unknown error")
+            logger.warning(f"TrackingMore API error: {error_msg}")
+            return (False, None, error_msg)
+            
     except Exception as e:
         logger.error(f"Unexpected error fetching tracking: {e}")
         return (False, None, str(e))
@@ -1790,6 +1806,48 @@ def track_and_notify(request, tracking_num):
     return JsonResponse(
         {"success": True, "data": tracking_data, "notification_saved": notif_success}
     )
+
+
+@login_required
+def mark_as_delivered(request):
+    """
+    Mark a document request as delivered when tracking shows package arrived.
+    """
+    if request.method != "POST":
+        return JsonResponse({"success": False, "error": "Only POST allowed"}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        tracking_number = data.get("tracking_number", "").strip()
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False, "error": "Invalid JSON"}, status=400)
+    
+    if not tracking_number:
+        return JsonResponse({"success": False, "error": "Tracking number required"}, status=400)
+    
+    # Find the document request with this tracking number
+    doc_requests = DocumentRequest.objects.filter(
+        tracking_number=tracking_number,
+        student=request.user
+    )
+    
+    if not doc_requests.exists():
+        return JsonResponse({"success": False, "error": "No request found with this tracking number"}, status=404)
+    
+    # Update status to COMPLETED for all matching requests
+    updated_count = doc_requests.update(status="COMPLETED")
+    
+    # Create notification
+    create_notification(
+        request.user,
+        "System",
+        f"Your document request has been marked as DELIVERED. Tracking: {tracking_number}"
+    )
+    
+    return JsonResponse({
+        "success": True,
+        "message": f"Package marked as delivered ({updated_count} request(s) updated)"
+    })
 
 
 # TOR Page Counting Dashboard for Mr. Lotivio

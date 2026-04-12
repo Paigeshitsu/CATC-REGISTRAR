@@ -888,6 +888,7 @@ function copyTrackingNumber(batchId) {
                 <div class="text-center mt-4">
                     <button type="button" class="btn btn-outline-primary me-2" onclick="refreshModalTracking()"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
                     <button type="button" class="btn btn-success me-2" onclick="saveTrackingNotification()"><i class="bi bi-bell-fill"></i> Save to Notifications</button>
+                    <button type="button" class="btn btn-warning me-2" id="markDeliveredBtn" onclick="markAsDelivered()"><i class="bi bi-check-circle-fill"></i> Mark as Delivered</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
@@ -1335,6 +1336,39 @@ function copyTrackingNumber(batchId) {
             .catch(function(error) {
                 console.error('Error saving notification:', error);
                 alert('Error saving notification. Please try again.');
+            });
+        }
+    }
+    
+    // Mark package as delivered
+    function markAsDelivered() {
+        var trackingNumber = document.getElementById('modal-tracking-number').textContent;
+        if (trackingNumber && trackingNumber !== '--') {
+            var csrfToken = getCsrfToken();
+            
+            fetch('/api/mark-delivered/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ tracking_number: trackingNumber })
+            })
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    // Update the status badge in the modal
+                    var statusBadge = document.getElementById('modal-tracking-status');
+                    statusBadge.textContent = 'DELIVERED';
+                    statusBadge.className = 'badge bg-success fs-6';
+                    alert('✓ Package marked as delivered!');
+                } else {
+                    alert('Error: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(function(error) {
+                console.error('Error marking delivered:', error);
+                alert('Error marking as delivered. Please try again.');
             });
         }
     }

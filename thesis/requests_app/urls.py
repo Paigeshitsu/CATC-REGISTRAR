@@ -9,6 +9,7 @@ urlpatterns = [
     path('api/document-types/', views.get_document_types, name='get_document_types'),
     path('api/track/<str:tracking_num>/', views.track_lbc_shipment, name='track_lbc_shipment'),
     path('api/track/notify/<str:tracking_num>/', views.track_and_notify, name='track_and_notify'),
+    path('api/mark-delivered/', views.mark_as_delivered, name='mark_as_delivered'),
     path('dashboard/', views.student_dashboard, name='student_dashboard'),
     path('tor/dashboard/', views.tor_dashboard, name='tor_dashboard'),
     path('tor/submit-count/', views.submit_tor_page_count, name='submit_tor_page_count'),
