@@ -1091,6 +1091,15 @@ function copyTrackingNumber(batchId) {
             if (data.success) {
                 // Show success - tracking saved
                 console.log('Tracking number saved successfully');
+                // Close the LBC booking modal and reload to show updated buttons
+                var modal = bootstrap.Modal.getInstance(document.getElementById('lbcBookingModal'));
+                if (modal) {
+                    modal.hide();
+                }
+                // Reload page after a short delay to show TRACK button
+                setTimeout(function() {
+                    window.location.reload();
+                }, 1500);
             }
         })
         .catch(function(error) {
