@@ -536,32 +536,20 @@ function submitTrackingForm(batchId) {
     var form = modal.querySelector('form');
     var formData = new FormData(form);
     
+    // Use fetch without redirect:manual to get JSON response
     fetch('', {
         method: 'POST',
         body: formData,
         headers: {
-            'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value
-        },
-        redirect: 'manual'
+            'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value,
+            'X-Requested-With': 'XMLHttpRequest'
+        }
     })
     .then(function(response) {
-        // Check if we got a redirect (which means Django processed and redirected)
-        if (response.type === 'opaqueredirect' || response.status === 302 || response.status === 301) {
-            // Page is about to redirect - don't show modal, let it redirect
-            // Show a brief message before redirect
-            document.getElementById('trackingInputForm' + batchId).style.display = 'none';
-            document.getElementById('trackingSuccess' + batchId).style.display = 'block';
-            document.getElementById('savedTrackingNum' + batchId).textContent = trackingNum;
-            document.getElementById('savedDeliveryType' + batchId).textContent = 'Processing...';
-            
-            // Redirect after showing the tracking number briefly
-            setTimeout(function() {
-                window.location.reload();
-            }, 60000);
-            return;
-        }
-        
-        if (response.ok) {
+        return response.json();
+    })
+    .then(function(data) {
+        if (data.success) {
             // Show success message
             document.getElementById('trackingInputForm' + batchId).style.display = 'none';
             document.getElementById('trackingSuccess' + batchId).style.display = 'block';
@@ -587,12 +575,14 @@ function submitTrackingForm(batchId) {
             }
             
             // NOTE: Modal stays open until user clicks CLOSE button
+            // No auto-reload - page stays on current view
         } else {
-            alert('Error saving tracking number. Please try again.');
+            alert('Error: ' + (data.message || 'Unknown error'));
         }
     })
     .catch(function(error) {
-        alert('Error saving tracking number. Please try again: ' + error);
+        console.error('Error:', error);
+        alert('Error saving tracking number. Please try again.');
     });
 }
 

@@ -624,49 +624,41 @@ def student_dashboard(request):
 
             if tracking_number:
                 # Check if this is an AJAX request
-                if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-                    # Update tracking number for all documents in the batch
-                    DocumentRequest.objects.filter(
-                        batch_id=batch_id, student=request.user
-                    ).update(
-                        tracking_number=tracking_number,
-                        lbc_type="BRANCH"
-                        if lbc_delivery_type == "branch_pickup"
-                        else "RIDER",
-                        lbc_branch_name=lbc_branch_name if lbc_branch_name else None,
-                    )
-                    # Register tracking with LBC API
-                    LBCTracker().register_lbc_tracking(tracking_number)
+                is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+                
+                # Update tracking number for all documents in the batch
+                DocumentRequest.objects.filter(
+                    batch_id=batch_id, student=request.user
+                ).update(
+                    tracking_number=tracking_number,
+                    lbc_type="BRANCH"
+                    if lbc_delivery_type == "branch_pickup"
+                    else "RIDER",
+                    lbc_branch_name=lbc_branch_name if lbc_branch_name else None,
+                )
+                # Register tracking with LBC API
+                LBCTracker().register_lbc_tracking(tracking_number)
+                
+                if is_ajax:
                     return JsonResponse(
                         {"success": True, "message": "Tracking number saved!"}
                     )
                 else:
-                    # Regular form submission
-                    DocumentRequest.objects.filter(
-                        batch_id=batch_id, student=request.user
-                    ).update(
-                        tracking_number=tracking_number,
-                        lbc_type="BRANCH"
-                        if lbc_delivery_type == "branch_pickup"
-                        else "RIDER",
-                        lbc_branch_name=lbc_branch_name if lbc_branch_name else None,
-                    )
-                    LBCTracker().register_lbc_tracking(tracking_number)
-                    messages.success(
-                        request,
-                        f"Tracking number {tracking_number} submitted successfully!",
-                    )
-                    return redirect("student_dashboard")
-            else:
-                if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                    # Return JSON for JavaScript to handle redirect manually
                     return JsonResponse(
                         {
-                            "success": False,
-                            "message": "Please enter a valid tracking number.",
+                            "success": True,
+                            "message": f"Tracking number {tracking_number} saved!",
+                            "redirect": "/student/"
                         }
                     )
-                messages.error(request, "Please enter a valid tracking number.")
-                return redirect("student_dashboard")
+            else:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "Please enter a valid tracking number.",
+                    }
+                )
 
         if action == "submit_request":
             reason = request.POST.get("reason")
