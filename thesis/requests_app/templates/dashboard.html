@@ -490,12 +490,18 @@
                     <h5 class="fw-bold text-success mb-3">Tracking Number Saved!</h5>
                     <div class="bg-primary bg-opacity-10 p-3 rounded mb-3">
                         <p class="small text-muted mb-1">YOUR TRACKING NUMBER</p>
-                        <h4 class="fw-bold text-primary mb-0" id="savedTrackingNum{{ batch.grouper }}">--</h4>
+                        <div class="d-flex align-items-center justify-content-center gap-2">
+                            <h4 class="fw-bold text-primary mb-0" id="savedTrackingNum{{ batch.grouper }}">--</h4>
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="copyTrackingNumber('{{ batch.grouper }}')" title="Copy to clipboard">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="bg-info bg-opacity-10 p-2 rounded mb-3">
                         <p class="small text-muted mb-1">DELIVERY TYPE</p>
                         <h6 class="fw-bold text-info mb-0" id="savedDeliveryType{{ batch.grouper }}">--</h6>
                     </div>
+                    <p class="small text-muted">This window will close in 1 minute.</p>
                 </div>
                 <div class="modal-footer border-0 justify-content-center">
                     <button type="button" class="btn btn-success fw-bold" id="trackNowBtn{{ batch.grouper }}" data-bs-dismiss="modal">
@@ -558,12 +564,30 @@ function submitTrackingForm(batchId) {
             
             // Hide the X close button to force using CLOSE button
             document.getElementById('closeTrackingBtn' + batchId).style.display = 'none';
+            
+            // Auto-close modal after 1 minute (60000 ms)
+            setTimeout(function() {
+                var modalEl = document.getElementById('enterTrackingModal' + batchId);
+                var modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) {
+                    modal.hide();
+                }
+            }, 60000);
         } else {
             alert('Error saving tracking number. Please try again.');
         }
     })
     .catch(function(error) {
         alert('Error saving tracking number. Please try again.');
+    });
+}
+
+function copyTrackingNumber(batchId) {
+    var trackingNum = document.getElementById('savedTrackingNum' + batchId).textContent;
+    navigator.clipboard.writeText(trackingNum).then(function() {
+        alert('Tracking number copied to clipboard!');
+    }).catch(function(err) {
+        console.error('Failed to copy: ', err);
     });
 }
 </script>
