@@ -567,14 +567,8 @@ function submitTrackingForm(batchId) {
             // Hide the X close button to force using CLOSE button
             document.getElementById('closeTrackingBtn' + batchId).style.display = 'none';
             
-            // Auto-close modal after 1 minute (60000 ms)
-            setTimeout(function() {
-                var modalEl = document.getElementById('enterTrackingModal' + batchId);
-                var modal = bootstrap.Modal.getInstance(modalEl);
-                if (modal) {
-                    modal.hide();
-                }
-            }, 60000);
+            // NOTE: Modal stays open until user clicks CLOSE or X button
+            // Removed auto-close timer so user has time to copy tracking number
         } else {
             alert('Error saving tracking number. Please try again.');
         }
