@@ -1,0 +1,45 @@
+@startuml CATC Document Request Portal - Deployment Diagram
+skinparam fontSize 12
+!theme plain
+top to bottom direction
+
+skinparam node {
+    BackgroundColor white
+    BorderColor #333
+}
+
+cloud "Internet" {
+    [Browser]
+    [Mobile App]
+}
+
+node "Web Server" {
+    [Gunicorn]
+    [Nginx]
+    [Python]
+    [Django]
+}
+
+cloud "External Services" {
+    [iProg SMS]
+    [LBC]
+    [Email]
+    [Xendit]
+}
+
+database "PostgreSQL"
+
+node "Admin" {
+    [Django Admin]
+}
+
+Browser -> Web_Server
+Mobile_App -> Web_Server
+Web_Server -> PostgreSQL
+Web_Server -> iProg_SMS
+Web_Server -> LBC
+Web_Server -> Email
+Web_Server -> Xendit
+Admin -> Web_Server
+
+@enduml

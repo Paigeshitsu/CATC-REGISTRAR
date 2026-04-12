@@ -1,0 +1,89 @@
+@startuml CATC Document Request Portal - Class Diagram
+skinparam fontSize 12
+!theme plain
+
+skinparam class {
+    BackgroundColor white
+    BorderColor black
+    Shadowing false
+}
+
+class User {
+    +username
+    +password
+    +email
+}
+
+class StudentMasterList {
+    +student_id
+    +full_name
+    +course
+    +email
+    +phone_number
+    +is_graduated
+}
+
+class OTPToken {
+    +otp_code
+    +google_auth_secret
+    +is_verified
+}
+
+class DocumentType {
+    +name
+    +price
+}
+
+class DocumentRequest {
+    +status
+    +delivery_method
+    +batch_id
+    +receipt_number
+    +tracking_number
+    +tor_page_count
+    +rush_processing
+}
+
+class StudentBalance {
+    +outstanding_amount
+}
+
+class Notification {
+    +message
+    +sender_role
+    +is_read
+}
+
+class CollectionLog {
+    +receipt_number
+    +amount_paid
+    +payment_method
+}
+
+class AuditLog {
+    +action
+    +details
+}
+
+class Profile {
+    +printed_name
+    +signature_data
+}
+
+class TORRequestHistory {
+    +document_type
+    +page_count
+    +price
+    +is_free
+}
+
+User "1" -- "1" Profile
+User "1" -- "0..*" OTPToken
+User "1" -- "0..*" DocumentRequest
+User "1" -- "0..*" Notification
+StudentMasterList "1" -- "0..1" StudentBalance
+DocumentRequest "1" -- "1" DocumentType
+DocumentRequest "1" -- "0..1" CollectionLog
+DocumentRequest "0..1" -- "1" TORRequestHistory
+
+@enduml

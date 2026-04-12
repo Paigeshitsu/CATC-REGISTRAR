@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5 col-lg-4">
+        <div class="card shadow-lg border-0 animate__animated animate__zoomIn animate__faster" style="border-radius: 20px; overflow: hidden;">
+            <div class="card-header bg-primary text-white text-center py-4 border-0">
+                <i class="bi bi-person-circle fs-1 mb-2 animate__animated animate__bounceIn animate__delay-1s"></i>
+                <h4 class="mb-0 fw-bold">Student Portal</h4>
+                <p class="small opacity-75 mb-0">CATC Online Form Request</p>
+            </div>
+            <div class="card-body p-4 bg-white">
+                <p class="text-muted text-center small mb-4">Select how you want to receive your login OTP.</p>
+                
+                <form method="post" id="loginForm">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-muted text-uppercase" style="letter-spacing: 1px;">Student ID</label>
+                        <div class="input-group input-group-lg border-2">
+                            <span class="input-group-text bg-light border-end-0 text-primary"><i class="bi bi-card-text"></i></span>
+                            {{ form.student_id }}
+                        </div>
+                    </div>
+                    
+                    <!-- OTP Method Selection Buttons -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-muted text-uppercase" style="letter-spacing: 1px;">Send OTP Via</label>
+                        <div class="row g-2">
+                            <input type="hidden" name="otp_method" id="selectedOtpMethod" value="email">
+                            
+                            <div class="col-6">
+                                <button type="button" class="btn btn-outline-primary w-100 btn-method p-3" onclick="selectOtpMethod('email')" id="btnEmail">
+                                    <i class="bi bi-envelope fs-5 d-block mb-1"></i>
+                                    <span class="fw-bold">Email</span>
+                                </button>
+                            </div>
+                            
+                            <div class="col-6">
+                                <button type="button" class="btn btn-outline-success w-100 btn-method p-3" onclick="selectOtpMethod('iprog')" id="btnIprog">
+                                    <i class="bi bi-chat-dots fs-5 d-block mb-1"></i>
+                                    <span class="fw-bold">SMS</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-sm main-btn" id="sendBtn">
+                        <span id="btnText">SEND OTP</span>
+                        <span id="btnSpinner" class="spinner-border spinner-border-sm d-none"></span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    input[name="student_id"] {
+        border-left: none !important;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: #0d6efd;
+        transition: all 0.3s ease;
+    }
+
+    input[name="student_id"]:focus {
+        background-color: #f0f7ff;
+        box-shadow: none;
+    }
+    
+    .btn-method {
+        border-radius: 10px;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-method:hover {
+        transform: translateY(-2px);
+    }
+    
+    .btn-method.active {
+        transform: scale(1.02);
+    }
+    
+    .btn-method.selected {
+        border-width: 2px;
+        font-weight: 600;
+    }
+    
+    #btnEmail.selected {
+        background-color: #0d6efd;
+        color: white;
+        border-color: #0d6efd;
+    }
+    
+    #btnIprog.selected {
+        background-color: #198754;
+        color: white;
+        border-color: #198754;
+    }
+    
+    .main-btn {
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border-radius: 12px;
+        background: linear-gradient(135deg, #0d6efd, #0056b3);
+        border: none;
+    }
+
+    .main-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(13, 110, 253, 0.35) !important;
+    }
+
+    .main-btn:active {
+        transform: translateY(0);
+    }
+</style>
+
+<script>
+    function selectOtpMethod(method) {
+        document.getElementById('selectedOtpMethod').value = method;
+        
+        document.querySelectorAll('.btn-method').forEach(btn => btn.classList.remove('selected'));
+        if (method === 'email') {
+            document.getElementById('btnEmail').classList.add('selected');
+        } else if (method === 'iprog') {
+            document.getElementById('btnIprog').classList.add('selected');
+        }
+    }
+    
+    // Initialize with email selected
+    selectOtpMethod('email');
+    
+    document.getElementById('loginForm').addEventListener('submit', function() {
+        const btn = document.getElementById('sendBtn');
+        document.getElementById('btnText').innerText = "Requesting Code...";
+        document.getElementById('btnSpinner').classList.remove('d-none');
+        btn.classList.add('disabled');
+        btn.classList.add('animate__animated', 'animate__pulse', 'animate__infinite');
+    });
+</script>
+{% endblock %}
+
+{% block footer %}{% endblock %}

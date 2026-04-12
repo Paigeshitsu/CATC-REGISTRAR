@@ -1,0 +1,50 @@
+@startuml CATC Document Request Portal - System Design
+skinparam fontSize 12
+!theme plain
+
+rectangle "Client (Browser)" {
+    [Django Templates]
+}
+
+cloud "External Services" {
+    [iProg SMS API]
+    [LBC Express]
+    [Email Service]
+}
+
+rectangle "Application Server" {
+    component "Django" {
+        [Routing]
+        [Views]
+        [Forms]
+    }
+    component "Services" {
+        [Auth]
+        [Request]
+        [Payment]
+        [Notification]
+    }
+    component "ORM" {
+        [Models]
+    }
+}
+
+rectangle "Database" {
+    database "PostgreSQL"
+}
+
+Client -> Django
+Django -> Services
+Django -> ORM
+ORM -> PostgreSQL
+Services -> "External Services"
+
+note right of Django
+  Technology Stack:
+  - Django 4.x
+  - Python 3.x
+  - PostgreSQL
+  - Bootstrap 5
+end note
+
+@enduml

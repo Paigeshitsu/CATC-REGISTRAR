@@ -1,0 +1,50 @@
+@startuml Process Request Sequence
+skinparam dpi 300
+skinparam fontSize 14
+skinparam entityFontSize 14
+skinparam classFontSize 14
+skinparam noteFontSize 14
+skinparam actorFontSize 14
+skinparam rectangleFontSize 14
+skinparam participantFontSize 14
+skinparam collectionsFontSize 14
+!theme plain
+
+actor Registrar
+participant ":RegistrarDashboardView" as Dashboard
+participant ":DocumentRequest" as Request
+participant ":Notification" as Notif
+participant ":TORRequestHistory" as TORHist
+actor Student
+
+Registrar -> Dashboard: View Active Requests
+Dashboard -> Request: Query Pending Requests
+Dashboard --> Registrar: Display Requests
+
+alt Approve Request
+    Registrar -> Dashboard: Click Approve
+    Dashboard -> Request: Update status = APPROVED
+    Request -> Notif: Create Notification
+    Notif --> Student: Notify to Proceed to Payment
+else Reject Request
+    Registrar -> Dashboard: Click Reject
+    Dashboard -> Request: Update status = REJECTED
+    Request -> Notif: Create Notification with Reason
+    Notif --> Student: Notify Rejection
+else Mark Ready
+    Registrar -> Dashboard: Enter Tracking Number
+    Registrar -> Dashboard: Set Processing Days
+    Dashboard -> Request: Update status = READY
+    Request -> Notif: Create Notification
+    Notif --> Student: Notify Ready for Pickup/Shipping
+else Mark Complete
+    Registrar -> Dashboard: Click Mark Done
+    alt TOR Request
+        Dashboard -> TORHist: Create TORRequestHistory
+    end
+    Dashboard -> Request: Update status = COMPLETED
+    Request -> Notif: Create Notification
+    Notif --> Student: Notify Completed
+end
+
+@enduml

@@ -1,0 +1,125 @@
+@startuml DFD Level 2 - Detailed Process Flows
+skinparam dpi 300
+skinparam fontSize 14
+skinparam entityFontSize 14
+skinparam classFontSize 14
+skinparam noteFontSize 14
+skinparam actorFontSize 14
+skinparam rectangleFontSize 14
+skinparam participantFontSize 14
+skinparam collectionsFontSize 14
+!theme plain
+
+skinparam rectangle {
+    BackgroundColor white
+    BorderColor black
+    FontName Arial
+    Shadowing false
+}
+
+skinparam database {
+    BackgroundColor white
+    BorderColor black
+    Shadowing false
+}
+
+together {
+    actor Student
+    actor Registrar
+    actor Accounting
+    actor Cashier
+    actor Admin
+}
+
+cloud "External Systems" #wheat {
+    rectangle "iProg SMS API" as SMS_API
+    rectangle "LBC Express" as LBC_API
+    rectangle "Email Service" as Email_API
+}
+
+rectangle "CATC Document Request Portal" #lightblue {
+
+    rectangle "P1: Authentication & OTP" as P1 {
+        rectangle "P1.1: Validate Student ID" as P1_1
+        rectangle "P1.2: Generate OTP" as P1_2
+        rectangle "P1.3: Send OTP (SMS/Email)" as P1_3
+        rectangle "P1.4: Verify OTP Code" as P1_4
+        rectangle "P1.5: Create Session" as P1_5
+    }
+    
+    rectangle "P2: Document Request Submission" as P2 {
+        rectangle "P2.1: Select Document Type" as P2_1
+        rectangle "P2.2: Select Delivery Method" as P2_2
+        rectangle "P2.3: Enter Shipping Address" as P2_3
+        rectangle "P2.4: Calculate Price" as P2_4
+        rectangle "P2.5: Submit Request" as P2_5
+    }
+    
+    rectangle "P3: Payment Processing" as P3 {
+        rectangle "P3.1: Calculate Total Fee" as P3_1
+        rectangle "P3.2: Process Online Payment" as P3_2
+        rectangle "P3.3: Process Cash Payment" as P3_3
+        rectangle "P3.4: Generate Receipt" as P3_4
+        rectangle "P3.5: Update Request Status" as P3_5
+    }
+    
+    rectangle "P4: Status Tracking" as P4 {
+        rectangle "P4.1: Display Active Requests" as P4_1
+        rectangle "P4.2: Track LBC Shipment" as P4_2
+        rectangle "P4.3: Send Status Notification" as P4_3
+    }
+    
+    rectangle "P5: Request Processing" as P5 {
+        rectangle "P5.1: Review Request" as P5_1
+        rectangle "P5.2: Approve/Reject" as P5_2
+        rectangle "P5.3: Set TOR Page Count" as P5_3
+        rectangle "P5.4: Mark Ready" as P5_4
+        rectangle "P5.5: Mark Complete" as P5_5
+    }
+    
+    rectangle "P6: Finance Management" as P6 {
+        rectangle "P6.1: View Transactions" as P6_1
+        rectangle "P6.2: View Balances" as P6_2
+        rectangle "P6.3: Export CSV" as P6_3
+        rectangle "P6.4: Clear Balance" as P6_4
+    }
+    
+    rectangle "P7: System Administration" as P7 {
+        rectangle "P7.1: Manage Document Types" as P7_1
+        rectangle "P7.2: Update Prices" as P7_2
+        rectangle "P7.3: Manage Users" as P7_3
+    }
+
+    database "Database" as DB
+}
+
+Student --> P1_1 : Enter Student ID
+Student --> P2_1 : Select Document Type
+Student --> P3_1 : Initiate Payment
+Student --> P4_1 : View Dashboard
+
+Registrar --> P5_1 : View Pending Requests
+Registrar --> P5_2 : Approve/Reject
+Registrar --> P5_4 : Mark Ready
+
+Accounting --> P6_1 : View Transactions
+Accounting --> P6_4 : Clear Balance
+
+Cashier --> P3_3 : Process Cash Payment
+
+Admin --> P7_1 : Manage Document Types
+Admin --> P7_3 : Manage Users
+
+P1_3 --> SMS_API : Send SMS OTP
+P1_3 --> Email_API : Send Email OTP
+P2_3 --> LBC_API : Create Shipment
+P4_2 --> LBC_API : Get Tracking
+
+P1_1 --> DB : Validate Student ID
+P2_5 --> DB : Save Request
+P3_4 --> DB : Log Payment
+P5_5 --> DB : Update Status
+P6_3 --> DB : Export Data
+P7_2 --> DB : Update Prices
+
+@enduml

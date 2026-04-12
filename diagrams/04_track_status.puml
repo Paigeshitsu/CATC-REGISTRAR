@@ -1,0 +1,39 @@
+@startuml Track Request Status Sequence
+skinparam dpi 300
+skinparam fontSize 14
+skinparam entityFontSize 14
+skinparam classFontSize 14
+skinparam noteFontSize 14
+skinparam actorFontSize 14
+skinparam rectangleFontSize 14
+skinparam participantFontSize 14
+skinparam collectionsFontSize 14
+!theme plain
+
+actor Student
+participant ":StudentDashboardView" as Dashboard
+participant ":DocumentRequest" as Request
+participant ":LBCTracker" as LBC
+actor Registrar
+actor "LBC Express" as LBC_API
+
+Student -> Dashboard: View Dashboard
+Dashboard -> Request: Get Active Requests
+Dashboard --> Student: Display Requests
+
+alt Registrar Updates Status
+    Registrar -> Dashboard: Mark Ready/Mark Complete
+    Dashboard -> Request: Update Status
+    Request --> Student: Notification
+end
+
+alt LBC Tracking
+    Student -> Dashboard: Enter Tracking Number
+    Dashboard -> LBC: Register Tracking
+    LBC -> LBC_API: Get Tracking Status
+    LBC_API --> LBC: Tracking Data
+    LBC --> Dashboard: Tracking Info
+    Dashboard --> Student: Display Live Tracking
+end
+
+@enduml

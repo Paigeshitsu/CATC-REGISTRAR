@@ -1,0 +1,52 @@
+@startuml CATC Document Request Portal - Package Diagram
+!theme plain
+
+skinparam package {
+    BackgroundColor #DAE8FC
+    BorderColor #333
+    FontName Arial
+    Shadowing false
+}
+
+package "Django Project" <<Root>> {
+    
+    package "Django Core" {
+        rectangle "settings.py"
+        rectangle "urls.py"
+        rectangle "wsgi.py"
+        rectangle "asgi.py"
+    }
+    
+    package "requests_app" {
+        rectangle "models.py"
+        rectangle "views.py"
+        rectangle "forms.py"
+        rectangle "serializers.py"
+        rectangle "urls.py"
+        rectangle "admin.py"
+        rectangle "apps.py"
+        rectangle "tests.py"
+        rectangle "decorators.py"
+    }
+    
+    package "Root App" {
+        rectangle "models.py"
+        rectangle "views.py"
+        rectangle "forms.py"
+        rectangle "urls.py"
+        rectangle "decorators.py"
+    }
+}
+
+package "External Services" <<Interface>> {
+    rectangle "iProg SMS API"
+    rectangle "LBC Express"
+    rectangle "Email Service"
+    rectangle "Xendit"
+}
+
+package "Database" <<Infrastructure>> {
+    rectangle "PostgreSQL/MySQL"
+}
+
+@enduml

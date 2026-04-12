@@ -1,0 +1,78 @@
+@startuml CATC Document Request Portal - Package Diagram
+skinparam fontSize 13
+skinparam shadowing true
+!theme plain
+hide stereotype
+
+skinparam package {
+    BackgroundColor #2C5F8C
+    BorderColor #1E3A5F
+    BorderThickness 1
+    FontStyle bold
+    FontColor white
+}
+
+skinparam node {
+    BackgroundColor #F5F7FA
+    BorderColor #5A6B7C
+    BorderThickness 1
+    FontColor #2C3E50
+    FontSize 11
+}
+
+skinparam database {
+    BackgroundColor #E8F4FC
+    BorderColor #2C5F8C
+    BorderThickness 2
+    FontColor #2C5F8C
+}
+
+skinparam arrow {
+    Color #5A6B7C
+}
+
+node "models.py" as models
+node "views.py" as views
+node "forms.py" as forms
+node "urls.py" as urls
+node "serializers.py" as ser
+node "decorators.py" as dec
+node "tracking_service.py" as track
+node "admin.py" as admin
+
+package "thesis" {
+    package "thesis (Settings)" {
+        [settings.py]
+        [urls.py]
+        [wsgi.py]
+    }
+}
+
+package "requests_app" {
+    [app modules]
+}
+
+package "External APIs" {
+    [iProg SMS]
+    [LBC Express]
+    [Xendit]
+}
+
+database "PostgreSQL" as db
+
+requests_app -> thesis
+requests_app -> db
+requests_app -> "External APIs"
+
+note bottom of requests_app
+  Core Modules:
+  • models.py - Database models
+  • views.py - Business logic
+  • forms.py - Form validation
+  • urls.py - Route definitions
+  • serializers.py - REST API
+  • decorators.py - Auth guards
+  • tracking_service.py - LBC integration
+end note
+
+@enduml

@@ -1,0 +1,91 @@
+@startuml CATC Document Request Portal - Conceptual Model
+skinparam fontSize 12
+!theme plain
+
+package "Core Domain" {
+    class StudentMasterList {
+        +student_id
+        +full_name
+        +course
+        +email
+        +phone_number
+        +is_graduated
+    }
+    
+    class DocumentType {
+        +name
+        +price
+    }
+    
+    class DocumentRequest {
+        +status
+        +delivery_method
+        +reason
+        +receipt_number
+        +tracking_number
+        +tor_page_count
+    }
+    
+    class OTPToken {
+        +otp_code
+        +is_verified
+    }
+    
+    class User {
+        +username
+    }
+    
+    class Profile {
+        +printed_name
+        +signature_data
+    }
+}
+
+package "Finance" {
+    class CollectionLog {
+        +receipt_number
+        +amount_paid
+    }
+    
+    class StudentBalance {
+        +outstanding_amount
+    }
+}
+
+package "Notification" {
+    class Notification {
+        +message
+        +sender_role
+        +is_read
+    }
+}
+
+package "Tracking" {
+    class TORRequestHistory {
+        +document_type
+        +page_count
+        +price
+        +is_free
+    }
+    
+    class AuditLog {
+        +action
+        +details
+    }
+}
+
+User "1" -- "1" Profile
+User "1" -- "0..*" OTPToken
+User "1" -- "0..*" DocumentRequest
+User "1" -- "0..*" Notification
+StudentMasterList "1" -- "0..1" StudentBalance
+DocumentRequest "1" -- "1" DocumentType
+DocumentRequest "1" -- "0..1" CollectionLog
+DocumentRequest "0..1" -- "1" TORRequestHistory
+
+note right of DocumentRequest::status
+  PENDING → APPROVED → PAID → PROCESSING → READY → COMPLETED
+  REJECTED (terminal)
+end note
+
+@enduml

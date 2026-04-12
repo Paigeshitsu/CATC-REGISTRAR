@@ -1,0 +1,348 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid mt-4 pb-5"> <!-- Added pb-5 for footer spacing -->
+    <!-- Header Banner -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg overflow-hidden" style="border-radius: 20px; background: linear-gradient(135deg, #198754, #0a5038);">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h3 class="fw-bold mb-1 text-white"><i class="bi bi-cash-stack"></i> Accounting Dashboard</h3>
+                            <p class="mb-0 text-white opacity-75">Manage revenue, document fees, and student accounts.</p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <div class="text-white">
+                                <div class="fw-bold">{{ user.username }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DASHBOARD HEADER -->
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-4 no-print">
+        <div>
+            <div class="d-flex gap-2 align-items-center">
+                <div class="text-end d-none d-md-block">
+                    <label class="small fw-bold text-muted text-uppercase d-block" style="font-size: 0.65rem;">Switch View</label>
+                <select class="form-select form-select-sm shadow-sm fw-bold" style="width: 250px; border-color: #0d6efd;" id="viewSelector" onchange="switchView()">
+                    <option value="transactions">📊 Collection Ledger</option>
+                    <option value="all-history">📂 All Student Requests</option>
+                    <option value="pricing">🏷️ Document Pricing</option>
+                    <option value="balances">⚠️ Outstanding Balances</option>
+                    <option value="audit">🕵️ System Audit Trail</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- RECONCILIATION CARDS -->
+    <div class="row mb-4 no-print view-section" id="cards-transactions">
+        <div class="col-md-4">
+            <div class="card border-start border-4 border-secondary shadow-sm p-3">
+                <h6 class="text-muted small text-uppercase fw-bold">Cash Drawer</h6>
+                <h4 class="fw-bold">₱{{ cash_total }}</h4>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-start border-4 border-info shadow-sm p-3">
+                <h6 class="text-muted small text-uppercase fw-bold">Bank Remittance</h6>
+                <h4 class="fw-bold text-info">₱{{ online_total }}</h4>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-start border-4 border-success shadow-sm bg-success bg-opacity-10 p-3">
+                <h6 class="text-success small text-uppercase fw-bold">Total Revenue</h6>
+                <h4 class="fw-bold text-success">₱{{ total_revenue }}</h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 1: COLLECTION LEDGER -->
+    <div id="section-transactions" class="view-section">
+        <div class="card mb-4 no-print shadow-sm border-0">
+            <div class="card-body bg-light border rounded">
+                <form method="GET" class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label class="small fw-bold text-muted">REPORT TYPE</label>
+                        <select name="filter_type" class="form-select form-select-sm">
+                            <option value="daily" {% if filter_type == 'daily' %}selected{% endif %}>Daily Ledger</option>
+                            <option value="weekly" {% if filter_type == 'weekly' %}selected{% endif %}>Weekly Summary</option>
+                            <option value="monthly" {% if filter_type == 'monthly' %}selected{% endif %}>Monthly Report</option>
+                            <option value="yearly" {% if filter_type == 'yearly' %}selected{% endif %}>Yearly Audit</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="small fw-bold text-muted">REFERENCE DATE</label>
+                        <input type="date" name="target_date" class="form-control form-control-sm" value="{{ target_date }}">
+                    </div>
+                    <div class="col-md-6">
+                        <button type="submit" class="btn btn-primary btn-sm fw-bold px-3">GENERATE</button>
+                        <a href="{% url 'export_collection_csv' %}?filter_type={{ filter_type }}&target_date={{ target_date }}" class="btn btn-success btn-sm fw-bold px-3">
+                            <i class="bi bi-file-earmark-spreadsheet"></i> CSV EXPORT
+                        </a>
+                        <button type="button" onclick="window.print()" class="btn btn-dark btn-sm fw-bold px-3"><i class="bi bi-printer"></i> PRINT</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-success text-white py-3 no-print">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-journal-check me-2"></i>Official Collection Records</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive ledger-scroll">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light sticky-header">
+                            <tr><th>Date</th><th>OR Number</th><th>Student Details</th><th>Method</th><th class="text-end pe-4">Amount Paid</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for t in transactions %}
+                            <tr>
+                                <td class="ps-3 small">{{ t.created_at|date:"M d, Y" }}</td>
+                                <td><span class="badge bg-danger-subtle text-danger border">№ {{ t.receipt_number }}</span></td>
+                                <td>
+                                    <!-- FIXED: Bold ID and Full Name Underneath -->
+                                    <strong class="text-dark">{{ t.student_id }}</strong><br>
+                                    <small class="text-muted text-uppercase" style="font-size: 0.65rem;">{{ t.student_name }}</small>
+                                </td>
+                                <td><span class="badge {% if t.payment_method == 'CASH' %}bg-secondary{% else %}bg-info text-dark{% endif %}">{{ t.payment_method }}</span></td>
+                                <td class="text-end pe-4 fw-bold text-success">₱{{ t.amount_paid }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 2: GLOBAL REQUEST HISTORY -->
+    <div id="section-all-history" class="view-section d-none">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-folder2-open me-2"></i>Global Request Registry</h5>
+                <!-- NEW: Registry Search Bar -->
+                <div class="input-group input-group-sm" style="width: 300px;">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" id="registrySearchInput" class="form-control border-start-0" 
+                           placeholder="Search Student ID..." onkeyup="filterRegistry()">
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive ledger-scroll">
+                    <table class="table table-sm table-hover align-middle mb-0" id="registryTable">
+                        <thead class="table-light sticky-header">
+                            <tr><th class="ps-3">Requested On</th><th>Student ID</th><th>Document</th><th>Status</th><th>Record Status</th></tr>
+                        </thead>
+                        <tbody id="registryTableBody">
+                            {% for req in all_requests_history %}
+                            <tr class="registry-row">
+                                <td class="ps-3">{{ req.created_at|date:"M d, Y" }}</td>
+                                <td class="sid-text"><strong>{{ req.student.username }}</strong></td>
+                                <td>{{ req.document_type.name }}</td>
+                                <td><span class="small fw-bold">{{ req.get_status_display }}</span></td>
+                                <td>
+                                    {% if req.is_deleted %}<span class="text-danger small fw-bold">ARCHIVED</span>
+                                    {% else %}<span class="text-success small fw-bold">ACTIVE</span>{% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 3: DOCUMENT PRICING -->
+    <div id="section-pricing" class="view-section d-none">
+        <div class="card shadow-sm border-0" style="max-width: 900px; margin: auto;">
+            <div class="card-header bg-dark text-white py-3">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-tags me-2"></i>Manage Document Fees</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr><th class="ps-4">Document</th><th>Current Price</th><th class="text-center">Set New Price</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for doc in doc_types %}
+                        <tr>
+                            <td class="ps-4 fw-semibold">{{ doc.name }}</td>
+                            <td class="fw-bold text-primary">₱{{ doc.price }}</td>
+                            <td class="text-center">
+                                <form method="POST" class="d-flex justify-content-center gap-2 py-2">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="doc_id" value="{{ doc.id }}">
+                                    <div class="input-group input-group-sm" style="width: 150px;">
+                                        <span class="input-group-text">₱</span>
+                                        <input type="number" name="new_price" step="0.01" class="form-control" placeholder="0.00" required>
+                                    </div>
+                                    <button name="action" value="update_price" class="btn btn-sm btn-primary">Update</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 4: OUTSTANDING BALANCES -->
+    <div id="section-balances" class="view-section d-none">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center py-3">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-exclamation-triangle me-2"></i>Student Balances</h5>
+                <div class="input-group input-group-sm" style="width: 300px;">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" id="debtorSearchInput" class="form-control border-start-0" 
+                           placeholder="Search Student ID..." onkeyup="filterDebtors()">
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive ledger-scroll">
+                    <table class="table table-hover align-middle mb-0" id="debtorsTable">
+                        <thead class="table-light sticky-header">
+                            <tr><th class="ps-4">Student ID & Name</th><th>Balance</th><th>Last Notified</th><th class="text-center">Action</th></tr>
+                        </thead>
+                        <tbody id="debtorsTableBody">
+                            {% for d in debtors %}
+                            <tr class="debtor-row">
+                                <td class="ps-4">
+                                    <strong class="sid-text text-dark">{{ d.student.student_id }}</strong><br>
+                                    <small class="text-muted">{{ d.student.full_name }}</small>
+                                </td>
+                                <td class="text-danger fw-bold">₱{{ d.outstanding_amount }}</td>
+                                <td class="small text-muted">{{ d.last_notified|date:"M d, Y"|default:"Never" }}</td>
+                                <td class="text-center">
+                                    <form method="POST" class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="balance_id" value="{{ d.id }}">
+                                        <button name="action" value="clear_balance" class="btn btn-sm btn-success px-2" onclick="return confirm('Clear this balance?')">Clear</button>
+                                    </form>
+                                    <form method="POST" class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="balance_id" value="{{ d.id }}">
+                                        <button name="action" value="notify_balance" class="btn btn-sm btn-outline-danger px-3">Send Notice</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 5: AUDIT TRAIL -->
+    <div id="section-audit" class="view-section d-none">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-dark text-white py-3">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-shield-lock me-2"></i>System Audit Trail</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive ledger-scroll">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-light sticky-header">
+                            <tr><th class="ps-3">Timestamp</th><th>User</th><th>Action</th><th>Details</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for log in audit_logs %}
+                            <tr>
+                                <td class="ps-3 small text-muted">{{ log.timestamp|date:"M d, Y H:i" }}</td>
+                                <td><strong>{{ log.user.username }}</strong></td>
+                                <td><span class="badge bg-primary">{{ log.get_action_display }}</span></td>
+                                <td class="small">{{ log.details }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* 1. Industrial Scroll & Footer Clearance */
+    .view-section { margin-bottom: 50px; animation: fadeIn 0.3s ease-in-out; }
+    
+    .ledger-scroll { 
+        max-height: 450px; 
+        overflow-y: auto; 
+        position: relative;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    /* 2. Sticky Header Logic */
+    .sticky-header th { 
+        position: sticky; 
+        top: 0; 
+        z-index: 1000; 
+        background: #f8f9fa !important; 
+        border-bottom: 2px solid #dee2e6; 
+        box-shadow: inset 0 -1px 0 #dee2e6;
+    }
+
+    /* 3. Clean Scrollbar */
+    .ledger-scroll::-webkit-scrollbar { width: 6px; }
+    .ledger-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+    .ledger-scroll::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+    .ledger-scroll::-webkit-scrollbar-thumb:hover { background: #0d6efd; }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    
+    @media print {
+        .no-print, nav, footer, .btn, .view-section.d-none, input, select { display: none !important; }
+        .only-print { display: block !important; }
+        .ledger-scroll { max-height: none !important; overflow: visible !important; }
+        body { background: white !important; margin: 0 !important; }
+    }
+    .only-print { display: none; }
+</style>
+
+<script>
+    function switchView(shouldSave = true) {
+        const val = document.getElementById('viewSelector').value;
+        document.querySelectorAll('.view-section').forEach(s => {
+            s.classList.toggle('d-none', !s.id.includes(val));
+        });
+        if (shouldSave) localStorage.setItem('activeAccountingView', val);
+    }
+
+    // REGISTRY SEARCH FUNCTION
+    function filterRegistry() {
+        const filter = document.getElementById('registrySearchInput').value.toUpperCase();
+        const rows = document.getElementsByClassName('registry-row');
+        for (let i = 0; i < rows.length; i++) {
+            const sidCell = rows[i].getElementsByClassName('sid-text')[0];
+            const txtValue = sidCell.textContent || sidCell.innerText;
+            rows[i].style.display = txtValue.toUpperCase().includes(filter) ? "" : "none";
+        }
+    }
+
+    // DEBTOR SEARCH FUNCTION
+    function filterDebtors() {
+        const filter = document.getElementById('debtorSearchInput').value.toUpperCase();
+        const rows = document.getElementsByClassName('debtor-row');
+        for (let i = 0; i < rows.length; i++) {
+            const idCell = rows[i].getElementsByClassName('sid-text')[0];
+            const id = idCell.textContent || idCell.innerText;
+            rows[i].style.display = id.toUpperCase().includes(filter) ? "" : "none";
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const saved = localStorage.getItem('activeAccountingView') || 'transactions';
+        document.getElementById('viewSelector').value = saved;
+        switchView(false);
+    });
+</script>
+{% endblock %}

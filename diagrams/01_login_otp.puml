@@ -1,0 +1,44 @@
+@startuml Login & OTP Verification Sequence
+skinparam dpi 300
+skinparam fontSize 14
+skinparam entityFontSize 14
+skinparam classFontSize 14
+skinparam noteFontSize 14
+skinparam actorFontSize 14
+skinparam rectangleFontSize 14
+skinparam participantFontSize 14
+skinparam collectionsFontSize 14
+!theme plain
+
+actor Student
+participant ":LoginView" as Login
+participant ":OTPToken" as OTP
+participant "iProg SMS API" as SMS
+participant ":VerifyOTPView" as Verify
+participant ":User" as User
+
+Student -> Login: Enter Student ID
+Login -> Login: Validate Student ID
+Login -> OTP: Create OTP Token
+OTP -> OTP: Generate 6-digit code
+OTP -> OTP: Generate Google Auth Secret
+alt Email Delivery
+    Login -> Login: Send OTP via Email
+else SMS Delivery
+    Login -> SMS: Send OTP Code
+    SMS --> Student: OTP SMS
+end
+Student -> Verify: Enter OTP Code
+Verify -> OTP: Verify OTP Code
+alt Google Auth
+    OTP -> OTP: Verify TOTP Code
+end
+alt Success
+    OTP -> Verify: Mark Verified
+    Verify -> User: Login User
+    User -> Student: Redirect to Dashboard
+else Failed
+    Verify --> Student: Show Error
+end
+
+@enduml

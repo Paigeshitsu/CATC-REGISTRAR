@@ -1,0 +1,351 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+.bulk-actions-toolbar { background: linear-gradient(135deg, #0d6efd, #004fb8); border-radius: 12px; padding: 12px 20px; margin-bottom: 20px; display: none; animation: slideDown 0.3s ease-out; }
+.bulk-actions-toolbar.active { display: flex; align-items: center; justify-content: space-between; }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+.bulk-count { color: white; font-weight: 600; }
+.stats-card-mini { border-radius: 12px; transition: all 0.3s; }
+.stats-card-mini:hover { transform: translateY(-3px); }
+</style>
+
+<div class="container-fluid mt-4">
+    <!-- Header Banner -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg overflow-hidden" style="border-radius: 20px; background: linear-gradient(135deg, #0d6efd, #004fb8);">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h3 class="fw-bold mb-1 text-white"><i class="bi bi-person-badge"></i> Registrar Control Panel</h3>
+                            <p class="mb-0 text-white opacity-75">Review requests, process document payments, and manage document dispatch.</p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <div class="text-white">
+                                <div class="fw-bold">{{ user.username }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STATS CARDS -->
+    <div class="row mb-4 g-3">
+        <div class="col-6 col-lg-3">
+            <div class="card stats-card-mini border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="stats-icon bg-warning-subtle text-warning me-3"><i class="bi bi-hourglass-split"></i></div>
+                    <div><div class="fw-bold text-warning" style="font-size: 1.5rem;">{{ pending_count|default:0 }}</div><div class="text-muted small">Pending</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card stats-card-mini border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="stats-icon bg-info-subtle text-info me-3"><i class="bi bi-credit-card"></i></div>
+                    <div><div class="fw-bold text-info" style="font-size: 1.5rem;">{{ paid_count|default:0 }}</div><div class="text-muted small">Paid</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card stats-card-mini border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="stats-icon bg-primary-subtle text-primary me-3"><i class="bi bi-gear"></i></div>
+                    <div><div class="fw-bold text-primary" style="font-size: 1.5rem;">{{ processing_count|default:0 }}</div><div class="text-muted small">Processing</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card stats-card-mini border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="stats-icon bg-success-subtle text-success me-3"><i class="bi bi-check-circle"></i></div>
+                    <div><div class="fw-bold text-success" style="font-size: 1.5rem;">{{ ready_count|default:0 }}</div><div class="text-muted small">Ready</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BULK ACTIONS TOOLBAR -->
+    <div class="bulk-actions-toolbar" id="bulkToolbar">
+        <div class="bulk-count"><i class="bi bi-check2-square me-2"></i><span id="selectedCount">0</span> selected</div>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-light btn-sm fw-bold" onclick="bulkApprove()"><i class="bi bi-check-all me-1"></i> Approve</button>
+            <button type="button" class="btn btn-warning btn-sm fw-bold" onclick="bulkMarkReady()"><i class="bi bi-box-seam me-1"></i> Ready</button>
+            <button type="button" class="btn btn-danger btn-sm fw-bold" onclick="bulkReject()"><i class="bi bi-x-circle me-1"></i> Reject</button>
+            <button type="button" class="btn btn-outline-light btn-sm" onclick="clearSelection()"><i class="bi bi-x-lg"></i></button>
+        </div>
+    </div>
+
+    <!-- ACTIVE REQUESTS QUEUE -->
+    <div class="row">
+        <div class="col-12">
+            <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-stack me-2 text-primary"></i>Active Document Queue</h5>
+            
+            {% regroup active_requests by batch_id as batch_list %}
+
+            {% for batch in batch_list %}
+                {% with first_item=batch.list.0 %}
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
+                        <div>
+                            {% if batch.grouper %}
+                                <span class="badge bg-secondary me-2">BATCH ID: {{ batch.grouper }}</span>
+                            {% else %}
+                                <span class="badge bg-danger me-2">NO BATCH ID (LEGACY)</span>
+                            {% endif %}
+                            <strong class="text-uppercase text-dark">{{ first_item.get_student_name }}</strong>
+                            <span class="badge bg-primary-subtle text-primary ms-2">{{ batch.list|length }} Items</span>
+                            <div class="text-muted mt-1" style="font-size: 0.75rem;">
+                                <i class="bi bi-clock"></i> Requested: {{ first_item.created_at|date:"M d, Y | h:i A" }}
+                            </div>
+                        </div>
+                        
+                        <form method="POST" class="d-flex align-items-center gap-2">
+                            {% csrf_token %}
+                            <input type="hidden" name="batch_id" value="{{ batch.grouper }}">
+                            
+                            {% if first_item.status == 'PENDING' %}
+                                {% if first_item.rush_processing %}
+                                <div class="mb-2">
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="bi bi-lightning-fill"></i> RUSH PROCESSING (2x Price)
+                                    </span>
+                                </div>
+                                {% endif %}
+                                <!-- Special TOR button - sends to TOR dashboard for page counting -->
+                                {% if 'TRANSCRIPT' in first_item.document_type.name|upper %}
+                                <button name="action" value="send_to_tor" class="btn btn-primary btn-sm fw-bold px-3">
+                                    <i class="bi bi-send me-1"></i> SEND TO TOR DESK
+                                </button>
+                                {% else %}
+                                <button name="action" value="approve" class="btn btn-success btn-sm fw-bold px-3">APPROVE FOR PAYMENT</button>
+                                {% endif %}
+                            
+                            {% elif first_item.status == 'PAYMENT_REQUIRED' %}
+                                <span class="badge bg-warning text-dark p-2 border border-warning-subtle shadow-sm me-2">
+                                    <i class="bi bi-hourglass-split me-1"></i> AWAITING STUDENT PAYMENT
+                                </span>
+
+                            {% elif first_item.status == 'PAID' or first_item.status == 'PROCESSING' %}
+                                <!-- PROCESSING DAYS INPUT -->
+                                <div class="d-flex align-items-center gap-2 me-2">
+                                    <label class="fw-bold small text-success mb-0">Processing Days:</label>
+                                    <input type="number" name="processing_days" class="form-control form-control-sm" 
+                                        min="1" value="{% if first_item.rush_processing %}1{% else %}3{% endif %}" 
+                                        style="width: 70px;" {% if first_item.rush_processing %}required{% endif %}>
+                                    {% if first_item.rush_processing %}
+                                    <span class="badge bg-warning text-dark small"><i class="bi bi-lightning-fill"></i> RUSH (1 Day)</span>
+                                    {% endif %}
+                                </div>
+                                <!-- LBC TRACKING INPUT (Optional - auto-generated if empty) -->
+                                {% if first_item.delivery_method == 'LBC' %}
+                                <div class="d-flex align-items-center gap-2 me-2">
+                                    <input type="text" name="tracking_number_input" class="form-control form-control-sm" 
+                                        placeholder="Auto-generate" style="width: 140px;"
+                                        value="{{ first_item.tracking_number|default:'' }}">
+                                    <small class="text-muted" style="font-size: 0.65rem;">(Optional)</small>
+                                </div>
+                                {% endif %}
+
+                                <!-- Only show MARK AS READY button if PAID, or if not a TOR document and status is PROCESSING -->
+                                {% if first_item.status == 'PAID' or 'TRANSCRIPT' not in first_item.document_type.name|upper %}
+                                <button type="submit" name="action" value="mark_ready" class="btn btn-primary btn-sm fw-bold shadow-sm px-3">
+                                    MARK AS READY
+                                </button>
+                                {% endif %}
+                                <!-- EXTEND PROCESSING BUTTON -->
+                                <button type="button" class="btn btn-warning btn-sm fw-bold shadow-sm" onclick="document.getElementById('extend-form-{{ batch.grouper|default:forloop.counter }}').classList.toggle('d-none')">
+                                    <i class="bi bi-clock-history"></i> EXTEND
+                                </button>
+                                <!-- Inline Extend Form -->
+                                <div id="extend-form-{{ batch.grouper|default:forloop.counter }}" class="position-absolute bg-white border rounded shadow p-3 d-none" style="z-index: 1000; min-width: 280px; right: 10px; top: 60px;">
+                                    <h6 class="fw-bold text-warning mb-2"><i class="bi bi-clock-history"></i> Extend Processing</h6>
+                                    <div class="mb-2">
+                                        <label class="form-label small fw-bold">Additional Days</label>
+                                        <input type="number" name="extend_days" class="form-control form-control-sm" min="1" max="30" value="1">
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label small fw-bold">Reason (required)</label>
+                                        <textarea name="extend_reason" class="form-control form-control-sm" rows="2" placeholder="Reason for delay..."></textarea>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('extend-form-{{ batch.grouper|default:forloop.counter }}').classList.add('d-none')">Cancel</button>
+                                        <button type="submit" name="action" value="extend_processing" class="btn btn-warning btn-sm fw-bold">Notify Student</button>
+                                    </div>
+                                </div>
+                            
+                            {% elif first_item.status == 'READY' %}
+                                <div class="text-end me-2">
+                                    <span class="badge bg-success shadow-sm mb-1 px-3">READY FOR PICKUP</span>
+                                    {% if first_item.tracking_number %}
+                                    <div class="text-primary fw-bold" style="font-size: 0.7rem;">LBC: {{ first_item.tracking_number }}</div>
+                                    {% endif %}
+                                </div>
+                                <button type="submit" name="action" value="mark_done" class="btn btn-dark btn-sm fw-bold shadow-sm">MARK AS DONE</button>
+                            {% endif %}
+
+                            <!-- REJECT BUTTON: Only for PENDING status (when approving) -->
+                            {% if first_item.status == 'PENDING' %}
+                            <div class="d-flex align-items-center gap-2 ms-auto flex-wrap">
+                                <textarea name="rejection_reason" class="form-control form-control-sm" rows="1" 
+                                    placeholder="Rejection reason (optional)" style="min-width: 150px; max-width: 180px; resize: none;"></textarea>
+                                <button name="action" value="reject" class="btn btn-outline-danger btn-sm flex-shrink-0" 
+                                        onclick="var reason = this.previousElementSibling.value; if(reason.trim() === '' && !confirm('Reject without providing a reason?')) return false;">
+                                    <i class="bi bi-x-circle"></i> REJECT
+                                </button>
+                            </div>
+                            {% endif %}
+                        </form>
+                    </div>
+                    
+                    <div class="card-body p-0">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr class="small text-uppercase text-muted" style="letter-spacing: 0.5px;">
+                                    <th class="ps-4">Document & Shipping Details</th>
+                                    <th>Method</th>
+                                    <th>Status</th>
+                                    <th class="text-center">Processing Instruction</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in batch.list %}
+                                <tr>
+                                    <td class="ps-4 py-3">
+                                        <div class="fw-bold text-dark">{{ item.document_type.name }}</div>
+                                        <div class="small text-muted italic mb-2">"{{ item.reason|truncatechars:60 }}"</div>
+                                    </td>
+                                    <td>
+                                        {% if item.delivery_method == 'LBC' %}
+                                            <span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1">
+                                                <i class="bi bi-truck me-1"></i> LBC EXPRESS
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-light text-secondary border px-2 py-1">
+                                                <i class="bi bi-person-walking me-1"></i> OFFICE PICKUP
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if item.status == 'PAID' %}
+                                            <span class="text-success small fw-bold"><i class="bi bi-check-circle-fill"></i> PAID</span>
+                                        {% elif item.status == 'READY' %}
+                                            <span class="badge bg-primary px-2">DOC READY</span>
+                                        {% else %}
+                                            <span class="small text-muted">{{ item.get_status_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if item.status == 'PAID' or item.status == 'PROCESSING' %}
+                                            <span class="text-muted smaller fw-bold">
+                                                <i class="bi bi-info-circle me-1"></i> Prepare Physical Document Offline
+                                            </span>
+                                        {% elif item.status == 'READY' %}
+                                            <span class="text-primary smaller fw-bold">Awaiting Release</span>
+                                        {% else %}
+                                            <span class="text-muted smaller italic opacity-50">Pending Stage</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endwith %}
+            {% empty %}
+                <div class="text-center py-5 bg-white rounded shadow-sm border mt-3">
+                    <i class="bi bi-inbox fs-1 text-muted opacity-25"></i>
+                    <p class="mt-2 text-muted fw-bold">No active requests in the queue.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- TRANSACTION HISTORY SECTION (KEEPING ENTIRELY AS IS) -->
+    <div class="accordion border-0 shadow-sm mt-5 mb-5" id="historyAcc">
+        <div class="accordion-item border-0 rounded">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed bg-dark text-white fw-bold py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseHistory">
+                    <i class="bi bi-clock-history me-2"></i> Finished Transaction History (Last 30 Days)
+                </button>
+            </h2>
+            <div id="collapseHistory" class="accordion-collapse collapse">
+                <div class="accordion-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="table-secondary small text-uppercase">
+                                <tr>
+                                    <th class="ps-4">Student</th>
+                                    <th>Document</th>
+                                    <th>Method</th>
+                                    <th>Tracking #</th>
+                                    <th>Result</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for h in history %}
+                                <tr>
+                                    <td class="ps-4 py-2">
+                                        <div class="fw-bold text-dark">{{ h.get_student_name }}</div>
+                                        <small class="text-muted">{{ h.student.username }}</small>
+                                    </td>
+                                    <td><span class="small">{{ h.document_type.name }}</span></td>
+                                    <td><small class="fw-bold text-muted">{{ h.get_delivery_method_display }}</small></td>
+                                    <td>
+                                        {% if h.tracking_number %}
+                                        <code class="text-primary fw-bold">{{ h.tracking_number }}</code>
+                                        {% else %}
+                                        <span class="text-muted small">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if h.status == 'COMPLETED' %}
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle px-3">CLAIMED</span>
+                                        {% else %}
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3">REJECTED</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <form method="POST">{% csrf_token %}
+                                            <input type="hidden" name="request_id" value="{{ h.id }}">
+                                            <button name="action" value="delete" class="btn btn-link text-danger p-0 small text-decoration-none" onclick="return confirm('Permanently remove this record?')">
+                                                <i class="bi bi-trash"></i> Delete
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SCRIPTS (KEEPING ENTIRELY AS IS) -->
+<script>
+    function copyLbcDetails(fname, lname, phone, address) {
+        const fullDetails = `RECEIVER: ${fname} ${lname}\nPHONE: ${phone}\nADDRESS: ${address}`;
+        navigator.clipboard.writeText(fullDetails).then(function() {
+            alert("Receiver details copied to clipboard!");
+        });
+    }
+</script>
+
+<style>
+    .smaller { font-size: 0.7rem; }
+    .italic { font-style: italic; }
+    .table th { font-size: 0.65rem; font-weight: 800; }
+    .input-group-sm > .form-control { font-size: 0.75rem; border-color: #0dcaf0; }
+    .btn-sm { font-size: 0.7rem; letter-spacing: 0.3px; }
+    .card-header { border-left: 4px solid #0d6efd; }
+    .bg-info-subtle { background-color: #e1f5fe !important; }
+    .btn-xs { padding: 1px 5px; font-size: 0.6rem; }
+</style>
+{% endblock %}

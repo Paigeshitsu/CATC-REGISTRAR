@@ -1,0 +1,26 @@
+@startuml Make Payment Sequence
+!theme plain
+
+actor Student
+participant ":StudentDashboardView" as Dashboard
+participant ":CashierDashboardView" as Cashier
+participant ":DocumentRequest" as Request
+participant ":CollectionLog" as Collection
+participant ":SystemCounter" as Counter
+actor Cashier
+
+alt Online Payment
+    Student -> Dashboard: Make Online Payment
+    Dashboard -> Request: Update status to PENDING_CASHIER_APPROVAL
+else Cash Payment
+    Student -> Cashier: Present Request ID
+    Cashier -> Request: Confirm Payment Amount
+    Cashier -> Counter: Get Next Receipt Number
+    Counter --> Cashier: OR Number
+    Cashier -> Collection: Create CollectionLog
+    Cashier -> Request: Update status to PAID
+end
+Request --> Student: Show Payment Confirmation
+Cashier --> Student: Generate Official Receipt
+
+@enduml

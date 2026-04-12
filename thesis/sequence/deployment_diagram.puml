@@ -1,0 +1,97 @@
+@startuml CATC Document Request Portal - Deployment Diagram
+!theme plain
+
+skinparam node {
+    BackgroundColor white
+    BorderColor black
+    FontName Arial
+    Shadowing false
+}
+
+skinparam rectangle {
+    BackgroundColor white
+    BorderColor black
+    FontName Arial
+    Shadowing false
+}
+
+cloud "Internet" {
+
+    node "Client Tier" <<Browser>> {
+        rectangle "Web Browser" as Browser
+    }
+    
+}
+
+node "Web Server / Cloud Platform" <<Production>> {
+    
+    rectangle "Django Application\n(Gunicorn + Nginx)" as DjangoApp
+    
+    package "Application Runtime" {
+        rectangle "Python 3.x"
+        rectangle "Django 4.x"
+        rectangle "Django Apps"
+    }
+}
+
+cloud "External Services" <<Third-Party>> {
+    
+    node "iProg SMS Service" {
+        rectangle "SMS Gateway" as SMS
+    }
+    
+    node "LBC Express" {
+        rectangle "LBC API" as LBC
+    }
+    
+    node "Email Service" {
+        rectangle "SMTP Server" as Email
+    }
+    
+    node "Payment Gateway" {
+        rectangle "Xendit API" as Xendit
+    }
+}
+
+node "Database Server" <<Data Tier>> {
+    
+    rectangle "PostgreSQL\nDatabase" as DB {
+        rectangle "Document Requests"
+        rectangle "User Data"
+        rectangle "Transaction Logs"
+    }
+}
+
+node "Admin Workstation" <<Internal>> {
+    rectangle "Admin Browser\n(Django Admin)" as AdminPanel
+}
+
+Browser -down-> DjangoApp : HTTPS\n(port 443/80)
+DjangoApp -down-> DB : JDBC/psycopg2
+DjangoApp -down-> SMS : REST API
+DjangoApp -down-> LBC : REST API
+DjangoApp -down-> Email : SMTP
+DjangoApp -down-> Xendit : REST API
+AdminPanel -down-> DjangoApp : HTTPS\n(port 443/80)
+
+note right of DjangoApp
+    <b>Application Server</b>
+    - Run via Gunicorn
+    - Served by Nginx
+    - Static/Media files
+end note
+
+note right of DB
+    <b>Database Server</b>
+    - PostgreSQL 14+
+    - Hosted locally or cloud
+    - Daily backups
+end note
+
+node "User Mobile Devices" <<Client>> {
+    rectangle "iOS/Android\nBrowser" as Mobile
+}
+
+Mobile -down-> DjangoApp : HTTPS
+
+@enduml

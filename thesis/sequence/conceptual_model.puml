@@ -1,0 +1,135 @@
+@startuml CATC Document Request Portal - Conceptual Model
+!theme plain
+
+skinparam class {
+    BackgroundColor white
+    BorderColor black
+    FontName Arial
+    Shadowing false
+}
+
+package "Core Domain" {
+    
+    class StudentMasterList {
+        +student_id: String
+        +full_name: String
+        +course: String
+        +major: String
+        +email: String
+        +phone_number: String
+        +is_graduated: Boolean
+    }
+    
+    class DocumentType {
+        +name: String
+        +price: Decimal
+    }
+    
+    class DocumentRequest {
+        +status: RequestStatus
+        +delivery_method: DeliveryMethod
+        +reason: String
+        +receipt_number: String
+        +payment_reference: String
+        +tracking_number: String
+        +tor_page_count: Integer
+        +rush_processing: Boolean
+    }
+    
+    class OTPToken {
+        +otp_code: String
+        +google_auth_secret: String
+        +google_auth_enabled: Boolean
+        +is_verified: Boolean
+    }
+    
+    class User {
+        +username: String
+        +password: String
+        +email: String
+    }
+    
+    class Profile {
+        +must_change_password: Boolean
+        +printed_name: String
+        +signature_data: String
+    }
+}
+
+package "Finance Domain" {
+    
+    class CollectionLog {
+        +receipt_number: String
+        +student_name: String
+        +student_id: String
+        +amount_paid: Decimal
+        +documents_included: String
+        +payment_method: PaymentMethod
+    }
+    
+    class StudentBalance {
+        +outstanding_amount: Decimal
+        +last_notified: DateTime
+    }
+}
+
+package "Notification Domain" {
+    
+    class Notification {
+        +message: String
+        +sender_role: SenderRole
+        +is_read: Boolean
+    }
+}
+
+package "Tracking Domain" {
+    
+    class TORRequestHistory {
+        +document_type: String
+        +page_count: Integer
+        +price: Decimal
+        +is_free: Boolean
+        +requested_at: DateTime
+        +completed_at: DateTime
+    }
+    
+    class AuditLog {
+        +action: ActionType
+        +resource_type: String
+        +resource_id: String
+        +details: String
+        +timestamp: DateTime
+    }
+    
+    class SystemCounter {
+        +name: String
+        +last_value: Integer
+    }
+}
+
+User "1" -- "1" Profile : has
+User "1" -- "0..*" OTPToken : owns
+User "1" -- "0..*" DocumentRequest : submits
+User "1" -- "0..*" Notification : receives
+StudentMasterList "1" -- "0..1" StudentBalance : has
+
+DocumentRequest "1" -- "1" DocumentType : for
+DocumentRequest "1" -- "0..1" CollectionLog : paid_by
+DocumentRequest "0..1" -- "1" TORRequestHistory : tracked_by
+
+StudentMasterList "1" -- "0..*" CollectionLog : has
+
+User "1" -- "0..*" CollectionLog : collected_by
+User "1" -- "0..*" AuditLog : logged_by
+
+note right of DocumentRequest::status
+    PENDING → PENDING_TOR_COUNT → APPROVED → PAID → PROCESSING → READY → COMPLETED
+    REJECTED (terminal)
+end note
+
+note right of StudentMasterList
+    Mock database for pre-authorized students
+    Student IDs follow format: S000001
+end note
+
+@enduml

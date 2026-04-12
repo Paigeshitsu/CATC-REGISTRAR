@@ -1,0 +1,55 @@
+@startuml DFD Level 0 - Context Diagram
+!theme plain
+
+skinparam rectangle {
+    BackgroundColor white
+    BorderColor black
+    FontName Arial
+}
+
+skinparam database {
+    BackgroundColor white
+    BorderColor black
+}
+
+together {
+    rectangle "Student" as StudentExt
+    rectangle "Registrar" as RegistrarExt
+    rectangle "Accounting" as AccountingExt
+    rectangle "Cashier" as CashierExt
+    rectangle "Admin" as AdminExt
+}
+
+rectangle "CATC Document Request Portal" as System #lightblue {
+
+    database "Database" as DB
+    
+    note as Note1
+        <b>System Boundaries:</b>
+        - Document Request Management
+        - Payment Processing  
+        - Status Tracking
+        - User Authentication
+    end note
+}
+
+StudentExt -up-> System : 1. Login/OTP
+StudentExt -up-> System : 2. Submit Request
+StudentExt -up-> System : 3. Make Payment
+StudentExt -up-> System : 4. Track Status
+
+RegistrarExt -left-> System : 5. Process Request
+RegistrarExt -left-> System : Approve/Reject/Mark Ready/Complete
+
+AccountingExt -left-> System : 6. Manage Finances
+AccountingExt -left-> System : View Transactions/Balances
+
+CashierExt -left-> System : 3. Process Cash Payment
+CashierExt -left-> System : Generate Official Receipt
+
+AdminExt -right-> System : 7. Manage System
+AdminExt -right-> System : Update Prices/Manage Users
+
+System -> DB : Store/Retrieve Data
+
+@enduml

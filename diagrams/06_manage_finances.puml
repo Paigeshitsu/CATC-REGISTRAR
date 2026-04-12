@@ -1,0 +1,44 @@
+@startuml Manage Finances Sequence
+skinparam dpi 300
+skinparam fontSize 14
+skinparam entityFontSize 14
+skinparam classFontSize 14
+skinparam noteFontSize 14
+skinparam actorFontSize 14
+skinparam rectangleFontSize 14
+skinparam participantFontSize 14
+skinparam collectionsFontSize 14
+!theme plain
+
+actor Accounting
+participant ":AccountingDashboardView" as Dashboard
+participant ":CollectionLog" as Collection
+participant ":StudentBalance" as Balance
+participant ":AuditLog" as Audit
+actor Student
+
+Accounting -> Dashboard: View Dashboard
+Dashboard -> Collection: Query All Transactions
+Dashboard -> Balance: Query Outstanding Balances
+Dashboard --> Accounting: Display Dashboard
+
+alt View Transactions
+    Accounting -> Dashboard: Filter by Date/Type
+    Dashboard -> Collection: Apply Filters
+    Dashboard --> Accounting: Display Transactions
+end
+
+alt Export CSV
+    Accounting -> Dashboard: Export CSV
+    Dashboard -> Collection: Generate CSV
+    Dashboard --> Accounting: Download CSV Ledger
+end
+
+alt Clear Balance
+    Accounting -> Dashboard: Clear Student Balance
+    Dashboard -> Balance: Set outstanding_amount = 0
+    Dashboard -> Audit: Log Balance Cleared
+    Balance -> Notif: Notify Student (optional)
+end
+
+@enduml

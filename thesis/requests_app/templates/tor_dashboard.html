@@ -1,0 +1,374 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .badge-rush {
+        background: linear-gradient(135deg, #dc3545, #c82333);
+        animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.8; }
+    }
+    .page-input {
+        width: 80px;
+        text-align: center;
+        font-weight: bold;
+    }
+    .pending-row {
+        background-color: #fff3cd;
+    }
+    .rush-row {
+        background-color: #f8d7da;
+    }
+    .approved-row {
+        background-color: #d4edda;
+    }
+</style>
+
+<div class="animate__animated animate__fadeIn">
+    <!-- Header Banner -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg overflow-hidden" style="border-radius: 20px; background: linear-gradient(135deg, #6f42c1, #4a148c);">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h3 class="fw-bold mb-1 text-white"><i class="bi bi-file-earmark-text"></i> TOR Request Dashboard</h3>
+                            <p class="mb-0 text-white opacity-75">Count TOR pages and process student requests</p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <div class="text-white">
+                                <div class="fw-bold">{{ user.username }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                <div class="card-body text-center">
+                    <div class="text-primary fs-1"><i class="bi bi-hourglass"></i></div>
+                    <h4 class="fw-bold">{{ processing_tor|length }}</h4>
+                    <p class="text-muted mb-0 small">Pending</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                <div class="card-body text-center">
+                    <div class="text-danger fs-1"><i class="bi bi-lightning-charge"></i></div>
+                    <h4 class="fw-bold">
+                        {% for tor in processing_tor %}
+                            {% if tor.rush_processing %}{{ forloop.counter }}{% endif %}
+                        {% empty %}0{% endfor %}
+                    </h4>
+                    <p class="text-muted mb-0 small">Rush Requests</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                <div class="card-body text-center">
+                    <div class="text-success fs-1"><i class="bi bi-check-circle"></i></div>
+                    <h4 class="fw-bold">{{ tor_requests|length }}</h4>
+                    <p class="text-muted mb-0 small">Processed Today</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                <div class="card-body text-center">
+                    <div class="text-warning fs-1"><i class="bi bi-currency-pound"></i></div>
+                    <h4 class="fw-bold">₱{{ tor_price_per_page }}</h4>
+                    <p class="text-muted mb-0 small">Per Page</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOR Requests Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="card-header bg-dark text-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-list-task"></i> TOR Page Counting Queue</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">Student</th>
+                                    <th>Document Type</th>
+                                    <th>Purpose</th>
+                                    <th>Rush</th>
+                                    <th>Status</th>
+                                    <th>Page Count</th>
+                                    <th>Price</th>
+                                    <th class="text-end pe-3">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tor in processing_tor %}
+                                <tr class="{% if tor.rush_processing %}rush-row{% else %}pending-row{% endif %}" id="tor-row-{{ tor.id }}">
+                                    <td class="ps-3">
+                                        <div class="fw-bold">{{ tor.student.get_full_name|default:tor.student.username }}</div>
+                                        <small class="text-muted">{{ tor.student.username }}</small>
+                                        {% if tor.batch_count > 1 %}
+                                        <br><small class="text-info"><i class="bi bi-layer-group"></i> Batch: {{ tor.batch_count }} items</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ tor.document_type.name }}</span>
+                                        {% if tor.has_auth %}
+                                        <br><span class="badge bg-warning text-dark mt-1">+ Auth</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small>{{ tor.reason|truncatechars:30 }}</small>
+                                    </td>
+                                    <td>
+                                        {% if tor.rush_processing %}
+                                            <span class="badge badge-rush">
+                                                <i class="bi bi-lightning-charge"></i> RUSH
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Standard</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if tor.status == 'APPROVED' %}
+                                            <span class="badge bg-success">Approved</span>
+                                        {% else %}
+                                            <span class="badge bg-warning text-dark">Processing</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control page-input" 
+                                               id="page-count-{{ tor.id }}" 
+                                               value="{{ tor.tor_page_count|default:'' }}" 
+                                               min="1" max="100"
+                                               placeholder="#">
+                                        {% if tor.has_auth %}
+                                        <small class="text-muted d-block mt-1">+ Auth: ₱{{ tor.auth_price|default:0 }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold" id="price-display-{{ tor.id }}">
+                                            {% if tor.tor_page_count %}
+                                                ₱{{ tor.calculated_price|default:0 }}
+                                            {% else %}--{% endif %}
+                                        </span>
+                                    </td>
+                                    <td class="text-end pe-3">
+                                        <button class="btn btn-success btn-sm fw-bold" 
+                                                onclick="submitPageCount({{ tor.id }})">
+                                            <i class="bi bi-check-lg"></i> Submit
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center py-5">
+                                        <div class="text-muted">
+                                            <i class="bi bi-inbox fs-1"></i>
+                                            <p class="mt-2">No TOR requests pending</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-info-circle"></i> Instructions</h6>
+                </div>
+                <div class="card-body">
+                    <ol class="small">
+                        <li>Review each TOR request from students</li>
+                        <li>Check the TOR document and count the number of pages</li>
+                        <li>Enter the page count in the input field</li>
+                        <li>Click Submit to approve and set the price</li>
+                        <li>Student will be notified to proceed with payment</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-calculator"></i> Pricing</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="small mb-0">
+                        <li><strong>Standard:</strong> ₱{{ tor_price_per_page }} per page</li>
+                        <li><strong>Rush (Priority):</strong> ₱{{ tor_price_per_page }} x 2 per page</li>
+                        <li><em>Example: 4 pages (Standard) = ₱400</em></li>
+                        <li><em>Example: 4 pages (Rush) = ₱800</em></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Request History Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="card-header bg-secondary text-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-clock-history"></i> TOR Request History</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">Date</th>
+                                    <th>Student</th>
+                                    <th>Document</th>
+                                    <th>Pages</th>
+                                    <th>Rush</th>
+                                    <th>Price</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tor in tor_requests %}
+                                <tr class="approved-row">
+                                    <td class="ps-3">
+                                        <small>{{ tor.created_at|date:"M d, Y" }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold">{{ tor.student.get_full_name|default:tor.student.username }}</div>
+                                        <small class="text-muted">{{ tor.student.username }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ tor.document_type.name }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold">{{ tor.tor_page_count }}</span>
+                                    </td>
+                                    <td>
+                                        {% if tor.rush_processing %}
+                                            <span class="badge badge-rush"><i class="bi bi-lightning-charge"></i> RUSH</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Standard</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold text-success">₱{{ tor.price }}</span>
+                                    </td>
+                                    <td>
+                                        {% if tor.status == 'PAID' %}
+                                            <span class="badge bg-success">Paid</span>
+                                        {% elif tor.status == 'READY' %}
+                                            <span class="badge bg-info">Ready</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">{{ tor.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-muted">
+                                        <i class="bi bi-inbox fs-1"></i>
+                                        <p class="mt-2">No completed TOR requests yet</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Calculate price when page count changes
+    document.querySelectorAll('.page-input').forEach(function(input) {
+        input.addEventListener('input', function() {
+            var rowId = this.id.replace('page-count-', '');
+            var pageCount = parseInt(this.value) || 0;
+            var priceDisplay = document.getElementById('price-display-' + rowId);
+            var row = document.getElementById('tor-row-' + rowId);
+            var isRush = row.classList.contains('rush-row');
+            
+            var pricePerPage = {{ tor_price_per_page|default:100 }};
+            var basePrice = pageCount * pricePerPage;
+            if (isRush) {
+                basePrice = basePrice * 2;
+            }
+            
+            if (pageCount > 0) {
+                priceDisplay.textContent = '₱' + basePrice;
+            } else {
+                priceDisplay.textContent = '--';
+            }
+        });
+    });
+
+    function submitPageCount(requestId) {
+        var pageCountInput = document.getElementById('page-count-' + requestId);
+        var pageCount = parseInt(pageCountInput.value);
+        
+        if (!pageCount || pageCount < 1) {
+            alert('Please enter a valid page count (minimum 1)');
+            return;
+        }
+        
+        var formData = new FormData();
+        formData.append('request_id', requestId);
+        formData.append('page_count', pageCount);
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        
+        fetch('{% url "submit_tor_page_count" %}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                alert('Page count submitted successfully!\n' + data.message);
+                
+                // Remove the row from the table
+                var row = document.getElementById('tor-row-' + requestId);
+                row.classList.remove('rush-row', 'pending-row');
+                row.classList.add('approved-row');
+                
+                // Update the row content
+                row.querySelector('td:nth-child(5)').innerHTML = '<span class="badge bg-success">Approved</span>';
+                row.querySelector('td:last-child').innerHTML = '<span class="badge bg-success"><i class="bi bi-check-circle"></i> Done</span>';
+                
+                // Reload after a moment
+                setTimeout(function() {
+                    location.reload();
+                }, 1500);
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        });
+    }
+</script>
+{% endblock %}

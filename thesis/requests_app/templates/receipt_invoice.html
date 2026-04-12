@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Payment Summary - {{ student.student_id }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #333; line-height: 1.6; background-color: #f8f9fa; }
+        .container { max-width: 600px; margin: auto; border: 1px solid #dee2e6; padding: 30px; border-radius: 12px; background-color: #ffffff; shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .header { border-bottom: 3px solid #0d6efd; padding-bottom: 15px; margin-bottom: 25px; }
+        .header h2 { color: #0d6efd; margin: 0; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; }
+        th { background-color: #f8f9fa; font-size: 0.85rem; text-transform: uppercase; color: #666; }
+        .total-row { font-size: 1.2rem; font-weight: bold; color: #198754; background: #fdfdfd; }
+        
+        /* THE BLUE BUTTON STYLE */
+        .btn-back {
+            display: inline-block;
+            padding: 12px 25px;
+            background-color: #0d6efd; /* Primary Blue */
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-back:hover { background-color: #0b5ed7; }
+        
+        .no-print { margin-bottom: 30px; text-align: center; }
+        
+        @media print { 
+            .no-print { display: none; } 
+            body { background-color: white; padding: 0; }
+            .container { border: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print">
+    <!-- Changed from <a> to <button> with window.close() logic -->
+    <button onclick="window.close()" class="btn-back" style="border: none; cursor: pointer;">
+        &larr; CLOSE AND RETURN TO DASHBOARD
+    </button>
+</div>
+
+    <div class="container">
+        <div class="header">
+            <h2>Payment Summary</h2>
+            <p style="margin-top: 10px;">
+                <strong>Student ID:</strong> {{ student.student_id }}<br>
+                <strong>Name:</strong> {{ student.full_name }}<br>
+                <strong>Date:</strong> {{ today|date:"M d, Y" }}
+            </p>
+        </div>
+
+        <p>This is a digital record of your document request and successful payment.</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Document Description</th>
+                    <th style="text-align: right;">Unit Price</th>
+                    <th style="text-align: right;">Qty</th>
+                    <th style="text-align: right;">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in summary_items %}
+                <tr>
+                    <td>
+                        {{ item.name }}
+                        <br><span style="font-size: 0.75rem; color: #6c757d;">{{ item.display_label }}: ₱{{ item.base_amount }}</span>
+                        {% if item.unit_label %}<br><span style="font-size: 0.75rem; color: #6c757d;">{{ item.unit_label }}</span>{% endif %}
+                    </td>
+                    <td style="text-align: right;">₱{{ item.unit_price }}</td>
+                    <td style="text-align: right;">{{ item.quantity }}</td>
+                    <td style="text-align: right;">₱{{ item.base_amount }}</td>
+                </tr>
+                {% if item.rush_fee %}
+                <tr>
+                    <td style="padding-left: 30px;"><span style="font-size: 0.75rem; color: #dc3545;">Rush Processing</span></td>
+                    <td style="text-align: right;"><span style="font-size: 0.75rem; color: #dc3545;">₱{{ item.unit_price }}</span></td>
+                    <td style="text-align: right;"><span style="font-size: 0.75rem; color: #dc3545;">1</span></td>
+                    <td style="text-align: right;"><span style="font-size: 0.75rem; color: #dc3545;">₱{{ item.rush_fee }}</span></td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+                <tr class="total-row">
+                    <td>TOTAL PAID</td>
+                    <td></td>
+                    <td></td>
+                    <td style="text-align: right;">₱{{ total_amount }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="margin-top: 30px; padding: 15px; background-color: #e7f3ff; border-radius: 8px; font-size: 0.85rem; color: #084298;">
+            <p style="margin: 0;"><strong>Status:</strong> VERIFIED PAID<br>
+               <strong>Reference:</strong> {{ display_receipt_no }}</p>
+        </div>
+        
+        {% if is_lbc_delivery %}
+        <div style="margin-top: 20px; padding: 15px; background-color: #fff3cd; border-radius: 8px; font-size: 0.85rem; color: #856404;">
+            <p style="margin: 0;"><strong><i class="bi bi-truck"></i> LBC Delivery Details:</strong><br>
+               <strong>Method:</strong> LBC Express Delivery<br>
+               {% if doc.shipping_barangay %}<strong>Shipping Address:</strong> {{ doc.shipping_barangay }}, {{ doc.shipping_municipality }}, {{ doc.shipping_province }}{% endif %}<br>
+               {% if doc.tracking_number %}<strong>Tracking Number:</strong> {{ doc.tracking_number }}{% else %}<em>Tracking number pending</em>{% endif %}
+            </p>
+        </div>
+        {% endif %}
+        
+        <div style="margin-top: 20px; font-size: 0.75rem; color: #999; text-align: center;">
+            <em>Note: This is a system-generated summary. Please present your student ID to the Registrar's Office for document claiming.</em>
+        </div>
+    </div>
+</body>
+</html>

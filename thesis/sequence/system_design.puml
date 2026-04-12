@@ -1,0 +1,103 @@
+@startuml CATC Document Request Portal - System Design
+!theme plain
+
+skinparam rectangle {
+    BackgroundColor white
+    BorderColor black
+    FontName Arial
+    Shadowing false
+}
+
+skinparam interface {
+    BackgroundColor white
+    BorderColor black
+}
+
+skinparam component {
+    BackgroundColor #DAE8FC
+    BorderColor #333
+}
+
+skinparam cloud {
+    BackgroundColor #FFF5D9
+    BorderColor #333
+}
+
+node "Client Layer (Browser)" as Client {
+    [Web Browser\n(Django Templates)] as Browser
+}
+
+cloud "External Services" #FFF5D9 {
+    [iProg SMS API] as SMS
+    [LBC Express API] as LBC
+    [Email Service\n(SMTP)] as Email
+}
+
+node "Application Server" as AppServer {
+    
+    component "Django Web Framework" #DAE8FC {
+        [Routing]
+        [Views]
+        [Forms]
+    }
+    
+    component "Business Logic Layer" #DAE8FC {
+        [AuthService]
+        [ReqService]
+        [PayService]
+        [NotifService]
+    }
+    
+    component "Django ORM" as ORM {
+        [Models]
+    }
+    
+    component "Third-Party Integrations" #DAE8FC {
+        [SMSIntegration]
+        [LBCIntegration]
+        [Xendit]
+    }
+}
+
+node "Database Server" as DBServer {
+    database "PostgreSQL/MySQL" as DB {
+        [StudentMasterList]
+        [DocumentRequest]
+        [DocumentType]
+        [OTPToken]
+        [CollectionLog]
+        [StudentBalance]
+        [Notification]
+        [AuditLog]
+        [TORRequestHistory]
+    }
+}
+
+Browser -> Routing : HTTP Request
+Routing -> Views : Route to View
+Views -> Forms : Validate Input
+Forms -> AuthService : Verify User
+AuthService -> ReqService : Process Request
+ReqService -> PayService : Calculate/Process
+PayService -> NotifService : Send Alerts
+
+Views -> SMSIntegration : Send OTP
+Views -> LBCIntegration : Shipment
+
+SMSIntegration -> SMS : API Call
+LBCIntegration -> LBC : API Call
+
+ORM -> Models : CRUD Operations
+Models -> DB : SQL Queries
+
+DB -[hidden]-> DBServer
+
+note right of AppServer
+    <b>Technology Stack:</b>
+    - Django 4.x
+    - Python 3.x
+    - PostgreSQL
+    - Bootstrap 5
+end note
+
+@enduml

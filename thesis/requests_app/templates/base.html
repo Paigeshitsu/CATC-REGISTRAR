@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CATC Form Request</title>
+    <link rel="icon" type="image/x-icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREjtEscWIrTcJMYmtWQSJ44Q_Xkcrs4k0w8w&s">
+    <link rel="shortcut icon" type="image/x-icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREjtEscWIrTcJMYmtWQSJ44Q_Xkcrs4k0w8w&s">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    
+    <style>
+        :root {
+            --catc-blue: #0d6efd;
+            --catc-dark-blue: #0000CD;
+            --catc-gold: #FFD700;
+        }
+        .modal { z-index: 2050 !important; }
+        .modal-backdrop { z-index: 2040 !important; }
+        html, body { height: 100%; margin: 0; scroll-behavior: smooth; }
+        body { display: flex; flex-direction: column; background-color: #f0f2f5; animation: fadeIn 0.6s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .content-wrapper { flex: 1 0 auto; }
+        .navbar { background: linear-gradient(135deg, var(--catc-blue), var(--catc-dark-blue)) !important; backdrop-filter: blur(10px); border-bottom: 3px solid var(--catc-gold); transition: all 0.3s ease; }
+        .navbar-brand-img { transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .navbar-brand-img:hover { transform: rotate(10deg) scale(1.1); }
+        .btn { transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-radius: 8px; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .notif-dropdown { width: 350px; max-height: 500px; overflow-y: auto; border: none; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); transform-origin: top right; animation: dropDownSmooth 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes dropDownSmooth { from { opacity: 0; transform: translateY(-15px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .notif-item { border-bottom: 1px solid #f1f1f1; transition: all 0.2s ease; margin: 5px; border-radius: 10px; }
+        .notif-item:hover { background-color: #f0f7ff; transform: scale(1.02); }
+        #notif-badge { animation: pulse-red 2s infinite; }
+        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); } 100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); } }
+        .alert { border: none; border-left: 5px solid; animation: flipInX 0.7s ease; }
+        footer { width: 100% !important; background: linear-gradient(135deg, #0d6efd 0%, #004fb8 100%); color: #ffffff; padding: 40px 0 20px 0; margin-top: 60px; border-top: 4px solid #FFD700; }
+        .footer-bottom { border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 20px; margin-top: 30px; font-size: 0.85rem; opacity: 0.8; }
+        body { display: flex; flex-direction: column; min-height: 100vh; margin: 0; }
+        .content-wrapper { flex: 1; }
+        .toast-container { position: fixed; top: 80px; right: 20px; z-index: 1100; }
+        .btn { border-radius: 8px; font-weight: 600; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; overflow: hidden; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(0,0,0,0.15); }
+        .btn-primary { background: linear-gradient(135deg, #0d6efd, #0056b3); border: none; }
+    </style>
+</head>
+<body>
+
+<div class="content-wrapper">
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-lg sticky-top py-2">
+        <div class="container-fluid">
+            <div class="d-flex align-items-center">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREjtEscWIrTcJMYmtWQSJ44Q_Xkcrs4k0w8w&s" alt="CATC Logo" width="45" height="45" class="me-3 navbar-brand-img rounded shadow-sm">
+                <div class="text-white lh-sm d-none d-sm-block">
+                    <h1 class="fw-bold m-0 p-0 text-white" style="font-size: 1.1rem; letter-spacing: 0.5px;">COMPUTER ARTS AND TECHNOLOGICAL COLLEGE INC.</h1>
+                    <p class="m-0 opacity-75 fw-semibold" style="font-size: 0.75rem;">Rizal Street, Binanuahan West, Legazpi City</p>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center">
+                {% if user.is_authenticated %}
+                    {% if not user.is_staff and not user.is_superuser %}
+                    
+                    <!-- Notifications Dropdown -->
+                    <div class="dropdown me-3">
+                        <button class="btn btn-link text-white position-relative d-flex align-items-center justify-content-center" type="button" id="notifBell" data-bs-toggle="dropdown" aria-expanded="false" style="width: 40px; height: 40px; overflow: visible;">
+                            <i class="bi bi-bell-fill fs-5"></i>
+                            {% if unread_count > 0 %}
+                            <span id="notif-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger fw-bold" style="font-size: 0.65rem; min-width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; border: 1.5px solid #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.4); margin-left: -5px;">{{ unread_count }}</span>
+                            {% endif %}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg notif-dropdown p-2" aria-labelledby="notifBell">
+                            <li class="p-2 border-bottom d-flex justify-content-between align-items-center">
+                                <span class="fw-bold small text-uppercase text-primary"><i class="bi bi-megaphone-fill me-2"></i>Inbox</span>
+                                <a href="javascript:void(0);" onclick="markAllRead(event)" class="text-muted x-small text-decoration-none" style="font-size: 0.7rem;">Clear all</a>
+                            </li>
+                            <div class="notif-scroll-area" style="max-height: 380px; overflow-y:auto;">
+                                {% if has_balance %}
+                                <li class="notif-item p-3 border-danger bg-danger bg-opacity-10" onclick="openNotifModal('Accounting', 'Immediate Alert', 'Balance detected: PHP{{ balance_amount }}. Please settle to unlock TOR requests.')">
+                                    <div class="d-flex justify-content-between"><strong class="small text-danger">FINANCE</strong><span class="badge bg-danger">URGENT</span></div>
+                                    <div class="text-dark small mt-1">Pending Balance: PHP{{ balance_amount }}</div>
+                                </li>
+                                {% endif %}
+                                {% for n in notifications %}
+                                <li class="notif-item p-3 {% if not n.is_read %}notif-unread{% endif %}" onclick="openNotifModal('{{ n.sender_role }}', '{{ n.created_at|date:'M d, Y h:i A' }}', '{{ n.message|escapejs }}')">
+                                    <div class="d-flex justify-content-between"><strong class="small text-primary">{{ n.sender_role }} Office</strong><small class="text-muted" style="font-size: 0.7rem;">{{ n.created_at|timesince }}</small></div>
+                                    <div class="text-dark small text-truncate mt-1">{{ n.message }}</div>
+                                </li>
+                                {% endfor %}
+                            </div>
+                        </ul>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="text-white text-end me-3 d-none d-lg-block">
+                        <small class="d-block opacity-75" style="font-size: 0.65rem; text-transform: uppercase;">User ID</small>
+                        <span class="fw-bold small">{{ user.username }}</span>
+                    </div>
+                    <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-light fw-bold px-3 shadow-sm border-2">LOGOUT</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
+                    <i class="bi {% if message.tags == 'success' %}bi-check-circle-fill{% else %}bi-exclamation-triangle-fill{% endif %} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% block content %}{% endblock %}
+    </div>
+</div>
+
+<div id="modal-container">
+    {% block modals %}{% endblock %}
+    <div class="modal fade" id="notifDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg animate__animated animate__zoomIn animate__faster">
+                <div class="modal-header bg-primary text-white border-0 rounded-top">
+                    <h5 class="modal-title fw-bold" id="modalSender">Notification</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 bg-light bg-opacity-50">
+                    <p id="modalDate" class="badge bg-secondary mb-3"></p>
+                    <div id="modalMessage" class="text-dark lh-lg fs-6 p-3 bg-white rounded border shadow-sm"></div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-primary fw-bold" data-bs-dismiss="modal">Acknowledged</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block footer %}
+<footer class="mt-auto">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-6 text-center text-md-start">
+                <h5 class="fw-bold mb-3" style="color: #FFD700;">COMPUTER ARTS AND TECHNOLOGICAL COLLEGE</h5>
+                <p class="small opacity-75 pe-md-5">Empowering students through technology. Our automated request system ensures fast and reliable scholastic record processing.</p>
+            </div>
+            <div class="col-md-3 text-center text-md-start">
+                <h6 class="fw-bold text-uppercase mb-3">Contact Support</h6>
+                <p class="small mb-1"><i class="bi bi-envelope me-2"></i>catcollege_registrar@yahoo.com</p>
+                <p class="small"><i class="bi bi-telephone me-2"></i>0908 874 4388</p>
+            </div>
+            <div class="col-md-3 text-center text-md-end">
+                <h6 class="fw-bold text-uppercase mb-3">&copy; 2026 CATC PORTAL</h6>
+                <div class="d-flex justify-content-center justify-content-md-end gap-3 fs-5">
+                    <i class="bi bi-facebook"></i><i class="bi bi-globe"></i>
+                </div>
+            </div>
+        </div>
+        <div class="text-center footer-bottom">
+            <p class="mb-0 fw-light">Developed for Computer Arts and Technological College. All Rights Reserved.</p>
+        </div>
+    </div>
+</footer>
+{% endblock %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function playNotificationSound() {
+        try {
+            var audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            var oscillator = audioContext.createOscillator();
+            var gainNode = audioContext.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        } catch(e) { console.log('Audio failed:', e); }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var badge = document.getElementById('notif-badge');
+        if (badge) playNotificationSound();
+    });
+
+    var notifBell = document.getElementById('notifBell');
+    if (notifBell) {
+        notifBell.addEventListener('show.bs.dropdown', function() { playNotificationSound(); });
+    }
+
+    function openNotifModal(sender, date, message) {
+        document.getElementById('modalSender').innerHTML = '<i class="bi bi-building"></i> ' + sender + ' Office';
+        document.getElementById('modalDate').innerText = "Sent: " + date;
+        document.getElementById('modalMessage').innerText = message;
+        var myModal = new bootstrap.Modal(document.getElementById('notifDetailModal'));
+        myModal.show();
+    }
+
+    function markAllRead(e) {
+        if(e) e.preventDefault();
+        fetch("{% url 'mark_notifications_read' %}", { method: 'GET' })
+        .then(function() {
+            var badge = document.getElementById('notif-badge');
+            if (badge) badge.style.display = 'none';
+        });
+    }
+</script>
+</body>
+</html>

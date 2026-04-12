@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header Banner -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg overflow-hidden" style="border-radius: 20px; background: linear-gradient(135deg, #fd7e14, #d6331c);">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h3 class="fw-bold mb-1 text-white"><i class="bi bi-cash-coin"></i> Cashier Payment Terminal</h3>
+                            <p class="mb-0 text-white opacity-75">Process document payments and manage transactions.</p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <div class="text-white">
+                                <div class="fw-bold">{{ user.username }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-4">
+        <div class="d-flex gap-2">
+            <a href="{% url 'signature_settings' %}" class="btn btn-outline-dark btn-sm fw-bold">
+                <i class="bi bi-pen"></i> Update My Signature
+            </a>
+        </div>
+    </div>
+
+    <!-- UNIFIED PAYMENT QUEUE -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-dark text-white py-3">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-list-check"></i> Payment Queue</h5>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light small text-uppercase">
+                    <tr>
+                        <th class="ps-4">Student ID</th>
+                        <th>Documents</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in all_payments %}
+                    <tr>
+                        <td class="ps-4 fw-bold">{{ r.student.username }}</td>
+                        <td>
+                            <div>{{ r.document_type.name }}</div>
+                            {% if r.rush_processing %}
+                            <span class="badge bg-warning text-dark small">RUSH</span>
+                            {% endif %}
+                            {% if r.batch_id %}
+                            <span class="badge bg-secondary small">Batch</span>
+                            {% endif %}
+                        </td>
+                        <td class="fw-bold">₱{{ r.get_price }}</td>
+                        <td>
+                            {% if r.status == 'PAYMENT_REQUIRED' %}
+                            <span class="badge bg-danger">UNPAID</span>
+                            {% elif r.status == 'PENDING_CASHIER_APPROVAL' %}
+                            <span class="badge bg-warning text-dark">ONLINE PENDING</span>
+                            {% elif r.status == 'PAID' %}
+                            <span class="badge bg-success">PAID</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ r.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if r.status == 'PAYMENT_REQUIRED' %}
+                            <!-- Unpaid - Confirm Payment -->
+                            <form method="POST" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="request_id" value="{{ r.id }}">
+                                <button name="action" value="confirm_payment" class="btn btn-success btn-sm px-3">
+                                    <i class="bi bi-check-circle"></i> Confirm Payment
+                                </button>
+                            </form>
+                            {% elif r.status == 'PENDING_CASHIER_APPROVAL' %}
+                            <!-- Online Payment - Verify -->
+                            <form method="POST" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="request_id" value="{{ r.id }}">
+                                <button name="action" value="confirm_payment" class="btn btn-primary btn-sm px-3">
+                                    <i class="bi bi-check-circle"></i> Verify & Approve
+                                </button>
+                            </form>
+                            {% elif r.status == 'PAID' %}
+                            <!-- Paid - Issue Receipt -->
+                            <div class="d-flex justify-content-center gap-2">
+                                <a href="{% url 'generate_receipt' r.id %}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                                <form method="POST" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="request_id" value="{{ r.id }}">
+                                    <button name="action" value="issue_receipt" class="btn btn-dark btn-sm">
+                                        <i class="bi bi-receipt"></i> Issue Summary
+                                    </button>
+                                </form>
+                            </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">No payment requests at this time.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- COLLECTION HISTORY -->
+    <div class="accordion shadow-sm mt-4" id="historyAcc">
+        <div class="accordion-item border-0">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed bg-light fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseHistory">
+                    <i class="bi bi-clock-history me-2"></i> Collection History
+                </button>
+            </h2>
+            <div id="collapseHistory" class="accordion-collapse collapse">
+                <div class="accordion-body p-0">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-dark small text-uppercase">
+                            <tr>
+                                <th class="ps-4">Receipt №</th>
+                                <th>Student ID</th>
+                                <th>Student Name</th>
+                                <th>Amount</th>
+                                <th>Documents</th>
+                                <th>Method</th>
+                                <th>Date & Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for h in collection_history %}
+                            <tr>
+                                <td class="ps-4"><span class="badge bg-dark">№ {{ h.receipt_number }}</span></td>
+                                <td>{{ h.student_id }}</td>
+                                <td>{{ h.student_name }}</td>
+                                <td class="fw-bold">₱{{ h.amount_paid }}</td>
+                                <td class="small">{{ h.documents_included }}</td>
+                                <td><span class="badge bg-info text-dark">{{ h.get_payment_method_display }}</span></td>
+                                <td class="small">{{ h.created_at|date:"M d, Y H:i" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="7" class="text-center py-3 text-muted">No collection history.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

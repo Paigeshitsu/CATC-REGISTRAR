@@ -1,0 +1,151 @@
+@startuml CATC Document Request Portal - Class Diagram
+!theme plain
+
+skinparam class {
+    BackgroundColor white
+    BorderColor black
+    FontName Arial
+    Shadowing false
+}
+
+class User <<django.contrib.auth.models>> {
+    +username: CharField
+    +password: CharField
+    +email: CharField
+    +first_name: CharField
+    +last_name: CharField
+}
+
+class StudentMasterList {
+    +student_id: CharField[7]
+    +full_name: CharField[255]
+    +course: CharField[100]
+    +major: CharField[100]
+    +email: EmailField
+    +phone_number: CharField[15]
+    +is_graduated: BooleanField
+    +masked_email: property
+    +masked_phone: property
+    +get_tor_request_count(): int
+}
+
+class OTPToken {
+    +otp_code: CharField[6]
+    +created_at: DateTimeField
+    +is_verified: BooleanField
+    +google_auth_secret: CharField[32]
+    +google_auth_enabled: BooleanField
+    +generate_code(): None
+    +get_google_auth_uri(): str
+    +verify_google_auth_code(code): bool
+    +verify_otp_code(code): bool
+}
+
+class DocumentType {
+    +name: CharField[100]
+    +price: DecimalField[10,2]
+}
+
+class DocumentRequest {
+    +STATUS_CHOICES: list
+    +DELIVERY_CHOICES: list
+    +LBC_TYPE_CHOICES: list
+    +TOR_PRICE_PER_PAGE: int
+    +student: ForeignKey(User)
+    +document_type: ForeignKey(DocumentType)
+    +reason: TextField
+    +status: CharField[20]
+    +batch_id: CharField[100]
+    +delivery_method: CharField[10]
+    +is_deleted: BooleanField
+    +receipt_number: CharField[10]
+    +payment_reference: CharField[100]
+    +created_at: DateTimeField
+    +generated_content: TextField
+    +tracking_number: CharField[100]
+    +lbc_type: CharField[10]
+    +lbc_branch_name: CharField[255]
+    +tor_page_count: PositiveIntegerField
+    +tor_price_override: DecimalField[10,2]
+    +rush_processing: BooleanField
+    +processing_days: PositiveIntegerField
+    +get_price(): Decimal
+    +get_student_name(): str
+}
+
+class SystemCounter {
+    +name: CharField[50]
+    +last_value: IntegerField
+    +get_next_receipt_no(): str
+}
+
+class StudentBalance {
+    +student: OneToOneField(StudentMasterList)
+    +outstanding_amount: DecimalField[10,2]
+    +last_notified: DateTimeField
+    +clear_balance(): None
+}
+
+class Notification {
+    +SENDER_CHOICES: list
+    +user: ForeignKey(User)
+    +message: TextField
+    +sender_role: CharField[20]
+    +created_at: DateTimeField
+    +is_read: BooleanField
+}
+
+class CollectionLog {
+    +PAYMENT_METHOD_CHOICES: list
+    +receipt_number: CharField[20]
+    +student_name: CharField[255]
+    +student_id: CharField[20]
+    +amount_paid: DecimalField[10,2]
+    +documents_included: TextField
+    +collected_by: ForeignKey(User)
+    +created_at: DateTimeField
+    +payment_method: CharField[10]
+}
+
+class AuditLog {
+    +ACTION_CHOICES: list
+    +user: ForeignKey(User)
+    +action: CharField[10]
+    +resource_type: CharField[50]
+    +resource_id: CharField[50]
+    +details: TextField
+    +timestamp: DateTimeField
+}
+
+class Profile {
+    +user: OneToOneField(User)
+    +must_change_password: BooleanField
+    +printed_name: CharField[255]
+    +signature_data: TextField
+}
+
+class TORRequestHistory {
+    +student: ForeignKey(User)
+    +document_type: CharField[255]
+    +page_count: IntegerField
+    +price: DecimalField[10,2]
+    +is_free: BooleanField
+    +requested_at: DateTimeField
+    +completed_at: DateTimeField
+    +batch_id: CharField[50]
+}
+
+User "1" -- "1" Profile : has
+User "1" -- "0..*" OTPToken : owns
+User "1" -- "0..*" DocumentRequest : submits
+User "1" -- "0..*" Notification : receives
+User "1" -- "0..*" CollectionLog : collected_by
+User "1" -- "0..*" AuditLog : logged_by
+StudentMasterList "1" -- "0..1" StudentBalance : has
+StudentMasterList "1" -- "0..*" CollectionLog : has
+
+DocumentRequest "1" -- "1" DocumentType : for
+DocumentRequest "0..1" -- "1" TORRequestHistory : tracked_by
+DocumentRequest "1" -- "0..1" CollectionLog : paid_by
+
+@enduml

@@ -1,0 +1,1280 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .badge-blink { animation: status-blink 1.2s linear infinite; }
+    @keyframes status-blink { 50% { opacity: 0.1; } }
+    .doc-row:hover { background-color: #f8f9fa; }
+    .history-row:hover { transform: translateX(8px); background-color: #f0f7ff !important; transition: all 0.3s; }
+    .banner-text { color: #ffffff !important; } 
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+    
+    .stats-card {
+        border-radius: 16px;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        overflow: hidden;
+    }
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.15) !important;
+    }
+    
+    /* LBC Booking Steps */
+    .lbc-step {
+        display: none;
+    }
+    .lbc-step.active {
+        display: block;
+    }
+    .lbc-step-indicator .step {
+        opacity: 0.3;
+    }
+    .lbc-step-indicator .step.active {
+        opacity: 1;
+    }
+    .lbc-step-indicator .step.completed {
+        opacity: 1;
+        color: #198754;
+    }
+    
+    /* LBC Tracking Timeline */
+    .tracking-timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+    .tracking-timeline::before {
+        content: '';
+        position: absolute;
+        left: 8px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #dee2e6;
+    }
+    .tracking-item {
+        position: relative;
+        padding-bottom: 20px;
+    }
+    .tracking-item::before {
+        content: '';
+        position: absolute;
+        left: -26px;
+        top: 5px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #0d6efd;
+        border: 2px solid #fff;
+        box-shadow: 0 0 0 2px #0d6efd;
+    }
+    .tracking-item:last-child::before {
+        background: #198754;
+        box-shadow: 0 0 0 2px #198754;
+    }
+</style>
+
+<div class="animate__animated animate__fadeIn">
+    <!-- BANNER -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg bg-primary overflow-hidden" style="border-radius: 20px; background: linear-gradient(135deg, #0d6efd, #003399);">
+                <div class="card-body p-4 position-relative">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h3 class="fw-bold mb-1 banner-text">Hello, {{ student.full_name }}!</h3>
+                            <p class="mb-0 small banner-text opacity-90"><i class="bi bi-stars me-1"></i> {{ random_greeting }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Shipment Tracking Panel -->
+    {% if active_shipment %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg" style="border-radius: 16px; background: linear-gradient(135deg, #198754, #0d6efd);">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h5 class="fw-bold text-white mb-1"><i class="bi bi-geo-alt-fill me-2"></i>Live Shipment Tracking</h5>
+                            <p class="text-white-50 mb-0">Your document is on its way!</p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <div class="bg-white bg-opacity-25 p-3 rounded mb-2 d-inline-block">
+                                <div class="small text-white-50">TRACKING NUMBER</div>
+                                <div class="fw-bold text-white fs-5">{{ active_shipment.tracking_number }}</div>
+                            </div>
+                            <br>
+                            <button type="button" class="btn btn-light btn-lg fw-bold" onclick="viewLiveTracking('{{ active_shipment.tracking_number }}')">
+                                <i class="bi bi-geo-alt-fill"></i> TRACK LIVE
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- Manual Tracking Search -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg" style="border-radius: 16px;">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h5 class="fw-bold text-dark mb-1"><i class="bi bi-geo-alt-fill me-2 text-success"></i>Track Your Shipment</h5>
+                            <p class="text-muted mb-0">Enter your LBC tracking number to see live status</p>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <input type="text" id="manualTrackingNumber" class="form-control form-control-lg" placeholder="Enter LBC Tracking Number" style="font-size: 1.1rem;">
+                                <button class="btn btn-success btn-lg fw-bold" type="button" onclick="manualTrack()">
+                                    <i class="bi bi-search"></i> TRACK
+                                </button>
+                            </div>
+                            <small class="text-muted mt-1 d-block">Your tracking number is saved automatically</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+    // Load saved tracking number from localStorage on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        var savedTracking = localStorage.getItem('manualTrackingNumber');
+        if (savedTracking) {
+            document.getElementById('manualTrackingNumber').value = savedTracking;
+        }
+    });
+
+    function manualTrack() {
+        var trackingNum = document.getElementById('manualTrackingNumber').value.trim();
+        if (trackingNum) {
+            // Save to localStorage so it persists
+            localStorage.setItem('manualTrackingNumber', trackingNum);
+            // Show modal explicitly first (prevent race condition)
+            var modalEl = document.getElementById('liveTrackingModal');
+            var modal = bootstrap.Modal.getOrCreateInstance(modalEl, {
+                backdrop: 'static',
+                keyboard: false
+            });
+            modal.show();
+            // Then fetch tracking
+            viewLiveTracking(trackingNum, false);
+        } else {
+            alert('Please enter a tracking number');
+        }
+    }
+    // Allow Enter key to trigger tracking
+    document.getElementById('manualTrackingNumber').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            e.stopPropagation();
+            manualTrack();
+        }
+    });
+    </script>
+    {% endif %}
+
+    <div class="row mb-4">
+        <!-- FORM COLUMN -->
+        <div class="col-md-5">
+            <div class="card shadow-lg border-0 mb-4 h-100">
+                <div class="card-header bg-dark text-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-file-earmark-plus-fill text-warning me-2"></i>Request Documents</h5>
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <form method="post" id="requestForm" class="d-flex flex-column flex-grow-1">
+                        {% csrf_token %}
+                        <p class="text-muted small mb-3">Welcome to the Online Document Request Portal</p>
+                        
+                        <div class="table-responsive custom-scrollbar flex-grow-1" style="max-height: 450px; overflow-y: auto; border: 1px solid #f1f1f1; border-radius: 12px;">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light sticky-top">
+                                    <tr><th class="ps-3">Document Type</th><th>Configuration</th></tr>
+                                </thead>
+                                <tbody>
+                                    {% for doc in grouped_docs %}
+                                    <tr id="row_{{ doc.id }}" class="doc-row {% if doc.is_blocked %}opacity-75{% endif %}">
+                                        <td class="ps-3 py-3">
+                                            <div class="fw-bold text-dark">{{ doc.name }}</div>
+                                            <div class="text-success fw-bold small">₱{{ doc.price }}</div>
+                                            {% if doc.tor_display_price %}
+                                            <div class="text-info fw-bold mt-1" style="font-size: 0.7rem;">
+                                                <i class="bi bi-info-circle-fill"></i> {{ doc.tor_display_price }}
+                                            </div>
+                                            {% endif %}
+                                            <div class="form-check mt-2">
+                                                <input class="form-check-input" type="checkbox" name="rush_{{ doc.id }}" id="rush_{{ doc.id }}" value="1">
+                                                <label class="form-check-label small text-warning fw-bold" for="rush_{{ doc.id }}">
+                                                    <i class="bi bi-lightning-fill"></i> Rush (1 Day) - 2x Price
+                                                </label>
+                                            </div>
+                                            {% if doc.is_blocked %}
+                                            <div class="text-danger fw-bold mt-1" style="font-size: 0.65rem;">
+                                                <i class="bi bi-exclamation-triangle-fill"></i> BLOCKED: SETTLE BALANCE FIRST
+                                            </div>
+                                            {% endif %}
+                                        </td>
+                                        <td class="pe-2">
+                                            <!-- FIX: Added disabled logic per row based on is_blocked -->
+                                            <select name="selection_{{ doc.id }}" 
+                                                    class="form-select form-select-sm mb-1 selection-box" 
+                                                    onchange="toggleDelivery(this, '{{ doc.id }}')"
+                                                    {% if doc.is_blocked %}disabled title="Locked due to balance"{% endif %}>
+                                                <option value="none">-- Select --</option>
+                                                <option value="doc">Document Only</option>
+                                                {% if doc.has_auth %}<option value="auth">Authentication Only</option><option value="both">Both Items</option>{% endif %}
+                                            </select>
+
+                                            <div id="delivery_wrapper_{{ doc.id }}" style="display: none;">
+                                                <select name="delivery_{{ doc.id }}" class="form-select form-select-sm mb-1" onchange="handleDeliveryChange(this, '{{ doc.id }}')">
+                                                    <option value="PICKUP">Office Pickup</option>
+                                                    <option value="LBC">LBC Delivery</option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="mt-3">
+                            <label class="form-label fw-bold small text-muted">PURPOSE</label>
+                            <textarea name="reason" class="form-control" rows="2" required placeholder="e.g. Job Application"></textarea>
+                        </div>
+
+                        <button type="submit" name="action" value="submit_request" class="btn btn-primary w-100 fw-bold mt-3 py-3 shadow" id="submitRequestBtn" onclick="showApprovalNotice(event)">
+                            <span id="submitBtnText">SUBMIT SELECTED REQUESTS</span>
+                            <span id="submitBtnSpinner" class="spinner-border spinner-border-sm d-none"></span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- HISTORY COLUMN -->
+        <div class="col-md-7">
+            <div class="card shadow-lg border-0 h-100">
+                <div class="card-header bg-dark text-white py-2">
+                    <h6 class="mb-0 fw-bold">My Request History</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive custom-scrollbar" style="max-height: 585px; overflow-y: auto;">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light small text-uppercase sticky-top">
+                                <tr>
+                                    <th style="width: 35%;">Requested Items</th>
+                                    <th style="width: 15%;">Status</th>
+                                    <th style="width: 12%;">Method</th>
+                                    <th style="width: 13%;">Processing</th>
+                                    <th style="width: 15%;" class="text-end pe-3">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% regroup requests by batch_id as batch_list %}
+                                {% for batch in batch_list %}
+                                    {% with first_item=batch.list.0 %}
+                                    <tr class="history-row">
+                                        <td class="ps-3 py-3">
+                                            <div class="small text-muted mb-1">{{ first_item.created_at|date:"M d, Y" }}</div>
+                                            <div class="fw-bold text-dark">
+                                                {% if batch.list|length > 1 %}
+                                                    <i class="bi bi-layers-half text-primary me-1"></i>
+                                                    {% for item in batch.list %}
+                                                        {% if "Authentication" not in item.document_type.name %}
+                                                            {{ item.document_type.name }} (+ Authentication)
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <i class="bi bi-file-earmark-text text-primary me-1"></i>
+                                                    {{ first_item.document_type.name }}
+                                                {% endif %}
+                                                {% if first_item.rush_processing %}
+                                                <span class="badge bg-warning text-dark ms-1" style="font-size: 0.6rem;">
+                                                    <i class="bi bi-lightning-fill"></i> RUSH
+                                                </span>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if first_item.status == 'PENDING' %}
+                                                <span class="badge rounded-pill bg-secondary badge-blink">PENDING APPROVAL</span>
+                                            {% elif first_item.status == 'PENDING_TOR_COUNT' %}
+                                                <span class="badge rounded-pill bg-warning text-dark badge-blink">COUNTING PAGES</span>
+                                            {% elif first_item.status == 'APPROVED' %}
+                                                <span class="badge rounded-pill bg-info badge-blink">APPROVED</span>
+                                            {% elif first_item.status == 'READY' %}
+                                                <span class="badge rounded-pill bg-success badge-blink">READY</span>
+                                            {% elif first_item.status == 'PAYMENT_REQUIRED' %}
+                                                <span class="badge rounded-pill bg-warning text-dark badge-blink">NEEDS PAYMENT</span>
+                                            {% elif first_item.status == 'PAID' %}
+                                                <span class="badge rounded-pill bg-success">PAID</span>
+                                            {% elif first_item.status == 'COMPLETED' %}
+                                                <span class="badge rounded-pill bg-success">CLAIMED</span>
+                                            {% elif first_item.status == 'REJECTED' %}
+                                                <span class="badge rounded-pill bg-danger">REJECTED</span>
+                                            {% elif first_item.status == 'PROCESSING' or first_item.status == 'PAID' %}
+                                                {% if first_item.rush_processing %}
+                                                    {% if first_item.processing_days > 1 %}
+                                                        <span class="badge rounded-pill bg-warning text-dark">PROCESSING ({{ first_item.processing_days }} DAYS - EXTENDED)</span>
+                                                        <div class="progress mt-1" style="height: 6px; font-size: 0.6rem;">
+                                                            <div class="progress-bar bg-warning" role="progressbar" style="width: 60%;"></div>
+                                                        </div>
+                                                    {% else %}
+                                                        <span class="badge rounded-pill bg-info text-dark">PROCESSING (1 DAY - RUSH)</span>
+                                                        <div class="progress mt-1" style="height: 6px;">
+                                                            <div class="progress-bar bg-info" role="progressbar" style="width: 50%;"></div>
+                                                        </div>
+                                                    {% endif %}
+                                                {% elif first_item.processing_days > 3 %}
+                                                    <span class="badge rounded-pill bg-warning text-dark">PROCESSING ({{ first_item.processing_days }} DAYS)</span>
+                                                    <div class="progress mt-1" style="height: 6px;">
+                                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 40%;"></div>
+                                                    </div>
+                                                {% elif first_item.processing_days %}
+                                                    <span class="badge rounded-pill bg-primary">PROCESSING ({{ first_item.processing_days }} DAYS)</span>
+                                                    <div class="progress mt-1" style="height: 6px;">
+                                                        <div class="progress-bar bg-primary" role="progressbar" style="width: 30%;"></div>
+                                                    </div>
+                                                {% else %}
+                                                    <span class="badge rounded-pill bg-primary">PROCESSING (3 DAYS)</span>
+                                                    <div class="progress mt-1" style="height: 6px;">
+                                                        <div class="progress-bar bg-primary" role="progressbar" style="width: 30%;"></div>
+                                                    </div>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="badge rounded-pill bg-secondary">{{ first_item.get_status_display }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if first_item.delivery_method == 'LBC' %}
+                                                <span class="small fw-bold text-info">LBC</span>
+                                            {% else %}
+                                                <span class="small fw-bold text-muted">PICKUP</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if first_item.processing_days %}
+                                                <span class="badge bg-secondary">{{ first_item.processing_days }} days</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">3 days</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end pe-3">
+                                            {% if first_item.status == 'APPROVED' or first_item.status == 'PAYMENT_REQUIRED' %}
+                                                <!-- DEBUG: batch_id = {{ batch.grouper }} -->
+                                                <a href="{% url 'pay_with_xendit' batch.grouper %}" class="btn btn-primary btn-sm fw-bold">PAY</a>
+                                            {% endif %}
+                                            <!-- View Summary Button - Available for all processed requests -->
+                                            {% if first_item.status == 'PROCESSING' or first_item.status == 'PAID' or first_item.status == 'READY' or first_item.status == 'COMPLETED' %}
+                                                <a href="{% url 'generate_receipt' first_item.id %}" target="_blank" class="btn btn-primary btn-sm fw-bold">
+                                                    <i class="bi bi-receipt"></i> SUMMARY
+                                                </a>
+                                            {% endif %}
+                                            
+                                            <!-- Track Button - Shows whenever tracking number exists -->
+                                            {% if first_item.tracking_number %}
+                                                <button type="button" class="btn btn-success btn-sm fw-bold" onclick="viewLiveTracking('{{ first_item.tracking_number }}')">
+                                                    <i class="bi bi-geo-alt-fill"></i> TRACK
+                                                </button>
+                                            {% endif %}
+                                            
+                                            {% if first_item.status == 'PROCESSING' or first_item.status == 'PAID' %}
+                                                {% if first_item.delivery_method == 'LBC' %}
+                                                <button type="button" class="btn btn-info btn-sm fw-bold" onclick="openLBCBookingModal()">
+                                                    <i class="bi bi-truck"></i> BOOK SHIPPING
+                                                </button>
+                                                {% endif %}
+                                            {% endif %}
+                                            {% if first_item.status == 'READY' and first_item.delivery_method == 'LBC' %}
+                                                <button type="button" class="btn btn-info btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#enterTrackingModal{{ batch.grouper }}">
+                                                    ENTER TRACKING #
+                                                </button>
+                                            {% endif %}
+                                            {% if first_item.status == 'PENDING' or first_item.status == 'APPROVED' or first_item.status == 'PAYMENT_REQUIRED' %}
+                                            <form method="POST" class="d-inline">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="batch_id" value="{{ batch.grouper }}">
+                                                <button type="submit" name="action" value="delete_request" class="btn btn-link text-danger p-0 ms-1" onclick="return confirm('Cancel?')"><i class="bi bi-trash3"></i></button>
+                                            </form>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endwith %}
+                                {% empty %}
+                                    <tr><td colspan="5" class="text-center py-4 text-muted">No requests found.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> 
+</div>
+
+<!-- Tracking Number Modal for Student LBC Delivery -->
+{% for batch in batch_list %}
+{% with first_item=batch.list.0 %}
+{% if first_item.status == 'READY' and first_item.delivery_method == 'LBC' %}
+<div class="modal fade" id="enterTrackingModal{{ batch.grouper }}" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 20px;">
+            <div class="modal-header bg-info text-white border-0">
+                <h6 class="modal-title fw-bold"><i class="bi bi-truck"></i> Enter LBC Tracking Number</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" id="closeTrackingBtn{{ batch.grouper }}"></button>
+            </div>
+            
+            <!-- Input Form -->
+            <div id="trackingInputForm{{ batch.grouper }}">
+                <form method="POST" action="" onsubmit="return false;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_tracking">
+                    <input type="hidden" name="batch_id" value="{{ batch.grouper }}">
+                    <div class="modal-body p-4">
+                        <p class="text-muted mb-3">Please book your shipping on LBC Express and enter the tracking number provided.</p>
+                        <div class="mb-3">
+                            <a href="https://lbconline.lbcexpress.com/booknow" target="_blank" class="btn btn-outline-primary w-100 mb-3">
+                                <i class="bi bi-box-seam"></i> Book on LBC Express
+                            </a>
+                        </div>
+                        
+                        <!-- Delivery Type Selection -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Delivery Type</label>
+                            <select name="lbc_delivery_type" id="lbcDeliveryType{{ batch.grouper }}" class="form-select form-select-lg" onchange="toggleLBCFields('{{ batch.grouper }}')">
+                                <option value="door_to_door">Door-to-Door Delivery</option>
+                                <option value="branch_pickup">LBC Branch Pickup</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Branch Pickup Details (hidden by default) -->
+                        <div id="branchFields{{ batch.grouper }}" style="display: none;">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Pickup Branch</label>
+                                <input type="text" name="lbc_branch_name" id="lbcBranch{{ batch.grouper }}" class="form-control" 
+                                       placeholder="e.g., LBC Legazpi City">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Consignee Name</label>
+                                <input type="text" name="lbc_consignee_name" id="lbcConsignee{{ batch.grouper }}" class="form-control" 
+                                       placeholder="Name of person picking up">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Tracking Number</label>
+                            <input type="text" name="student_tracking_number" id="trackingNum{{ batch.grouper }}" class="form-control form-control-lg" 
+                                   placeholder="Enter 12-digit LBC Tracking #" required minlength="12" maxlength="15" pattern="\d*">
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-info fw-bold" onclick="submitTrackingForm('{{ batch.grouper }}')">SUBMIT TRACKING #</button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Success Confirmation -->
+            <div id="trackingSuccess{{ batch.grouper }}" style="display: none;">
+                <div class="modal-body p-4 text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
+                    </div>
+                    <h5 class="fw-bold text-success mb-3">Tracking Number Saved!</h5>
+                    <div class="bg-primary bg-opacity-10 p-3 rounded mb-3">
+                        <p class="small text-muted mb-1">YOUR TRACKING NUMBER</p>
+                        <h4 class="fw-bold text-primary mb-0" id="savedTrackingNum{{ batch.grouper }}">--</h4>
+                    </div>
+                    <div class="bg-info bg-opacity-10 p-2 rounded mb-3">
+                        <p class="small text-muted mb-1">DELIVERY TYPE</p>
+                        <h6 class="fw-bold text-info mb-0" id="savedDeliveryType{{ batch.grouper }}">--</h6>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 justify-content-center">
+                    <button type="button" class="btn btn-success fw-bold" id="trackNowBtn{{ batch.grouper }}" data-bs-dismiss="modal">
+                        <i class="bi bi-geo-alt"></i> TRACK NOW
+                    </button>
+                    <button type="button" class="btn btn-primary fw-bold" data-bs-dismiss="modal">CLOSE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endwith %}
+{% endfor %}
+
+<script>
+function toggleLBCFields(batchId) {
+    var deliveryType = document.getElementById('lbcDeliveryType' + batchId).value;
+    var branchFields = document.getElementById('branchFields' + batchId);
+    if (deliveryType === 'branch_pickup') {
+        branchFields.style.display = 'block';
+    } else {
+        branchFields.style.display = 'none';
+    }
+}
+
+function submitTrackingForm(batchId) {
+    var trackingNum = document.getElementById('trackingNum' + batchId).value;
+    var deliveryType = document.getElementById('lbcDeliveryType' + batchId).value;
+    var modal = document.getElementById('enterTrackingModal' + batchId);
+    var form = modal.querySelector('form');
+    var formData = new FormData(form);
+    
+    fetch('', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(function(response) {
+        if (response.ok) {
+            // Show success message
+            document.getElementById('trackingInputForm' + batchId).style.display = 'none';
+            document.getElementById('trackingSuccess' + batchId).style.display = 'block';
+            document.getElementById('savedTrackingNum' + batchId).textContent = trackingNum;
+            
+            // Show delivery type
+            var deliveryType = document.getElementById('lbcDeliveryType' + batchId).value;
+            var deliveryText = deliveryType === 'branch_pickup' ? 'LBC Branch Pickup' : 'Door-to-Door Delivery';
+            document.getElementById('savedDeliveryType' + batchId).textContent = deliveryText;
+            
+            // Set up TRACK NOW button
+            var trackNowBtn = document.getElementById('trackNowBtn' + batchId);
+            if (trackNowBtn) {
+                trackNowBtn.onclick = function() {
+                    viewLiveTracking(trackingNum);
+                };
+            }
+            
+            // Hide the X close button to force using CLOSE button
+            document.getElementById('closeTrackingBtn' + batchId).style.display = 'none';
+        } else {
+            alert('Error saving tracking number. Please try again.');
+        }
+    })
+    .catch(function(error) {
+        alert('Error saving tracking number. Please try again.');
+    });
+}
+</script>
+
+<!-- LBC Delivery Notice Modal -->
+<div class="modal fade" id="lbcNoticeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-warning text-dark border-0">
+                <h6 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle-fill"></i> Important Notice</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <div class="mb-3">
+                    <i class="bi bi-truck" style="font-size: 3rem; color: #0d6efd;"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-3">LBC Delivery Selected</h5>
+                <p class="text-muted mb-0">
+                    All shipping fees and related charges are at the expense of the Student.
+                </p>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-primary w-100 fw-bold" data-bs-dismiss="modal">
+                    I Understand
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Request Submitted Approval Notice Modal -->
+<div class="modal fade" id="approvalNoticeModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-info text-white border-0">
+                <h6 class="modal-title fw-bold"><i class="bi bi-check-circle-fill"></i> Request Submitted</h6>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <div class="mb-3">
+                    <i class="bi bi-hourglass-split" style="font-size: 3rem; color: #0d6efd;"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-3">Thank You!</h5>
+                <p class="text-muted mb-0">
+                    Please wait for approval of your request.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- LBC Booking and Tracking Modal -->
+<div class="modal fade" id="lbcBookingModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" style="--bs-modal-width: 700px;">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white border-0">
+                <h6 class="modal-title fw-bold"><i class="bi bi-truck"></i> LBC Express Booking & Tracking</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <!-- Step Indicators -->
+                <div class="d-flex justify-content-between mb-4 lbc-step-indicator">
+                    <div class="text-center step active" id="step1-indicator">
+                        <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" style="width: 30px; height: 30px;">1</div>
+                        <div class="small mt-1">Sender</div>
+                    </div>
+                    <div class="text-center step" id="step2-indicator">
+                        <div class="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center" style="width: 30px; height: 30px;">2</div>
+                        <div class="small mt-1">Receiver</div>
+                    </div>
+                    <div class="text-center step" id="step3-indicator">
+                        <div class="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center" style="width: 30px; height: 30px;">3</div>
+                        <div class="small mt-1">Package</div>
+                    </div>
+                    <div class="text-center step" id="step4-indicator">
+                        <div class="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center" style="width: 30px; height: 30px;">4</div>
+                        <div class="small mt-1">Confirm</div>
+                    </div>
+                </div>
+                
+                <!-- Step 1: Sender Information -->
+                <div class="lbc-step active" id="lbc-step-1">
+                    <h6 class="fw-bold mb-3"><i class="bi bi-person-fill"></i> Sender Information</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold">First Name</label>
+                            <input type="text" class="form-control" id="lbc-sender-firstname" value="CATC" readonly>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold">Last Name</label>
+                            <input type="text" class="form-control" id="lbc-sender-lastname" value="Registrar Office" readonly>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold">Phone Number</label>
+                            <input type="text" class="form-control" id="lbc-sender-phone" value="(052) 742-0628" readonly>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold">Email</label>
+                            <input type="email" class="form-control" id="lbc-sender-email" value="registrar@catc.edu.ph" readonly>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label small fw-bold">Pickup Address</label>
+                            <input type="text" class="form-control" id="lbc-sender-address" value="Computer Arts Technological College, New Main Building, Binanuahan West, Legazpi City, Albay" readonly>
+                        </div>
+                    </div>
+                    <div class="text-end mt-3">
+                        <button type="button" class="btn btn-primary" onclick="lbcNextStep(2)">Next: Receiver <i class="bi bi-arrow-right"></i></button>
+                    </div>
+                </div>
+                
+                <!-- Step 2: Receiver Information -->
+                <div class="lbc-step" id="lbc-step-2">
+                    <h6 class="fw-bold mb-3"><i class="bi bi-person"></i> Receiver Information</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold">First Name *</label>
+                            <input type="text" class="form-control" id="lbc-receiver-firstname" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold">Last Name *</label>
+                            <input type="text" class="form-control" id="lbc-receiver-lastname" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold">Phone Number *</label>
+                            <input type="text" class="form-control" id="lbc-receiver-phone" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold">Email</label>
+                            <input type="email" class="form-control" id="lbc-receiver-email">
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label small fw-bold">Floor/Unit/Bldg *</label>
+                            <input type="text" class="form-control" id="lbc-receiver-floor" required>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label small fw-bold">Street Address *</label>
+                            <input type="text" class="form-control" id="lbc-receiver-street" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label small fw-bold">Barangay *</label>
+                            <input type="text" class="form-control" id="lbc-receiver-barangay" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label small fw-bold">City/Municipality *</label>
+                            <input type="text" class="form-control" id="lbc-receiver-city" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label small fw-bold">Province *</label>
+                            <input type="text" class="form-control" id="lbc-receiver-province" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold">Landmark</label>
+                            <input type="text" class="form-control" id="lbc-receiver-landmark">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold">Postal Code</label>
+                            <input type="text" class="form-control" id="lbc-receiver-zip">
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-3">
+                        <button type="button" class="btn btn-secondary" onclick="lbcNextStep(1)"><i class="bi bi-arrow-left"></i> Back</button>
+                        <button type="button" class="btn btn-primary" onclick="lbcNextStep(3)">Next: Package <i class="bi bi-arrow-right"></i></button>
+                    </div>
+                </div>
+                
+                <!-- Step 3: Package Information -->
+                <div class="lbc-step" id="lbc-step-3">
+                    <h6 class="fw-bold mb-3"><i class="bi bi-box-seam"></i> Package Information</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold">Content Description *</label>
+                            <input type="text" class="form-control" id="lbc-package-content" value="Documents" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold">Number of Packages</label>
+                            <input type="number" class="form-control" id="lbc-package-count" value="1" min="1">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold">Weight (kg)</label>
+                            <input type="number" class="form-control" id="lbc-package-weight" value="1" min="0.1" step="0.1">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold">Service Type</label>
+                            <select class="form-select" id="lbc-service-type">
+                                <option value="standard">Standard Delivery (3-5 days)</option>
+                                <option value="express">Express Delivery (1-2 days)</option>
+                                <option value="oversize">Oversize/Fragile</option>
+                            </select>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label small fw-bold">Special Instructions</label>
+                            <textarea class="form-control" id="lbc-package-instructions" rows="2" placeholder="Handle with care, etc."></textarea>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-3">
+                        <button type="button" class="btn btn-secondary" onclick="lbcNextStep(2)"><i class="bi bi-arrow-left"></i> Back</button>
+                        <button type="button" class="btn btn-primary" onclick="lbcNextStep(4)">Next: Confirm <i class="bi bi-arrow-right"></i></button>
+                    </div>
+                </div>
+                
+                <!-- Step 4: Confirmation -->
+                <div class="lbc-step" id="lbc-step-4">
+                    <h6 class="fw-bold mb-3"><i class="bi bi-check2-circle"></i> Confirm Your Booking</h6>
+                    <div class="bg-light p-3 rounded mb-3">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="small fw-bold text-muted mb-1">FROM:</p>
+                                <p class="mb-2" id="confirm-sender"></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="small fw-bold text-muted mb-1">TO:</p>
+                                <p class="mb-2" id="confirm-receiver"></p>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="small fw-bold text-muted mb-1">PACKAGE:</p>
+                                <p class="mb-0" id="confirm-package"></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="small fw-bold text-muted mb-1">ESTIMATED DELIVERY:</p>
+                                <p class="mb-0 text-success fw-bold" id="confirm-delivery"></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="alert alert-info small">
+                        <i class="bi bi-info-circle-fill"></i> By confirming, you agree to LBC's terms and conditions. Shipping fees will be charged to your account.
+                    </div>
+                    <div class="d-flex justify-content-between mt-3">
+                        <button type="button" class="btn btn-secondary" onclick="lbcNextStep(3)"><i class="bi bi-arrow-left"></i> Back</button>
+                        <button type="button" class="btn btn-success" onclick="lbcBookShipment()"><i class="bi bi-check-lg"></i> Confirm & Book</button>
+                    </div>
+                </div>
+                
+                <!-- Step 5: Tracking Result -->
+                <div class="lbc-step" id="lbc-step-5">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                        <h5 class="fw-bold mt-3">Booking Confirmed!</h5>
+                        <p class="text-muted">Your shipment has been booked. Tracking below.</p>
+                    </div>
+                    
+                    <!-- Tracking Number Display -->
+                    <div class="bg-primary bg-opacity-10 p-3 rounded text-center mb-4">
+                        <p class="small text-muted mb-1">TRACKING NUMBER</p>
+                        <h4 class="fw-bold text-primary mb-0" id="tracking-number-display">--</h4>
+                    </div>
+                    
+                    <!-- Live Tracking -->
+                    <div id="tracking-result">
+                        <h6 class="fw-bold mb-3"><i class="bi bi-geo-alt-fill"></i> Live Tracking</h6>
+                        <div class="mb-3">
+                            <span class="badge bg-success" id="tracking-status">PENDING</span>
+                            <span class="badge bg-info" id="tracking-estimate"></span>
+                        </div>
+                        <div class="tracking-timeline" id="tracking-timeline">
+                            <!-- Timeline will be populated by API -->
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <button type="button" class="btn btn-outline-primary" onclick="refreshTracking()"><i class="bi bi-arrow-clockwise"></i> Refresh Tracking</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Live Tracking View Modal -->
+<div class="modal fade" id="liveTrackingModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow" style="border-radius: 20px;">
+            <div class="modal-header bg-success text-white border-0">
+                <h5 class="modal-title fw-bold"><i class="bi bi-geo-alt-fill me-2"></i> Live Shipment Tracking</h5>
+            </div>
+            <div class="modal-body p-4">
+                <div class="bg-primary bg-opacity-10 p-4 rounded text-center mb-4">
+                    <p class="small text-muted mb-1">TRACKING NUMBER</p>
+                    <h3 class="fw-bold text-primary mb-0" id="modal-tracking-number">--</h3>
+                </div>
+                
+                <div class="mb-4">
+                    <span class="badge bg-success fs-6" id="modal-tracking-status">PENDING</span>
+                </div>
+                
+                <div class="tracking-timeline" id="modal-tracking-timeline" style="max-height: 300px; overflow-y: auto;">
+                    <!-- Timeline will be populated by API -->
+                </div>
+                
+                <div class="text-center mt-4">
+                    <button type="button" class="btn btn-outline-primary me-2" onclick="refreshModalTracking()"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+                    <button type="button" class="btn btn-success me-2" onclick="saveTrackingNotification()"><i class="bi bi-bell-fill"></i> Save to Notifications</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden form for LBC booking submission -->
+<form id="lbcBookingForm" method="post" style="display: none;">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="book_lbc">
+    <input type="hidden" name="lbc_tracking" id="lbc_tracking_input">
+    <input type="hidden" name="lbc_sender" id="lbc_sender_input">
+    <input type="hidden" name="lbc_receiver" id="lbc_receiver_input">
+    <input type="hidden" name="lbc_package" id="lbc_package_input">
+</form>
+
+<script>
+    function toggleDelivery(selectElement, docId) {
+        const wrapper = document.getElementById('delivery_wrapper_' + docId);
+        const row = document.getElementById('row_' + docId);
+        if (selectElement.value !== 'none') { wrapper.style.display = 'block'; row.classList.add('table-primary'); } 
+        else { wrapper.style.display = 'none'; row.classList.remove('table-primary'); }
+    }
+    
+    function handleDeliveryChange(selectElement, docId) {
+        // Show popup modal notice when LBC Delivery is selected
+        if (selectElement.value === 'LBC') {
+            var lbcModal = new bootstrap.Modal(document.getElementById('lbcNoticeModal'));
+            lbcModal.show();
+        }
+        // Also call toggleDelivery to show/hide the wrapper
+        toggleDelivery(selectElement, docId);
+    }
+    
+    function showApprovalNotice(event) {
+        // Let the form submit normally - the modal will show after submission via messages
+        return true;
+    }
+    
+    // LBC Booking Functions
+    let currentLBCStep = 1;
+    let currentTrackingNumber = '';
+    
+    function lbcNextStep(step) {
+        // Validate current step before moving
+        if (step > currentLBCStep && !validateLBCStep(currentLBCStep)) {
+            return;
+        }
+        
+        // Update step indicators
+        document.querySelectorAll('.lbc-step-indicator .step').forEach(function(el, index) {
+            el.classList.remove('active', 'completed');
+            if (index + 1 < step) {
+                el.classList.add('completed');
+            } else if (index + 1 === step) {
+                el.classList.add('active');
+            }
+        });
+        
+        // Hide all steps
+        document.querySelectorAll('.lbc-step').forEach(function(el) {
+            el.classList.remove('active');
+        });
+        
+        // Show target step
+        if (step <= 4) {
+            document.getElementById('lbc-step-' + step).classList.add('active');
+            currentLBCStep = step;
+            
+            // Update confirmation details when going to step 4
+            if (step === 4) {
+                updateLBCConfirmation();
+            }
+        }
+    }
+    
+    function validateLBCStep(step) {
+        if (step === 2) {
+            // Validate receiver fields
+            var required = ['lbc-receiver-firstname', 'lbc-receiver-lastname', 'lbc-receiver-phone', 
+                           'lbc-receiver-floor', 'lbc-receiver-street', 'lbc-receiver-barangay', 
+                           'lbc-receiver-city', 'lbc-receiver-province'];
+            for (var i = 0; i < required.length; i++) {
+                var field = document.getElementById(required[i]);
+                if (!field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    return false;
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            }
+        }
+        return true;
+    }
+    
+    function updateLBCConfirmation() {
+        var senderInfo = document.getElementById('lbc-sender-firstname').value + ' ' + 
+                        document.getElementById('lbc-sender-lastname').value + '<br>' +
+                        document.getElementById('lbc-sender-address').value;
+        
+        var receiverInfo = document.getElementById('lbc-receiver-firstname').value + ' ' + 
+                          document.getElementById('lbc-receiver-lastname').value + '<br>' +
+                          document.getElementById('lbc-receiver-floor').value + ', ' +
+                          document.getElementById('lbc-receiver-street').value + '<br>' +
+                          document.getElementById('lbc-receiver-barangay').value + ', ' +
+                          document.getElementById('lbc-receiver-city').value + ', ' +
+                          document.getElementById('lbc-receiver-province').value;
+        
+        var serviceType = document.getElementById('lbc-service-type');
+        var serviceName = serviceType.options[serviceType.selectedIndex].text;
+        
+        var packageInfo = document.getElementById('lbc-package-content').value + ' (' + 
+                         document.getElementById('lbc-package-count').value + ' item(s), ' +
+                         document.getElementById('lbc-package-weight').value + ' kg)<br>' +
+                         'Service: ' + serviceName;
+        
+        // Calculate estimated delivery
+        var today = new Date();
+        var deliveryDays = serviceType.value === 'express' ? 2 : 5;
+        var deliveryDate = new Date(today.getTime() + (deliveryDays * 24 * 60 * 60 * 1000));
+        var deliveryEstimate = deliveryDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+        
+        document.getElementById('confirm-sender').innerHTML = senderInfo;
+        document.getElementById('confirm-receiver').innerHTML = receiverInfo;
+        document.getElementById('confirm-package').innerHTML = packageInfo;
+        document.getElementById('confirm-delivery').textContent = deliveryEstimate;
+    }
+    
+    function lbcBookShipment() {
+        // Generate a tracking number (simulated for now)
+        var trackingNum = 'LBC' + Date.now().toString().slice(-10);
+        currentTrackingNumber = trackingNum;
+        
+        // Update tracking display
+        document.getElementById('tracking-number-display').textContent = trackingNum;
+        document.getElementById('lbc_tracking_input').value = trackingNum;
+        
+        // Store the booking info
+        var bookingData = {
+            tracking: trackingNum,
+            sender: {
+                name: document.getElementById('lbc-sender-firstname').value + ' ' + document.getElementById('lbc-sender-lastname').value,
+                phone: document.getElementById('lbc-sender-phone').value,
+                address: document.getElementById('lbc-sender-address').value
+            },
+            receiver: {
+                firstname: document.getElementById('lbc-receiver-firstname').value,
+                lastname: document.getElementById('lbc-receiver-lastname').value,
+                phone: document.getElementById('lbc-receiver-phone').value,
+                address: document.getElementById('lbc-receiver-floor').value + ', ' + document.getElementById('lbc-receiver-street').value + ', ' + document.getElementById('lbc-receiver-barangay').value + ', ' + document.getElementById('lbc-receiver-city').value + ', ' + document.getElementById('lbc-receiver-province').value
+            },
+            package: {
+                content: document.getElementById('lbc-package-content').value,
+                count: document.getElementById('lbc-package-count').value,
+                weight: document.getElementById('lbc-package-weight').value,
+                service: document.getElementById('lbc-service-type').value
+            }
+        };
+        
+        document.getElementById('lbc_receiver_input').value = JSON.stringify(bookingData.receiver);
+        document.getElementById('lbc_package_input').value = JSON.stringify(bookingData.package);
+        
+        // Move to tracking view
+        document.querySelectorAll('.lbc-step-indicator .step').forEach(function(el, index) {
+            el.classList.remove('active');
+            el.classList.add('completed');
+        });
+        
+        document.querySelectorAll('.lbc-step').forEach(function(el) {
+            el.classList.remove('active');
+        });
+        document.getElementById('lbc-step-5').classList.add('active');
+        
+        // Initialize tracking timeline with sample data
+        initializeTrackingTimeline(trackingNum);
+        
+        // Submit booking to backend
+        document.getElementById('lbcBookingForm').submit();
+    }
+    
+    function initializeTrackingTimeline(trackingNum) {
+        // Show loading state
+        document.getElementById('tracking-status').textContent = 'PROCESSING';
+        document.getElementById('tracking-status').className = 'badge bg-warning';
+        
+        // Sample timeline data (in production, this would come from the API)
+        var timelineData = [
+            { datetime: new Date().toLocaleString(), location: 'Legazpi City, Albay', status: 'Shipment booked and pending pickup' },
+            { datetime: '', location: 'Legazpi City, Albay', status: 'Picked up by LBC Rider' },
+            { datetime: '', location: 'Legazpi City Hub', status: 'Arrived at LBC Legazpi Hub' },
+            { datetime: '', location: 'Legazpi City Hub', status: 'In transit to destination' },
+            { datetime: '', location: 'Destination City', status: 'Out for delivery' },
+            { datetime: '', location: 'Destination', status: 'Delivered' }
+        ];
+        
+        // Populate timeline
+        var timelineHTML = '';
+        timelineData.forEach(function(item, index) {
+            timelineHTML += '<div class="tracking-item">' +
+                '<div class="small text-muted">' + (item.datetime || 'Pending...') + '</div>' +
+                '<div class="fw-bold text-' + (index === timelineData.length - 1 ? 'success' : 'dark') + '">' + item.status + '</div>' +
+                '<div class="small text-info"><i class="bi bi-geo-alt"></i> ' + item.location + '</div>' +
+            '</div>';
+        });
+        
+        document.getElementById('tracking-timeline').innerHTML = timelineHTML;
+    }
+    
+    function refreshTracking() {
+        // Call the Django LBC API to get real-time tracking
+        if (currentTrackingNumber) {
+            var apiUrl = '/api/track/' + currentTrackingNumber + '/';
+            
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateTrackingDisplay(data.data);
+                    } else if (data.data) {
+                        // Django returns data in data field
+                        updateTrackingDisplay(data.data);
+                    } else {
+                        // Keep showing simulated data if API fails
+                        console.log('Using simulated tracking data');
+                    }
+                })
+                .catch(error => {
+                    console.log('Tracking API not available, showing simulated data');
+                });
+        }
+    }
+    
+    function updateTrackingDisplay(data) {
+        if (data.status) {
+            var statusBadge = document.getElementById('tracking-status');
+            if (data.status.toLowerCase().includes('delivered')) {
+                statusBadge.textContent = 'DELIVERED';
+                statusBadge.className = 'badge bg-success';
+            } else if (data.status.toLowerCase().includes('transit') || data.status.toLowerCase().includes('shipment')) {
+                statusBadge.textContent = 'IN TRANSIT';
+                statusBadge.className = 'badge bg-primary';
+            } else {
+                statusBadge.textContent = data.status;
+                statusBadge.className = 'badge bg-info';
+            }
+        }
+        
+        if (data.timeline && data.timeline.length > 0) {
+            var timelineHTML = '';
+            data.timeline.forEach(function(item, index) {
+                timelineHTML += '<div class="tracking-item">' +
+                    '<div class="small text-muted">' + (item.dateTime || 'Pending...') + '</div>' +
+                    '<div class="fw-bold text-' + (index === 0 ? 'success' : 'dark') + '">' + (item.status || 'Update') + '</div>' +
+                    '<div class="small text-info"><i class="bi bi-geo-alt"></i> ' + (item.location || 'Unknown') + '</div>' +
+                '</div>';
+            });
+            document.getElementById('tracking-timeline').innerHTML = timelineHTML;
+        }
+    }
+    
+    // Helper function to get CSRF token
+    function getCsrfToken() {
+        // Try to get from cookie
+        var name = 'csrftoken';
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // View Live Tracking from request history
+    function viewLiveTracking(trackingNumber, saveNotification) {
+        // Update modal with tracking number
+        document.getElementById('modal-tracking-number').textContent = trackingNumber;
+        document.getElementById('modal-tracking-status').textContent = 'LOADING...';
+        document.getElementById('modal-tracking-status').className = 'badge bg-warning';
+        document.getElementById('modal-tracking-timeline').innerHTML = '<div class="text-center py-3"><div class="spinner-border text-primary"></div></div>';
+        
+        // Show modal FIRST, then fetch data (prevent race condition)
+        var modalEl = document.getElementById('liveTrackingModal');
+        var modal = bootstrap.Modal.getOrCreateInstance(modalEl, {
+            backdrop: 'static',
+            keyboard: false
+        });
+        modal.show();
+        
+        // Determine API endpoint
+        var apiEndpoint = saveNotification ? '/api/track/notify/' : '/api/track/';
+        var apiUrl = apiEndpoint + encodeURIComponent(trackingNumber) + '/';
+        
+        var fetchOptions = {
+            method: 'POST',  // Always use POST for consistency
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            }
+        };
+        
+        // Use fetch with proper error handling
+        fetch(apiUrl, fetchOptions)
+            .then(function(response) {
+                if (!response.ok) {
+                    throw new Error('HTTP error! status: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(function(data) {
+                var trackingData = data.success ? data.data : data;
+                
+                // Update status
+                var statusBadge = document.getElementById('modal-tracking-status');
+                if (trackingData && trackingData.status) {
+                    var statusLower = trackingData.status.toLowerCase();
+                    if (statusLower.includes('delivered')) {
+                        statusBadge.textContent = 'DELIVERED';
+                        statusBadge.className = 'badge bg-success';
+                    } else if (statusLower.includes('transit') || statusLower.includes('shipment')) {
+                        statusBadge.textContent = 'IN TRANSIT';
+                        statusBadge.className = 'badge bg-primary';
+                    } else {
+                        statusBadge.textContent = trackingData.status;
+                        statusBadge.className = 'badge bg-info';
+                    }
+                } else {
+                    statusBadge.textContent = 'UNKNOWN';
+                    statusBadge.className = 'badge bg-secondary';
+                }
+                
+                // Update timeline
+                var timelineEl = document.getElementById('modal-tracking-timeline');
+                if (trackingData && trackingData.timeline && trackingData.timeline.length > 0) {
+                    var timelineHTML = '';
+                    trackingData.timeline.forEach(function(item, index) {
+                        timelineHTML += '<div class="tracking-item">' +
+                            '<div class="small text-muted">' + (item.dateTime || 'Pending...') + '</div>' +
+                            '<div class="fw-bold text-' + (index === 0 ? 'success' : 'dark') + '">' + (item.status || 'Update') + '</div>' +
+                            '<div class="small text-info"><i class="bi bi-geo-alt"></i> ' + (item.location || 'Unknown') + '</div>' +
+                        '</div>';
+                    });
+                    timelineEl.innerHTML = timelineHTML;
+                } else {
+                    timelineEl.innerHTML = '<div class="text-center text-muted py-3">No tracking updates available yet.</div>';
+                }
+                
+                // Show notification saved message if applicable
+                if (saveNotification && data.notification_saved) {
+                    console.log('Notification saved successfully');
+                }
+            })
+            .catch(function(error) {
+                console.error('Tracking API error:', error);
+                document.getElementById('modal-tracking-status').textContent = 'ERROR';
+                document.getElementById('modal-tracking-status').className = 'badge bg-danger';
+                document.getElementById('modal-tracking-timeline').innerHTML = 
+                    '<div class="text-center text-danger py-3">' +
+                    '<i class="bi bi-exclamation-triangle fs-4"></i>' +
+                    '<p class="mt-2">Unable to fetch tracking information.</p>' +
+                    '<p class="text-muted small">Please check your connection and try again.</p>' +
+                    '</div>';
+            });
+    }
+    
+    // Refresh tracking in modal
+    function refreshModalTracking() {
+        var trackingNumber = document.getElementById('modal-tracking-number').textContent;
+        if (trackingNumber && trackingNumber !== '--') {
+            viewLiveTracking(trackingNumber);
+        }
+    }
+    
+    // Save tracking to notifications (uses combined endpoint)
+    function saveTrackingNotification() {
+        var trackingNumber = document.getElementById('modal-tracking-number').textContent;
+        if (trackingNumber && trackingNumber !== '--') {
+            // Call the combined track+notify endpoint
+            var csrfToken = getCsrfToken();
+            
+            fetch('/api/track/notify/' + encodeURIComponent(trackingNumber) + '/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                }
+            })
+            .then(function(response) {
+                if (!response.ok) {
+                    throw new Error('HTTP error! status: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success) {
+                    alert('✓ Tracking information saved to notifications!');
+                } else {
+                    alert('Error: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(function(error) {
+                console.error('Error saving notification:', error);
+                alert('Error saving notification. Please try again.');
+            });
+        }
+    }
+    
+    function openLBCBookingModal() {
+        currentLBCStep = 1;
+        lbcNextStep(1);
+        var modal = new bootstrap.Modal(document.getElementById('lbcBookingModal'));
+        modal.show();
+    }
+</script>
+{% endblock %}
