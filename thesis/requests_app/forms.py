@@ -19,7 +19,7 @@ class StudentIDLoginForm(forms.Form):
     otp_method = forms.ChoiceField(
         choices=OTP_METHOD_CHOICES,
         widget=forms.Select(attrs={'class': 'form-select form-select-lg'}),
-        initial='email',
+        initial='iprog',
     )
 
 class OTPVerifyForm(forms.Form):

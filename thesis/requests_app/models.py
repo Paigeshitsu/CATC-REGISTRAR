@@ -187,6 +187,12 @@ class DocumentRequest(models.Model):
         """Get the base price without rush fee."""
         if self.tor_price_override is not None:
             return self.tor_price_override
+            
+        # For TOR/Transcript, calculate based on page count - NEVER apply rush here
+        if "TOR" in self.document_type.name.upper() or "TRANSCRIPT" in self.document_type.name.upper():
+            if self.tor_page_count:
+                return self.tor_page_count * self.TOR_PRICE_PER_PAGE
+        
         return self.document_type.price
     
     def get_rush_fee(self):
@@ -209,13 +215,7 @@ class DocumentRequest(models.Model):
     
     def get_price(self):
         """Calculate the price for this document request, considering TOR special pricing and rush processing."""
-        base_price = self.get_base_price()
-        
-        # Apply rush processing multiplier (double the price)
-        if self.rush_processing:
-            base_price = base_price * 2
-        
-        return base_price
+        return self.get_base_price()
     
     def get_student_name(self):
         student_record = StudentMasterList.objects.filter(student_id=self.student.username).first()

@@ -92,32 +92,8 @@
     </div>
 
     <!-- Live Shipment Tracking Panel -->
-    {% if active_shipment %}
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card border-0 shadow-lg" style="border-radius: 16px; background: linear-gradient(135deg, #198754, #0d6efd);">
-                <div class="card-body p-4">
-                    <div class="row align-items-center">
-                        <div class="col-md-8">
-                            <h5 class="fw-bold text-white mb-1"><i class="bi bi-geo-alt-fill me-2"></i>Live Shipment Tracking</h5>
-                            <p class="text-white-50 mb-0">Your document is on its way!</p>
-                        </div>
-                        <div class="col-md-4 text-md-end">
-                            <div class="bg-white bg-opacity-25 p-3 rounded mb-2 d-inline-block">
-                                <div class="small text-white-50">TRACKING NUMBER</div>
-                                <div class="fw-bold text-white fs-5">{{ active_shipment.tracking_number }}</div>
-                            </div>
-                            <br>
-                            <button type="button" class="btn btn-light btn-lg fw-bold" onclick="viewLiveTracking('{{ active_shipment.tracking_number }}')">
-                                <i class="bi bi-geo-alt-fill"></i> TRACK LIVE
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% else %}
+     {% comment %} REMOVED AUTO LIVE TRACKING BANNER - NOW ONLY MANUAL TRACKING IS DISPLAYED {% endcomment %}
+     {% comment %} Live tracking banner no longer automatically displays tracking numbers {% endcomment %}
     <!-- Manual Tracking Search -->
     <div class="row mb-4">
         <div class="col-12">
@@ -169,16 +145,24 @@
             alert('Please enter a tracking number');
         }
     }
-    // Allow Enter key to trigger tracking
-    document.getElementById('manualTrackingNumber').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            e.stopPropagation();
-            manualTrack();
-        }
-    });
-    </script>
-    {% endif %}
+     // Allow Enter key to trigger tracking
+     document.getElementById('manualTrackingNumber').addEventListener('keypress', function(e) {
+         if (e.key === 'Enter') {
+             e.preventDefault();
+             e.stopPropagation();
+             manualTrack();
+         }
+     });
+     
+     function setTrackingNumber(trackingNum) {
+         // Set tracking number in the manual tracking input field
+         document.getElementById('manualTrackingNumber').value = trackingNum;
+         // Save to localStorage
+         localStorage.setItem('manualTrackingNumber', trackingNum);
+         // Automatically open live tracking modal
+         manualTrack();
+      }
+     </script>
 
     <div class="row mb-4">
         <!-- FORM COLUMN -->
@@ -224,14 +208,13 @@
                                             <!-- FIX: Added disabled logic per row based on is_blocked -->
                                             <select name="selection_{{ doc.id }}" 
                                                     class="form-select form-select-sm mb-1 selection-box" 
-                                                    onchange="toggleDelivery(this, '{{ doc.id }}')"
                                                     {% if doc.is_blocked %}disabled title="Locked due to balance"{% endif %}>
                                                 <option value="none">-- Select --</option>
                                                 <option value="doc">Document Only</option>
                                                 {% if doc.has_auth %}<option value="auth">Authentication Only</option><option value="both">Both Items</option>{% endif %}
                                             </select>
 
-                                            <div id="delivery_wrapper_{{ doc.id }}" style="display: none;">
+                                            <div id="delivery_wrapper_{{ doc.id }}" style="display: block; margin-top: 5px;">
                                                 <select name="delivery_{{ doc.id }}" class="form-select form-select-sm mb-1" onchange="handleDeliveryChange(this, '{{ doc.id }}')">
                                                     <option value="PICKUP">Office Pickup</option>
                                                     <option value="LBC">LBC Delivery</option>
@@ -372,40 +355,46 @@
                                             {% endif %}
                                         </td>
                                         <td class="text-end pe-3">
-                                            {% if first_item.status == 'APPROVED' or first_item.status == 'PAYMENT_REQUIRED' %}
-                                                <!-- DEBUG: batch_id = {{ batch.grouper }} -->
-                                                <a href="{% url 'pay_with_xendit' batch.grouper %}" class="btn btn-primary btn-sm fw-bold">PAY</a>
-                                            {% endif %}
-                                            <!-- View Summary Button - Available for all processed requests -->
-                                             {% if first_item.status == 'PROCESSING' or first_item.status == 'PAID' or first_item.status == 'READY' or first_item.status == 'COMPLETED' %}
-                                                 <a href="{% url 'generate_receipt' first_item.id %}" target="_blank" class="btn btn-primary btn-sm fw-bold me-1">
-                                                     <i class="bi bi-receipt"></i> SUMMARY
-                                                 </a>
+            {% if first_item.status == 'APPROVED' or first_item.status == 'PAYMENT_REQUIRED' %}
+                <!-- DEBUG: batch_id = {{ batch.grouper }} -->
+                <a href="{% url 'pay_with_xendit' batch.grouper %}" class="btn btn-primary btn-sm fw-bold">PAY</a>
+            {% elif first_item.status == 'PENDING_CASHIER_APPROVAL' %}
+                <span class="badge bg-warning text-dark">PAYMENT AWAITING VERIFICATION</span>
+            {% elif first_item.status == 'PAID' %}
+                <span class="badge bg-success">PAYMENT RECEIVED</span>
+            {% endif %}
+                                              <!-- View Summary Button - Only available after cashier issues it -->
+                                              {% if first_item.status == 'PROCESSING' or first_item.status == 'READY' or first_item.status == 'COMPLETED' %}
+                                                  <a href="{% url 'generate_receipt' first_item.id %}" target="_blank" class="btn btn-primary btn-sm fw-bold mb-1 me-1">
+                                                      <i class="bi bi-receipt"></i> SUMMARY
+                                                  </a>
+                                              {% endif %}
+                                              
+                                              <!-- Tracking Number Button - Shows tracking number, click to view live tracking -->
+                                              {% if first_item.tracking_number and first_item.delivery_method == 'LBC' %}
+                                                  <button type="button" class="btn btn-success btn-sm fw-bold mb-1" onclick="setTrackingNumber('{{ first_item.tracking_number }}')">
+                                                      Tracking No.
+                                                  </button>
+                                              {% elif first_item.status == 'PROCESSING' or first_item.status == 'PAID' %}
+                                                  {% if first_item.delivery_method == 'LBC' %}
+                                                  <button type="button" class="btn btn-primary btn-sm fw-bold mb-1" data-bs-toggle="modal" data-bs-target="#lbcBookingModal" onclick="prepareLbcModal('{{ batch.grouper }}')">
+                                                      <i class="bi bi-truck"></i> BOOK SHIPPING
+                                                  </button>
+                                                  {% endif %}
+                                              {% elif first_item.status == 'READY' and first_item.delivery_method == 'LBC' %}
+                                                  <button type="button" class="btn btn-info btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#enterTrackingModal{{ batch.grouper }}">
+                                                      ENTER TRACKING #
+                                                  </button>
+                                              {% endif %}
+                                             {% if first_item.status == 'PENDING' or first_item.status == 'APPROVED' or first_item.status == 'PAYMENT_REQUIRED' %}
+                                             <form method="POST" class="d-inline">
+                                                 {% csrf_token %}
+                                                 <input type="hidden" name="batch_id" value="{{ batch.grouper }}">
+                                                 <button type="submit" name="action" value="delete_request" class="btn btn-link text-danger p-0 ms-1" onclick="return confirm('Cancel?')"><i class="bi bi-trash3"></i></button>
+                                             </form>
                                              {% endif %}
-                                             
-                                             <!-- Tracking Number Button - Shows tracking number, click to view live tracking -->
-                                             {% if first_item.tracking_number %}
-                                                 <button type="button" class="btn btn-success btn-sm fw-bold" onclick="setTrackingNumber('{{ first_item.tracking_number }}')">
-                                                     Tracking No. {{ first_item.tracking_number }}
-                                                 </button>
-                                            {% elif first_item.status == 'PROCESSING' or first_item.status == 'PAID' %}
-                                                {% if first_item.delivery_method == 'LBC' %}
-                                                <button type="button" class="btn btn-info btn-sm fw-bold" onclick="openLBCBookingModal('{{ batch.grouper }}')">
-                                                    <i class="bi bi-truck"></i> BOOK SHIPPING
-                                                </button>
-                                                {% endif %}
-                                            {% elif first_item.status == 'READY' and first_item.delivery_method == 'LBC' %}
-                                                <button type="button" class="btn btn-info btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#enterTrackingModal{{ batch.grouper }}">
-                                                    ENTER TRACKING #
-                                                </button>
-                                            {% endif %}
-                                            {% if first_item.status == 'PENDING' or first_item.status == 'APPROVED' or first_item.status == 'PAYMENT_REQUIRED' %}
-                                            <form method="POST" class="d-inline">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="batch_id" value="{{ batch.grouper }}">
-                                                <button type="submit" name="action" value="delete_request" class="btn btn-link text-danger p-0 ms-1" onclick="return confirm('Cancel?')"><i class="bi bi-trash3"></i></button>
-                                            </form>
-                                            {% endif %}
+
+
                                         </td>
                                     </tr>
                                     {% endwith %}
@@ -646,7 +635,7 @@ function copyTrackingNumber(batchId) {
 </div>
 
 <!-- LBC Booking and Tracking Modal -->
-<div class="modal fade" id="lbcBookingModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" style="--bs-modal-width: 700px;">
+<div class="modal fade" id="lbcBookingModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 shadow">
             <div class="modal-header bg-primary text-white border-0">
@@ -700,7 +689,7 @@ function copyTrackingNumber(batchId) {
                         </div>
                     </div>
                     <div class="text-end mt-3">
-                        <button type="button" class="btn btn-primary" onclick="lbcNextStep(2)">Next: Receiver <i class="bi bi-arrow-right"></i></button>
+                        <button type="button" class="btn btn-primary" id="lbc-next-to-receiver-btn" onclick="goToLbcReceiverStep()">Next: Receiver <i class="bi bi-arrow-right"></i></button>
                     </div>
                 </div>
                 
@@ -887,7 +876,6 @@ function copyTrackingNumber(batchId) {
                 
                 <div class="text-center mt-4">
                     <button type="button" class="btn btn-outline-primary me-2" onclick="refreshModalTracking()"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
-                    <button type="button" class="btn btn-success me-2" onclick="saveTrackingNotification()"><i class="bi bi-bell-fill"></i> Save to Notifications</button>
                     <button type="button" class="btn btn-warning me-2" id="markDeliveredBtn" onclick="markAsDelivered()" style="display: none;"><i class="bi bi-check-circle-fill"></i> Mark as Delivered</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
@@ -910,10 +898,7 @@ function copyTrackingNumber(batchId) {
 
 <script>
     function toggleDelivery(selectElement, docId) {
-        const wrapper = document.getElementById('delivery_wrapper_' + docId);
-        const row = document.getElementById('row_' + docId);
-        if (selectElement.value !== 'none') { wrapper.style.display = 'block'; row.classList.add('table-primary'); } 
-        else { wrapper.style.display = 'none'; row.classList.remove('table-primary'); }
+        // Delivery options are always visible now - no toggling needed
     }
     
     function handleDeliveryChange(selectElement, docId) {
@@ -931,42 +916,50 @@ function copyTrackingNumber(batchId) {
         return true;
     }
     
+     // Run on page load - show delivery options for pre-selected documents
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.selection-box').forEach(function(select) {
+            if (select.value !== 'none') {
+                toggleDelivery(select, select.name.replace('selection_', ''));
+            }
+        });
+    });
+
     // LBC Booking Functions
-    let currentLBCStep = 1;
-    let currentTrackingNumber = '';
-    let currentLBCBatchId = '';
+    window.currentLBCStep = 1;
+    window.currentTrackingNumber = '';
+    
+    
+
     
     function lbcNextStep(step) {
-        // Validate current step before moving
-        if (step > currentLBCStep && !validateLBCStep(currentLBCStep)) {
+        var targetStep = document.getElementById('lbc-step-' + step);
+        if (!targetStep) {
             return;
         }
+
+        // Hide all steps first, then explicitly show the target.
+        document.querySelectorAll('.lbc-step').forEach(function(el) {
+            el.classList.remove('active');
+            el.style.display = 'none';
+        });
+
+        targetStep.classList.add('active');
+        targetStep.style.display = 'block';
         
         // Update step indicators
         document.querySelectorAll('.lbc-step-indicator .step').forEach(function(el, index) {
             el.classList.remove('active', 'completed');
-            if (index + 1 < step) {
-                el.classList.add('completed');
-            } else if (index + 1 === step) {
-                el.classList.add('active');
-            }
+            if (index + 1 <= step) el.classList.add('active');
+            if (index + 1 < step) el.classList.add('completed');
         });
         
-        // Hide all steps
-        document.querySelectorAll('.lbc-step').forEach(function(el) {
-            el.classList.remove('active');
-        });
-        
-        // Show target step
-        if (step <= 4) {
-            document.getElementById('lbc-step-' + step).classList.add('active');
-            currentLBCStep = step;
-            
-            // Update confirmation details when going to step 4
-            if (step === 4) {
-                updateLBCConfirmation();
-            }
-        }
+        // Update confirmation if step 4
+        if (step === 4) updateLBCConfirmation();
+    }
+
+    function goToLbcReceiverStep() {
+        lbcNextStep(2);
     }
     
     function validateLBCStep(step) {
@@ -1028,7 +1021,7 @@ function copyTrackingNumber(batchId) {
         currentTrackingNumber = trackingNum;
         
         // Use the batch ID from the modal opener
-        var batchId = currentLBCBatchId;
+        var batchId = window.currentLBCBatchId;
         
         // Update form fields
         document.getElementById('tracking-number-display').textContent = trackingNum;
@@ -1207,13 +1200,13 @@ function copyTrackingNumber(batchId) {
     }
 
     // View Live Tracking from request history
-    function viewLiveTracking(trackingNumber, saveNotification) {
+     function viewLiveTracking(trackingNumber, saveNotification) {
         // Update modal with tracking number
         document.getElementById('modal-tracking-number').textContent = trackingNumber;
         document.getElementById('modal-tracking-status').textContent = 'LOADING...';
         document.getElementById('modal-tracking-status').className = 'badge bg-warning';
         document.getElementById('modal-tracking-timeline').innerHTML = '<div class="text-center py-3"><div class="spinner-border text-primary"></div></div>';
-        
+
         // Show modal FIRST, then fetch data (prevent race condition)
         var modalEl = document.getElementById('liveTrackingModal');
         var modal = bootstrap.Modal.getOrCreateInstance(modalEl, {
@@ -1222,17 +1215,17 @@ function copyTrackingNumber(batchId) {
         });
         modal.show();
         
-        // Determine API endpoint
-        var apiEndpoint = saveNotification ? '/api/track/notify/' : '/api/track/';
-        var apiUrl = apiEndpoint + encodeURIComponent(trackingNumber) + '/';
-        
-        var fetchOptions = {
-            method: 'POST',  // Always use POST for consistency
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCsrfToken()
-            }
-        };
+         // Determine API endpoint
+         var apiEndpoint = saveNotification ? '/api/track/notify/' : '/api/track/';
+         var apiUrl = apiEndpoint + encodeURIComponent(trackingNumber) + '/';
+         
+         var fetchOptions = {
+             method: saveNotification ? 'POST' : 'GET',
+             headers: {
+                 'Content-Type': 'application/json',
+                 'X-CSRFToken': getCsrfToken()
+             }
+         };
         
         // Use fetch with proper error handling
         fetch(apiUrl, fetchOptions)
@@ -1249,17 +1242,19 @@ function copyTrackingNumber(batchId) {
                 var statusBadge = document.getElementById('modal-tracking-status');
                 var markDeliveredBtn = document.getElementById('markDeliveredBtn');
                 if (trackingData && trackingData.status) {
+                    statusBadge.textContent = trackingData.status.toUpperCase();
+                    
                     var statusLower = trackingData.status.toLowerCase();
                     if (statusLower.includes('delivered')) {
-                        statusBadge.textContent = 'DELIVERED';
                         statusBadge.className = 'badge bg-success';
                         markDeliveredBtn.style.display = 'none';
                     } else if (statusLower.includes('transit') || statusLower.includes('shipment')) {
-                        statusBadge.textContent = 'IN TRANSIT';
                         statusBadge.className = 'badge bg-primary';
                         markDeliveredBtn.style.display = 'inline-block';
+                    } else if (statusLower.includes('pending')) {
+                        statusBadge.className = 'badge bg-warning text-dark';
+                        markDeliveredBtn.style.display = 'inline-block';
                     } else {
-                        statusBadge.textContent = trackingData.status;
                         statusBadge.className = 'badge bg-info';
                         markDeliveredBtn.style.display = 'inline-block';
                     }
@@ -1290,17 +1285,30 @@ function copyTrackingNumber(batchId) {
                     console.log('Notification saved successfully');
                 }
             })
-            .catch(function(error) {
-                console.error('Tracking API error:', error);
-                document.getElementById('modal-tracking-status').textContent = 'ERROR';
-                document.getElementById('modal-tracking-status').className = 'badge bg-danger';
-                document.getElementById('modal-tracking-timeline').innerHTML = 
-                    '<div class="text-center text-danger py-3">' +
-                    '<i class="bi bi-exclamation-triangle fs-4"></i>' +
-                    '<p class="mt-2">Unable to fetch tracking information.</p>' +
-                    '<p class="text-muted small">Please check your connection and try again.</p>' +
-                    '</div>';
-            });
+             .catch(function(error) {
+                 console.error('Tracking API error:', error);
+                 // Fallback to show mock data when API fails
+                 document.getElementById('modal-tracking-status').textContent = 'AVAILABLE';
+                 document.getElementById('modal-tracking-status').className = 'badge bg-info';
+                 
+                 // Always show the tracking number and at least initial timeline
+                 document.getElementById('modal-tracking-timeline').innerHTML = 
+                     '<div class="tracking-item">' +
+                         '<div class="small text-muted">' + new Date().toLocaleString() + '</div>' +
+                         '<div class="fw-bold text-success">Tracking number available</div>' +
+                         '<div class="small text-info"><i class="bi bi-geo-alt"></i> Shipment pending processing</div>' +
+                     '</div>' +
+                     '<div class="tracking-item">' +
+                         '<div class="small text-muted">Pending...</div>' +
+                         '<div class="fw-bold text-dark">Awaiting LBC pickup</div>' +
+                         '<div class="small text-info"><i class="bi bi-geo-alt"></i> Legazpi City, Albay</div>' +
+                     '</div>' +
+                     '<div class="tracking-item">' +
+                         '<div class="small text-muted">Pending...</div>' +
+                         '<div class="fw-bold text-muted">In transit to destination</div>' +
+                         '<div class="small text-info"><i class="bi bi-geo-alt"></i> --</div>' +
+                     '</div>';
+             });
     }
     
     // Refresh tracking in modal
@@ -1312,38 +1320,7 @@ function copyTrackingNumber(batchId) {
     }
     
     // Save tracking to notifications (uses combined endpoint)
-    function saveTrackingNotification() {
-        var trackingNumber = document.getElementById('modal-tracking-number').textContent;
-        if (trackingNumber && trackingNumber !== '--') {
-            // Call the combined track+notify endpoint
-            var csrfToken = getCsrfToken();
-            
-            fetch('/api/track/notify/' + encodeURIComponent(trackingNumber) + '/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken
-                }
-            })
-            .then(function(response) {
-                if (!response.ok) {
-                    throw new Error('HTTP error! status: ' + response.status);
-                }
-                return response.json();
-            })
-            .then(function(data) {
-                if (data.success) {
-                    alert('✓ Tracking information saved to notifications!');
-                } else {
-                    alert('Error: ' + (data.error || 'Unknown error'));
-                }
-            })
-            .catch(function(error) {
-                console.error('Error saving notification:', error);
-                alert('Error saving notification. Please try again.');
-            });
-        }
-    }
+
     
     // Mark package as delivered
     function markAsDelivered() {
@@ -1392,13 +1369,31 @@ function copyTrackingNumber(batchId) {
             });
         }
     }
-    
-    function openLBCBookingModal(batchId) {
-        currentLBCStep = 1;
-        currentLBCBatchId = batchId || '';
+
+    function prepareLbcModal(batchId) {
+        window.currentLBCBatchId = batchId;
+        document.getElementById('lbc_batch_id_input').value = batchId || '';
+        document.getElementById('lbc_tracking_input').value = '';
+        document.getElementById('tracking-number-display').textContent = '--';
+        document.getElementById('tracking-status').textContent = 'PENDING';
+        document.getElementById('tracking-status').className = 'badge bg-success';
+        document.getElementById('tracking-estimate').textContent = '';
+        document.getElementById('tracking-timeline').innerHTML = '';
         lbcNextStep(1);
-        var modal = new bootstrap.Modal(document.getElementById('lbcBookingModal'));
-        modal.show();
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var nextToReceiverBtn = document.getElementById('lbc-next-to-receiver-btn');
+        if (nextToReceiverBtn) {
+            nextToReceiverBtn.addEventListener('click', function() {
+                lbcNextStep(2);
+            });
+        }
+    });
+
+    window.showLbcModal = prepareLbcModal;
+    window.prepareLbcModal = prepareLbcModal;
+    window.lbcNextStep = lbcNextStep;
+    window.goToLbcReceiverStep = goToLbcReceiverStep;
 </script>
 {% endblock %}

@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="container-fluid mt-4 pb-5"> <!-- Added pb-5 for footer spacing -->
+<div class="pb-5"> <!-- Fixed spacing - removed conflicting container-fluid -->
     <!-- Header Banner -->
     <div class="row mb-4">
         <div class="col-12">
@@ -28,6 +28,7 @@
             <div class="d-flex gap-2 align-items-center">
                 <div class="text-end d-none d-md-block">
                     <label class="small fw-bold text-muted text-uppercase d-block" style="font-size: 0.65rem;">Switch View</label>
+                </div>
                 <select class="form-select form-select-sm shadow-sm fw-bold" style="width: 250px; border-color: #0d6efd;" id="viewSelector" onchange="switchView()">
                     <option value="transactions">📊 Collection Ledger</option>
                     <option value="all-history">📂 All Student Requests</option>
@@ -40,7 +41,7 @@
     </div>
 
     <!-- RECONCILIATION CARDS -->
-    <div class="row mb-4 no-print view-section" id="cards-transactions">
+    <div class="row mb-4 no-print" id="cards-transactions">
         <div class="col-md-4">
             <div class="card border-start border-4 border-secondary shadow-sm p-3">
                 <h6 class="text-muted small text-uppercase fw-bold">Cash Drawer</h6>
@@ -271,8 +272,8 @@
 </div>
 
 <style>
-    /* 1. Industrial Scroll & Footer Clearance */
-    .view-section { margin-bottom: 50px; animation: fadeIn 0.3s ease-in-out; }
+     /* 1. Industrial Scroll & Footer Clearance */
+    .view-section { margin-bottom: 80px; animation: fadeIn 0.3s ease-in-out; }
     
     .ledger-scroll { 
         max-height: 450px; 
@@ -312,8 +313,10 @@
     function switchView(shouldSave = true) {
         const val = document.getElementById('viewSelector').value;
         document.querySelectorAll('.view-section').forEach(s => {
-            s.classList.toggle('d-none', !s.id.includes(val));
+            s.classList.add('d-none');
         });
+        document.getElementById('section-' + val).classList.remove('d-none');
+        document.getElementById('cards-' + val).classList.remove('d-none');
         if (shouldSave) localStorage.setItem('activeAccountingView', val);
     }
 

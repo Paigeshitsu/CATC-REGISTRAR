@@ -66,39 +66,23 @@ def get_base_document_name(document_name):
 
 def build_summary_item(item):
     is_auth = is_authentication_document(item)
-    base_amount = item.get_base_price()
-    rush_fee = item.get_rush_fee()
     
-    doc_name = item.document_type.name
     if is_auth:
-        base_name = get_base_document_name(doc_name)
+        base_name = get_base_document_name(item.document_type.name)
         doc_display = f"Authentication - {base_name}"
+        base_amount = item.get_base_price()
+        total_amount = item.get_base_price()
     else:
-        doc_display = doc_name
-    
-    is_tor = "TOR" in doc_name.upper() or "TRANSCRIPT" in doc_name.upper()
-    
-    if is_tor and item.tor_page_count:
-        unit_label = f"{item.tor_page_count} pages x ₱{item.TOR_PRICE_PER_PAGE}/page = ₱{base_amount}"
-    elif is_tor:
-        unit_label = "₱100/page (TOR)"
-    else:
-        unit_label = f"₱{base_amount}"
+        doc_display = item.document_type.name
+        base_amount = item.get_base_price()
+        total_amount = base_amount * 2 if (item.rush_processing) else base_amount
     
     return {
         "name": doc_display,
-        "display_label": "Authentication Fee" if is_auth else "Document Fee",
-        "base_price": base_amount,
-        "unit_price": item.get_unit_price(),
-        "quantity": item.get_quantity() if not is_auth else 1,
         "base_amount": base_amount,
-        "rush_fee": rush_fee,
-        "total_amount": item.get_price(),
+        "total_amount": total_amount,
         "is_authentication": is_auth,
-        "is_tor": is_tor,
-        "is_rush": item.rush_processing,
-        "page_count": item.tor_page_count,
-        "unit_label": unit_label,
+        "is_rush": item.rush_processing and not is_auth,
     }
 
 
@@ -115,85 +99,14 @@ def get_authentication_summary_items(items):
 def get_payment_summary(items):
     display_items = []
     total_amount = 0
-    auth_item_map = {
-        get_base_document_name(item.document_type.name): item
-        for item in items
-        if is_authentication_document(item)
-    }
-    used_auth_keys = set()
 
-    doc_unit_prices = {
-        get_base_document_name(item.document_type.name): item.get_unit_price()
-        for item in items
-        if not is_authentication_document(item)
-    }
-
-    # First add all non-authentication items
+    # List ALL items exactly as they appear in the database
     for item in items:
-        if is_authentication_document(item):
-            continue
-
-        base_name = get_base_document_name(item.document_type.name)
-        
-        # Check if this document has an authentication item in the same batch
-        if base_name in auth_item_map:
-            auth_item = auth_item_map[base_name]
-            used_auth_keys.add(base_name)
-            
-            # Create a combined item for Document + Auth
-            doc_base_price = item.get_base_price()
-            auth_base_price = auth_item.get_base_price()  # Auth price without rush
-            
-            # Calculate totals - rush only applies to the document, not auth
-            total_item_price = item.get_price() + auth_base_price
-            
-            is_tor = "TOR" in item.document_type.name.upper() or "TRANSCRIPT" in item.document_type.name.upper()
-            
-            if is_tor and item.tor_page_count:
-                unit_label = f"{item.tor_page_count} pages x ₱{item.TOR_PRICE_PER_PAGE}/page"
-            else:
-                unit_label = f"₱{doc_base_price} + ₱{auth_base_price} (Auth)"
-            
-            summary_item = {
-                "name": f"{item.document_type.name} + Authentication",
-                "display_label": "Combined Document + Auth",
-                "document_price": doc_base_price,
-                "auth_price": auth_base_price,
-                "unit_price": 0,
-                "quantity": 1,
-                "base_amount": doc_base_price + auth_base_price,
-                "rush_fee": item.get_rush_fee() if item.rush_processing else 0,
-                "total_amount": total_item_price,
-                "is_authentication": False,
-                "is_combined": True,
-                "is_tor": is_tor,
-                "is_rush": item.rush_processing,
-                "page_count": item.tor_page_count,
-                "unit_label": unit_label,
-            }
-            display_items.append(summary_item)
-            total_amount += total_item_price
-        else:
-            # No authentication - create normal summary item
-            summary_item = build_summary_item(item)
-            display_items.append(summary_item)
-            total_amount += summary_item["total_amount"]
-
-    # Add remaining standalone authentication items (not paired with any document)
-    remaining_auth_items = [
-        item
-        for item in items
-        if is_authentication_document(item)
-        and get_base_document_name(item.document_type.name) not in used_auth_keys
-    ]
-
-    for auth_item in remaining_auth_items:
-        summary_item = build_summary_item(auth_item)
-        base_name = get_base_document_name(summary_item["name"])
-        if base_name in doc_unit_prices:
-            summary_item["unit_price"] = doc_unit_prices[base_name]
+        summary_item = build_summary_item(item)
         display_items.append(summary_item)
         total_amount += summary_item["total_amount"]
+
+
 
     return display_items, total_amount
 
@@ -219,14 +132,14 @@ def get_xendit_paid_amount(items):
     return None
 
 
-def send_otp_sms(phone_number, otp_code, provider="httpsms"):
+def send_otp_sms(phone_number, otp_code, provider="iprog"):
     """
     Send OTP via SMS. Supports multiple providers.
     
     Args:
         phone_number: Target phone number
         otp_code: The OTP code to send
-        provider: SMS provider - 'httpsms' (default) or 'iprog'
+        provider: SMS provider - 'iprog' (default) or 'httpsms'
     """
     message = f"Your CATC Portal OTP is: {otp_code}. Valid for 10 minutes."
     
@@ -238,10 +151,10 @@ def send_otp_sms(phone_number, otp_code, provider="httpsms"):
     else:
         clean_phone = "+" + clean_phone
 
-    if provider == "iprog":
-        return _send_iprog_sms(clean_phone, message)
-    else:
+    if provider == "httpsms":
         return _send_httpsms_sms(clean_phone, message)
+    else:
+        return _send_iprog_sms(clean_phone, message)
 
 
 def _send_httpsms_sms(clean_phone, message):
@@ -586,7 +499,7 @@ def student_dashboard(request):
         if is_tor and is_first_tor_request:
             tor_display_price = 0  # Free for first TOR request
         elif is_tor and not is_first_tor_request:
-            tor_display_price = "Pay per page (₱100/page)"
+            tor_display_price = "100php per page"
 
         grouped_docs.append(
             {
@@ -626,18 +539,27 @@ def student_dashboard(request):
                 # Check if this is an AJAX request
                 is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
                 
-                # Update tracking number for all documents in the batch
-                DocumentRequest.objects.filter(
-                    batch_id=batch_id, student=request.user
-                ).update(
-                    tracking_number=tracking_number,
-                    lbc_type="BRANCH"
-                    if lbc_delivery_type == "branch_pickup"
-                    else "RIDER",
-                    lbc_branch_name=lbc_branch_name if lbc_branch_name else None,
-                )
-                # Register tracking with LBC API
-                LBCTracker().register_lbc_tracking(tracking_number)
+                # Only update tracking number if this is an LBC delivery
+                batch_sample = DocumentRequest.objects.filter(batch_id=batch_id, student=request.user).first()
+                if batch_sample and batch_sample.delivery_method == "LBC":
+                    # Update tracking number for all documents in the batch
+                    DocumentRequest.objects.filter(
+                        batch_id=batch_id, student=request.user
+                    ).update(
+                        tracking_number=tracking_number,
+                        lbc_type="BRANCH"
+                        if lbc_delivery_type == "branch_pickup"
+                        else "RIDER",
+                        lbc_branch_name=lbc_branch_name if lbc_branch_name else None,
+                     )
+                    # Register tracking with TrackingMore API
+                    try:
+                        tracker = LBCTracker()
+                        result = tracker.register_lbc_tracking(tracking_number)
+                        if result.get("meta", {}).get("code", 200) >= 400:
+                            logger.warning(f"TrackingMore registration failed for {tracking_number}: {result}")
+                    except Exception as e:
+                        logger.error(f"TrackingMore registration error for {tracking_number}: {e}")
                 
                 if is_ajax:
                     return JsonResponse(
@@ -933,6 +855,7 @@ def registrar_dashboard(request):
         elif action == "mark_ready":
             t_no = request.POST.get("tracking_number_input", "").strip()
             processing_days = request.POST.get("processing_days")
+            batch_sample = batch.first()
             try:
                 processing_days = int(processing_days) if processing_days else None
             except ValueError:
@@ -954,8 +877,8 @@ def registrar_dashboard(request):
                     item.status = "READY"  # Student comes to claim
                 item.save()
 
-            # Register tracking with LBC API if tracking number provided
-            if t_no:
+            # Register tracking with TrackingMore only for LBC delivery requests
+            if t_no and batch_sample and batch_sample.delivery_method == "LBC":
                 try:
                     tracker = LBCTracker()
                     result = tracker.register_lbc_tracking(t_no)
@@ -1316,6 +1239,20 @@ def cashier_dashboard(request):
                 doc_req.batch_id,
                 "Payment confirmed by Cashier.",
             )
+            
+        elif action == "issue_receipt":
+            # Issue and finalize summary - make it visible to student
+            batch = DocumentRequest.objects.filter(batch_id=doc_req.batch_id)
+            batch.update(status="PROCESSING")
+            
+            log_audit(
+                request.user,
+                "UPDATE",
+                "DocumentRequest",
+                doc_req.batch_id,
+                "Receipt issued and finalized by Cashier.",
+            )
+            
             return redirect("cashier_dashboard")
     return render(
         request,
@@ -1350,9 +1287,7 @@ def xendit_webhook(request):
 
             _, total = get_payment_summary(items)
 
-            # Change status to your "Pending" value.
-            # Also, remove receipt_number if you want the cashier to assign it later.
-            items.update(status="PAID")
+            items.update(status="PENDING_CASHIER_APPROVAL")
             CollectionLog.objects.create(
                 receipt_number=new_no,
                 student_id=items.first().student.username,
@@ -1375,7 +1310,7 @@ def payment_success(request):
                 student=request.user, status__in=["APPROVED", "PAYMENT_REQUIRED"]
             )
             if pending_payments.exists():
-                pending_payments.update(status="PAID")
+                pending_payments.update(status="PENDING_CASHIER_APPROVAL")
                 messages.success(
                     request, "Payment Verified! Your documents are being processed."
                 )
@@ -1421,6 +1356,7 @@ def payment_success(request):
 
 
 @login_required
+@login_required
 def generate_receipt(request, req_id):
     doc_req = get_object_or_404(DocumentRequest, id=req_id)
     is_staff = request.user.groups.filter(
@@ -1428,11 +1364,8 @@ def generate_receipt(request, req_id):
     ).exists()
     if not (doc_req.student == request.user or is_staff or request.user.is_superuser):
         raise PermissionDenied()
-    batch = (
-        DocumentRequest.objects.filter(receipt_number=doc_req.receipt_number)
-        if doc_req.receipt_number
-        else DocumentRequest.objects.filter(id=req_id)
-    )
+    # ALWAYS load the FULL batch by batch_id, not just individual item
+    batch = DocumentRequest.objects.filter(batch_id=doc_req.batch_id)
     student = StudentMasterList.objects.filter(
         student_id=doc_req.student.username
     ).first()
@@ -1847,10 +1780,106 @@ def mark_as_delivered(request):
         f"Your document request has been marked as DELIVERED. Tracking: {tracking_number}"
     )
     
-    return JsonResponse({
-        "success": True,
-        "message": f"Package marked as delivered ({updated_count} request(s) updated)"
-    })
+    return JsonResponse({"success": True, "updated": updated_count})
+
+
+@csrf_exempt
+def trackingmore_webhook(request):
+    """
+    Webhook endpoint for TrackingMore to push delivery status updates.
+    When TrackingMore status changes, this automatically updates the request status.
+    """
+    if request.method != "POST":
+        return JsonResponse({"meta": {"code": 405, "message": "Method not allowed"}}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        logger.info(f"TrackingMore webhook received: {json.dumps(data)}")
+
+        # Extract tracking data
+        tracking_data = data.get("data", {})
+        tracking_number = tracking_data.get("tracking_number", "").strip()
+        delivery_status = tracking_data.get("delivery_status", "").lower()
+
+        if not tracking_number:
+            return JsonResponse({"meta": {"code": 400, "message": "Tracking number missing"}}, status=400)
+
+        logger.info(f"TrackingMore webhook: {tracking_number} status = {delivery_status}")
+
+        # Map TrackingMore statuses to request statuses
+        STATUS_MAP = {
+            "pending": "PROCESSING",
+            "pending001": "PROCESSING",
+            "pending002": "PROCESSING",
+            "transit": "PROCESSING",
+            "shipment collected": "PROCESSING",
+            "out for delivery": "READY",
+            "delivered": "COMPLETED",
+            "delivered001": "COMPLETED",
+            "delivered002": "COMPLETED",
+            "delivered003": "COMPLETED",
+            "delivered004": "COMPLETED",
+            "failed attempt": "PROCESSING",
+            "exception": "PROCESSING",
+            "expired": "PROCESSING",
+        }
+
+        # Get the mapped status
+        new_status = STATUS_MAP.get(delivery_status, "PROCESSING")
+        logger.info(f"Mapped status: {delivery_status} → {new_status}")
+
+        # Find all document requests with this tracking number (LBC delivery only)
+        doc_requests = DocumentRequest.objects.filter(
+            tracking_number=tracking_number,
+            delivery_method="LBC"
+        )
+
+        logger.info(f"Found {doc_requests.count()} requests for tracking number: {tracking_number}")
+
+        if doc_requests.exists():
+            updated_count = 0
+            for req in doc_requests:
+                # Only update if status actually changed
+                if req.status != new_status:
+                    req.status = new_status
+                    req.save()
+                    updated_count += 1
+
+                    logger.info(f"Updated request {req.id}: {tracking_number} status → {new_status}")
+
+                    # Send notification for status changes
+                    status_messages = {
+                        "READY": f"Your document is OUT FOR DELIVERY! Tracking: {tracking_number}",
+                        "COMPLETED": f"Your document has been DELIVERED! Status updated to Claimed."
+                    }
+
+                    if new_status in status_messages:
+                        create_notification(
+                            req.student,
+                            "System",
+                            status_messages[new_status]
+                        )
+
+                        # Clear tracking number when delivered
+                        if new_status == "COMPLETED":
+                            req.tracking_number = ""
+                            req.save()
+
+            logger.info(f"Total updated: {updated_count} requests for tracking {tracking_number}")
+            return JsonResponse({"meta": {"code": 200, "message": f"Updated {updated_count} requests to {new_status}"}})
+        else:
+            logger.info(f"No LBC requests found for tracking {tracking_number}")
+            return JsonResponse({"meta": {"code": 200, "message": "No matching requests"}})
+
+    except json.JSONDecodeError:
+        logger.error("TrackingMore webhook: Invalid JSON received")
+        return JsonResponse({"meta": {"code": 400, "message": "Invalid JSON"}}, status=400)
+    except Exception as e:
+        logger.error(f"TrackingMore webhook error: {e}")
+        return JsonResponse({"meta": {"code": 500, "message": "Internal error"}}, status=500)
+
+
+
 
 
 # TOR Page Counting Dashboard for Mr. Lotivio
@@ -1864,39 +1893,29 @@ def tor_dashboard(request):
     ):
         raise PermissionDenied()
 
-    # Get TOR requests that need page counting
-    # These are TOR requests sent by registrar but need page count
+    # Get ALL processed TOR/Transcript requests
     tor_requests = (
         DocumentRequest.objects.filter(
-            document_type__name__icontains="TOR",
-            status__in=["APPROVED", "PAYMENT_REQUIRED", "PAID", "READY"],
-            is_deleted=False,
+            (
+                Q(document_type__name__icontains="TOR") |
+                Q(document_type__name__icontains="TRANSCRIPT")
+            ),
             tor_page_count__isnull=False,
+            is_deleted=False,
         )
+        .exclude(document_type__name__icontains="Authentication")
         .select_related("document_type", "student")
         .order_by("-created_at")[:50]
     )  # Last 50 processed
 
-    # Also get TRANSCRIPT requests that have been processed
-    transcript_processed = (
-        DocumentRequest.objects.filter(
-            document_type__name__icontains="TRANSCRIPT",
-            status__in=["APPROVED", "PAYMENT_REQUIRED", "PAID", "READY"],
-            is_deleted=False,
-            tor_page_count__isnull=False,
-        )
-        .select_related("document_type", "student")
-        .order_by("-created_at")[:50]
-    )
-
-    # Combine both
-    tor_requests = tor_requests | transcript_processed
-
-    # Also get TOR requests that are PENDING_TOR_COUNT (new requests waiting for page count)
+    # Also get TOR/Transcript requests that are PENDING_TOR_COUNT (new requests waiting for page count)
     # EXCLUDE Authentication documents - they will be bundled with their parent TOR/Transcript request
     processing_tor = (
         DocumentRequest.objects.filter(
-            document_type__name__icontains="TOR",
+            (
+                Q(document_type__name__icontains="TOR") |
+                Q(document_type__name__icontains="TRANSCRIPT")
+            ),
             status="PENDING_TOR_COUNT",
             is_deleted=False,
         )
@@ -2003,24 +2022,20 @@ def submit_tor_page_count(request):
             doc_request = DocumentRequest.objects.get(id=request_id)
             doc_request.tor_page_count = int(page_count)
 
-            # Calculate the TOR price based on page count
+            # Calculate UNRUSHED base price for storage
             TOR_PRICE_PER_PAGE = 100
-            tor_price = doc_request.tor_page_count * TOR_PRICE_PER_PAGE
+            tor_base_price = doc_request.tor_page_count * TOR_PRICE_PER_PAGE
+            tor_price = (
+                tor_base_price * 2 if doc_request.rush_processing else tor_base_price
+            )
 
-            # Apply rush multiplier if rush processing
-            if doc_request.rush_processing:
-                tor_price = tor_price * 2
+            # Store ONLY the base price (no rush multiplier applied yet)
+            doc_request.tor_price_override = tor_base_price
+            doc_request.save()
 
             # Check if student has any previous TOR/Transcript requests in the permanent TORRequestHistory
             # This cannot be deleted by students, so it serves as a permanent record
-            student_master = StudentMasterList.objects.filter(
-                student_id=doc_request.student.username
-            ).first()
-            has_previous_tor = (
-                TORRequestHistory.objects.filter(student=student_master).exists()
-                if student_master
-                else False
-            )
+            has_previous_tor = TORRequestHistory.objects.filter(student=doc_request.student).exists()
 
             # Check if this is a FREE TOR request (tor_price_override = 0 OR first TOR request)
             is_free_tor = (
@@ -2033,7 +2048,7 @@ def submit_tor_page_count(request):
                 batch_items = DocumentRequest.objects.filter(
                     batch_id=doc_request.batch_id, is_deleted=False
                 )
-                total_price = tor_price  # Start with TOR price
+                total_price = tor_price  # Start with TOR price, including rush if applicable
 
                 # Add other items' price if exists (Authentication, etc.)
                 for item in batch_items:

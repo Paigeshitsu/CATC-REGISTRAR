@@ -16,7 +16,7 @@ class TrackingMoreTracker:
     def _get_headers(self):
         return {
             "Content-Type": "application/json",
-            "Trackingmore-Api-Key": self.api_key or ""
+            "Tracking-Api-Key": self.api_key or ""
         }
     
     def detect_courier(self, tracking_number):
@@ -43,8 +43,9 @@ class TrackingMoreTracker:
         Uses V4 API - creates tracking and gets results in real-time.
         """
         if not self.use_api:
-            logger.warning("TrackingMore API key not configured")
-            return {"meta": {"code": 400, "message": "API key not configured"}}
+            logger.warning("TrackingMore API key not configured - shipment will not appear on TrackingMore dashboard")
+            logger.warning("Add TRACKINGMORE_API_KEY to your environment variables to enable this feature")
+            return {"meta": {"code": 202, "message": "API key not configured - local only"}, "data": {}}
         
         try:
             data = {
@@ -61,6 +62,18 @@ class TrackingMoreTracker:
                 timeout=30
             )
             result = response.json()
+            
+            # Handle 409 - tracking number already exists (ignore this error)
+            status_code = result.get("meta", {}).get("code")
+            if status_code == 409:
+                logger.info(f"Tracking number {tracking_number} already exists in TrackingMore")
+                return {"meta": {"code": 200, "message": "Tracking already exists"}, "data": {}}
+            
+            if status_code == 401:
+                logger.error("TrackingMore Authentication Failed!")
+                logger.error("Your API key is invalid or has expired")
+                logger.error("Visit https://admin.trackingmore.com/ to get a valid API key")
+            
             logger.info(f"TrackingMore create response: {result}")
             return result
         except Exception as e:
@@ -133,7 +146,7 @@ class LBCTracker:
     
     def __init__(self):
         self.tracking_more = TrackingMoreTracker()
-        self.courier_code = "lbc-express"
+        self.courier_code = "lbcexpress"
     
     def register_lbc_tracking(self, tracking_number):
         """
