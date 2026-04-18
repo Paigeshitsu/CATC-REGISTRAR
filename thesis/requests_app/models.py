@@ -255,6 +255,7 @@ class Notification(models.Model):
         ('Registrar', 'Registrar Office'),
         ('Accounting', 'Accounting Office'),
         ('Cashier', 'Cashier Office'),
+        ('TOR Desk', 'TOR Desk'),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')

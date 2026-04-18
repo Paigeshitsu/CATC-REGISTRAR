@@ -722,16 +722,28 @@ function copyTrackingNumber(batchId) {
                             <input type="text" class="form-control" id="lbc-receiver-street" required>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label small fw-bold">Barangay *</label>
-                            <input type="text" class="form-control" id="lbc-receiver-barangay" required>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label small fw-bold">City/Municipality *</label>
-                            <input type="text" class="form-control" id="lbc-receiver-city" required>
+                            <label class="form-label small fw-bold">Region *</label>
+                            <select class="form-select" id="lbc-receiver-region" required onchange="loadProvinces()">
+                                <option value="">Select Region</option>
+                            </select>
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label small fw-bold">Province *</label>
-                            <input type="text" class="form-control" id="lbc-receiver-province" required>
+                            <select class="form-select" id="lbc-receiver-province" required onchange="loadCities()">
+                                <option value="">Select Province</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label small fw-bold">City/Municipality *</label>
+                            <select class="form-select" id="lbc-receiver-city" required onchange="loadBarangays()">
+                                <option value="">Select City/Municipality</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label small fw-bold">Barangay *</label>
+                            <select class="form-select" id="lbc-receiver-baranggay" required>
+                                <option value="">Select Barangay</option>
+                            </select>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label small fw-bold">Landmark</label>
@@ -966,8 +978,8 @@ function copyTrackingNumber(batchId) {
         if (step === 2) {
             // Validate receiver fields
             var required = ['lbc-receiver-firstname', 'lbc-receiver-lastname', 'lbc-receiver-phone', 
-                           'lbc-receiver-floor', 'lbc-receiver-street', 'lbc-receiver-barangay', 
-                           'lbc-receiver-city', 'lbc-receiver-province'];
+                           'lbc-receiver-floor', 'lbc-receiver-street', 'lbc-receiver-region',
+                           'lbc-receiver-province', 'lbc-receiver-city', 'lbc-receiver-baranggay'];
             for (var i = 0; i < required.length; i++) {
                 var field = document.getElementById(required[i]);
                 if (!field.value.trim()) {
@@ -986,13 +998,14 @@ function copyTrackingNumber(batchId) {
                         document.getElementById('lbc-sender-lastname').value + '<br>' +
                         document.getElementById('lbc-sender-address').value;
         
-        var receiverInfo = document.getElementById('lbc-receiver-firstname').value + ' ' + 
+var receiverInfo = document.getElementById('lbc-receiver-firstname').value + ' ' + 
                           document.getElementById('lbc-receiver-lastname').value + '<br>' +
                           document.getElementById('lbc-receiver-floor').value + ', ' +
                           document.getElementById('lbc-receiver-street').value + '<br>' +
-                          document.getElementById('lbc-receiver-barangay').value + ', ' +
-                          document.getElementById('lbc-receiver-city').value + ', ' +
-                          document.getElementById('lbc-receiver-province').value;
+                          document.getElementById('lbc-receiver-baranggay').value + ', ' +
+                          document.getElementById('lbc-receiver-city').options[document.getElementById('lbc-receiver-city').selectedIndex].text + ', ' +
+                          document.getElementById('lbc-receiver-province').options[document.getElementById('lbc-receiver-province').selectedIndex].text + ', ' +
+                          document.getElementById('lbc-receiver-region').options[document.getElementById('lbc-receiver-region').selectedIndex].text;
         
         var serviceType = document.getElementById('lbc-service-type');
         var serviceName = serviceType.options[serviceType.selectedIndex].text;
@@ -1036,11 +1049,17 @@ function copyTrackingNumber(batchId) {
                 phone: document.getElementById('lbc-sender-phone').value,
                 address: document.getElementById('lbc-sender-address').value
             },
-            receiver: {
+receiver: {
                 firstname: document.getElementById('lbc-receiver-firstname').value,
                 lastname: document.getElementById('lbc-receiver-lastname').value,
                 phone: document.getElementById('lbc-receiver-phone').value,
-                address: document.getElementById('lbc-receiver-floor').value + ', ' + document.getElementById('lbc-receiver-street').value + ', ' + document.getElementById('lbc-receiver-barangay').value + ', ' + document.getElementById('lbc-receiver-city').value + ', ' + document.getElementById('lbc-receiver-province').value
+                region: document.getElementById('lbc-receiver-region').options[document.getElementById('lbc-receiver-region').selectedIndex].text,
+                province: document.getElementById('lbc-receiver-province').options[document.getElementById('lbc-receiver-province').selectedIndex].text,
+                city: document.getElementById('lbc-receiver-city').options[document.getElementById('lbc-receiver-city').selectedIndex].text,
+                barangay: document.getElementById('lbc-receiver-baranggay').value,
+                floor: document.getElementById('lbc-receiver-floor').value,
+                street: document.getElementById('lbc-receiver-street').value,
+                address: document.getElementById('lbc-receiver-floor').value + ', ' + document.getElementById('lbc-receiver-street').value + ', ' + document.getElementById('lbc-receiver-baranggay').value + ', ' + document.getElementById('lbc-receiver-city').options[document.getElementById('lbc-receiver-city').selectedIndex].text + ', ' + document.getElementById('lbc-receiver-province').options[document.getElementById('lbc-receiver-province').selectedIndex].text + ', ' + document.getElementById('lbc-receiver-region').options[document.getElementById('lbc-receiver-region').selectedIndex].text
             },
             package: {
                 content: document.getElementById('lbc-package-content').value,
@@ -1391,9 +1410,239 @@ function copyTrackingNumber(batchId) {
         }
     });
 
-    window.showLbcModal = prepareLbcModal;
+window.showLbcModal = prepareLbcModal;
     window.prepareLbcModal = prepareLbcModal;
     window.lbcNextStep = lbcNextStep;
     window.goToLbcReceiverStep = goToLbcReceiverStep;
+
+const PSGC_API_BASE = 'https://psgc.gitlab.io/api';
+    let regionsCache = null;
+    let provincesCache = {};
+    let citiesCache = {};
+    let barangaysCache = {};
+
+    async function loadRegions() {
+        const select = document.getElementById('lbc-receiver-region');
+        if (!select) return;
+        
+        try {
+            if (!regionsCache) {
+                const response = await fetch(PSGC_API_BASE + '/regions/');
+                regionsCache = await response.json();
+            }
+            
+            select.innerHTML = '<option value="">Select Region</option>';
+            regionsCache.forEach(region => {
+                const option = document.createElement('option');
+                option.value = region.code;
+                option.textContent = region.name;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error loading regions:', error);
+            select.innerHTML = '<option value="">Error loading regions</option>';
+        }
+    }
+
+    async function loadProvinces() {
+        const regionSelect = document.getElementById('lbc-receiver-region');
+        const provinceSelect = document.getElementById('lbc-receiver-province');
+        
+        if (!regionSelect || !provinceSelect) return;
+        
+        const regionCode = regionSelect.value;
+        if (!regionCode) {
+            provinceSelect.innerHTML = '<option value="">Select Province</option>';
+            return;
+        }
+
+        try {
+            if (!provincesCache[regionCode]) {
+                const response = await fetch(PSGC_API_BASE + '/regions/' + regionCode + '/provinces/');
+                provincesCache[regionCode] = await response.json();
+            }
+            
+            provinceSelect.innerHTML = '<option value="">Select Province</option>';
+            provincesCache[regionCode].forEach(province => {
+                const option = document.createElement('option');
+                option.value = province.code;
+                option.textContent = province.name;
+                provinceSelect.appendChild(option);
+            });
+            
+            document.getElementById('lbc-receiver-city').innerHTML = '<option value="">Select City/Municipality</option>';
+            document.getElementById('lbc-receiver-baranggay').innerHTML = '<option value="">Select Barangay</option>';
+        } catch (error) {
+            console.error('Error loading provinces:', error);
+            provinceSelect.innerHTML = '<option value="">Error loading provinces</option>';
+        }
+    }
+
+    async function loadCities() {
+        const provinceSelect = document.getElementById('lbc-receiver-province');
+        const citySelect = document.getElementById('lbc-receiver-city');
+        
+        if (!provinceSelect || !citySelect) return;
+        
+        const provinceCode = provinceSelect.value;
+        if (!provinceCode) {
+            citySelect.innerHTML = '<option value="">Select City/Municipality</option>';
+            return;
+        }
+
+        try {
+            if (!citiesCache[provinceCode]) {
+                const response = await fetch(PSGC_API_BASE + '/provinces/' + provinceCode + '/cities/');
+                citiesCache[provinceCode] = await response.json();
+            }
+            
+            citySelect.innerHTML = '<option value="">Select City/Municipality</option>';
+            citiesCache[provinceCode].forEach(city => {
+                const option = document.createElement('option');
+                option.value = city.code;
+                option.textContent = city.name;
+                citySelect.appendChild(option);
+            });
+            
+            document.getElementById('lbc-receiver-baranggay').innerHTML = '<option value="">Select Barangay</option>';
+        } catch (error) {
+            console.error('Error loading cities:', error);
+            citySelect.innerHTML = '<option value="">Error loading cities</option>';
+        }
+    }
+
+    async function loadBarangays() {
+        const citySelect = document.getElementById('lbc-receiver-city');
+        const barangaySelect = document.getElementById('lbc-receiver-baranggay');
+        
+        if (!citySelect || !barangaySelect) return;
+        
+        const cityCode = citySelect.value;
+        if (!cityCode) {
+            barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+            return;
+        }
+
+        try {
+            if (!barangaysCache[cityCode]) {
+                const response = await fetch(PSGC_API_BASE + '/cities/' + cityCode + '/barangays/');
+                barangaysCache[cityCode] = await response.json();
+            }
+            
+            barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+            barangaysCache[cityCode].forEach(barangay => {
+                const option = document.createElement('option');
+                option.value = barangay.name;
+                option.textContent = barangay.name;
+                barangaySelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error loading barangays:', error);
+            barangaySelect.innerHTML = '<option value="">Error loading barangays</option>';
+        }
+    }
+
+    window.loadRegions = loadRegions;
+    window.loadProvinces = loadProvinces;
+    window.loadCities = loadCities;
+    window.loadBarangays = loadBarangays;
+
+    const lbcBookingModal = document.getElementById('lbcBookingModal');
+    if (lbcBookingModal) {
+        lbcBookingModal.addEventListener('shown.bs.modal', function() {
+            loadRegions();
+        });
+    }
+            
+            select.innerHTML = '<option value="">Select Province</option>';
+            provincesCache.forEach(province => {
+                const option = document.createElement('option');
+                option.value = province.code;
+                option.textContent = province.name;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error loading provinces:', error);
+            select.innerHTML = '<option value="">Error loading provinces</option>';
+        }
+    }
+
+    async function loadCities() {
+        const provinceSelect = document.getElementById('lbc-receiver-province');
+        const citySelect = document.getElementById('lbc-receiver-city');
+        
+        if (!provinceSelect || !citySelect) return;
+        
+        const provinceCode = provinceSelect.value;
+        if (!provinceCode) {
+            citySelect.innerHTML = '<option value="">Select City/Municipality</option>';
+            return;
+        }
+
+        try {
+            if (!citiesCache[provinceCode]) {
+                const response = await fetch(PSGC_API_BASE + '/provinces/' + provinceCode + '/');
+                const data = await response.json();
+                citiesCache[provinceCode] = data.cities || [];
+            }
+            
+            citySelect.innerHTML = '<option value="">Select City/Municipality</option>';
+            citiesCache[provinceCode].forEach(city => {
+                const option = document.createElement('option');
+                option.value = city.code;
+                option.textContent = city.name;
+                citySelect.appendChild(option);
+            });
+            
+            const barangaySelect = document.getElementById('lbc-receiver-barangay');
+            if (barangaySelect) barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+        } catch (error) {
+            console.error('Error loading cities:', error);
+            citySelect.innerHTML = '<option value="">Error loading cities</option>';
+        }
+    }
+
+    async function loadBarangays() {
+        const citySelect = document.getElementById('lbc-receiver-city');
+        const barangaySelect = document.getElementById('lbc-receiver-barangay');
+        
+        if (!citySelect || !barangaySelect) return;
+        
+        const cityCode = citySelect.value;
+        if (!cityCode) {
+            barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+            return;
+        }
+
+        try {
+            if (!barangaysCache[cityCode]) {
+                const response = await fetch(PSGC_API_BASE + '/cities/' + cityCode + '/');
+                const data = await response.json();
+                barangaysCache[cityCode] = data.barangays || [];
+            }
+            
+            barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+            barangaysCache[cityCode].forEach(barangay => {
+                const option = document.createElement('option');
+                option.value = barangay.name;
+                option.textContent = barangay.name;
+                barangaySelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error loading barangays:', error);
+            barangaySelect.innerHTML = '<option value="">Error loading barangays</option>';
+        }
+    }
+
+    window.loadProvinces = loadProvinces;
+    window.loadCities = loadCities;
+    window.loadBarangays = loadBarangays;
+
+    const lbcBookingModal = document.getElementById('lbcBookingModal');
+    if (lbcBookingModal) {
+        lbcBookingModal.addEventListener('shown.bs.modal', function() {
+            loadProvinces();
+        });
+    }
 </script>
 {% endblock %}
