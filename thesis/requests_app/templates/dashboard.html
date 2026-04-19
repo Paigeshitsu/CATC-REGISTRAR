@@ -689,7 +689,7 @@ function copyTrackingNumber(batchId) {
                         </div>
                     </div>
                     <div class="text-end mt-3">
-                        <button type="button" class="btn btn-primary" id="lbc-next-to-receiver-btn" onclick="goToLbcReceiverStep()">Next: Receiver <i class="bi bi-arrow-right"></i></button>
+<button type="button" class="btn btn-primary" id="lbc-next-to-receiver-btn" onclick="goToLbcReceiverStep(); return false;">Next: Receiver <i class="bi bi-arrow-right"></i></button>
                     </div>
                 </div>
                 
@@ -739,12 +739,12 @@ function copyTrackingNumber(batchId) {
                                 <option value="">Select City/Municipality</option>
                             </select>
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label small fw-bold">Barangay *</label>
-                            <select class="form-select" id="lbc-receiver-baranggay" required>
-                                <option value="">Select Barangay</option>
-                            </select>
-                        </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label small fw-bold">Barangay *</label>
+                                <select class="form-select" id="lbc-receiver-barangay" required>
+                                    <option value="">Select Barangay</option>
+                                </select>
+                            </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label small fw-bold">Landmark</label>
                             <input type="text" class="form-control" id="lbc-receiver-landmark">
@@ -945,8 +945,10 @@ function copyTrackingNumber(batchId) {
 
     
     function lbcNextStep(step) {
+        console.log('lbcNextStep called with step:', step);
         var targetStep = document.getElementById('lbc-step-' + step);
         if (!targetStep) {
+            console.error('Step element not found:', 'lbc-step-' + step);
             return;
         }
 
@@ -1402,15 +1404,6 @@ receiver: {
         lbcNextStep(1);
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        var nextToReceiverBtn = document.getElementById('lbc-next-to-receiver-btn');
-        if (nextToReceiverBtn) {
-            nextToReceiverBtn.addEventListener('click', function() {
-                lbcNextStep(2);
-            });
-        }
-    });
-
 window.showLbcModal = prepareLbcModal;
     window.prepareLbcModal = prepareLbcModal;
     window.lbcNextStep = lbcNextStep;
@@ -1472,7 +1465,7 @@ const PSGC_API_BASE = 'https://psgc.gitlab.io/api';
             });
             
             document.getElementById('lbc-receiver-city').innerHTML = '<option value="">Select City/Municipality</option>';
-            document.getElementById('lbc-receiver-baranggay').innerHTML = '<option value="">Select Barangay</option>';
+            document.getElementById('lbc-receiver-barangay').innerHTML = '<option value="">Select Barangay</option>';
         } catch (error) {
             console.error('Error loading provinces:', error);
             provinceSelect.innerHTML = '<option value="">Error loading provinces</option>';
@@ -1505,7 +1498,7 @@ const PSGC_API_BASE = 'https://psgc.gitlab.io/api';
                 citySelect.appendChild(option);
             });
             
-            document.getElementById('lbc-receiver-baranggay').innerHTML = '<option value="">Select Barangay</option>';
+            document.getElementById('lbc-receiver-barangay').innerHTML = '<option value="">Select Barangay</option>';
         } catch (error) {
             console.error('Error loading cities:', error);
             citySelect.innerHTML = '<option value="">Error loading cities</option>';
@@ -1514,7 +1507,7 @@ const PSGC_API_BASE = 'https://psgc.gitlab.io/api';
 
     async function loadBarangays() {
         const citySelect = document.getElementById('lbc-receiver-city');
-        const barangaySelect = document.getElementById('lbc-receiver-baranggay');
+        const barangaySelect = document.getElementById('lbc-receiver-barangay');
         
         if (!citySelect || !barangaySelect) return;
         
@@ -1554,96 +1547,3 @@ const PSGC_API_BASE = 'https://psgc.gitlab.io/api';
             loadRegions();
         });
     }
-            
-            select.innerHTML = '<option value="">Select Province</option>';
-            provincesCache.forEach(province => {
-                const option = document.createElement('option');
-                option.value = province.code;
-                option.textContent = province.name;
-                select.appendChild(option);
-            });
-        } catch (error) {
-            console.error('Error loading provinces:', error);
-            select.innerHTML = '<option value="">Error loading provinces</option>';
-        }
-    }
-
-    async function loadCities() {
-        const provinceSelect = document.getElementById('lbc-receiver-province');
-        const citySelect = document.getElementById('lbc-receiver-city');
-        
-        if (!provinceSelect || !citySelect) return;
-        
-        const provinceCode = provinceSelect.value;
-        if (!provinceCode) {
-            citySelect.innerHTML = '<option value="">Select City/Municipality</option>';
-            return;
-        }
-
-        try {
-            if (!citiesCache[provinceCode]) {
-                const response = await fetch(PSGC_API_BASE + '/provinces/' + provinceCode + '/');
-                const data = await response.json();
-                citiesCache[provinceCode] = data.cities || [];
-            }
-            
-            citySelect.innerHTML = '<option value="">Select City/Municipality</option>';
-            citiesCache[provinceCode].forEach(city => {
-                const option = document.createElement('option');
-                option.value = city.code;
-                option.textContent = city.name;
-                citySelect.appendChild(option);
-            });
-            
-            const barangaySelect = document.getElementById('lbc-receiver-barangay');
-            if (barangaySelect) barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
-        } catch (error) {
-            console.error('Error loading cities:', error);
-            citySelect.innerHTML = '<option value="">Error loading cities</option>';
-        }
-    }
-
-    async function loadBarangays() {
-        const citySelect = document.getElementById('lbc-receiver-city');
-        const barangaySelect = document.getElementById('lbc-receiver-barangay');
-        
-        if (!citySelect || !barangaySelect) return;
-        
-        const cityCode = citySelect.value;
-        if (!cityCode) {
-            barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
-            return;
-        }
-
-        try {
-            if (!barangaysCache[cityCode]) {
-                const response = await fetch(PSGC_API_BASE + '/cities/' + cityCode + '/');
-                const data = await response.json();
-                barangaysCache[cityCode] = data.barangays || [];
-            }
-            
-            barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
-            barangaysCache[cityCode].forEach(barangay => {
-                const option = document.createElement('option');
-                option.value = barangay.name;
-                option.textContent = barangay.name;
-                barangaySelect.appendChild(option);
-            });
-        } catch (error) {
-            console.error('Error loading barangays:', error);
-            barangaySelect.innerHTML = '<option value="">Error loading barangays</option>';
-        }
-    }
-
-    window.loadProvinces = loadProvinces;
-    window.loadCities = loadCities;
-    window.loadBarangays = loadBarangays;
-
-    const lbcBookingModal = document.getElementById('lbcBookingModal');
-    if (lbcBookingModal) {
-        lbcBookingModal.addEventListener('shown.bs.modal', function() {
-            loadProvinces();
-        });
-    }
-</script>
-{% endblock %}

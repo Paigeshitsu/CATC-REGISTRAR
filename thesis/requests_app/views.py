@@ -99,6 +99,7 @@ def get_authentication_summary_items(items):
 def get_payment_summary(items):
     display_items = []
     total_amount = 0
+    shipping_fee = 0
 
     # List ALL items exactly as they appear in the database
     for item in items:
@@ -106,9 +107,14 @@ def get_payment_summary(items):
         display_items.append(summary_item)
         total_amount += summary_item["total_amount"]
 
+    # Calculate shipping fee if LBC delivery is selected
+    lbc_item = items.filter(delivery_method="LBC").first()
+    if lbc_item and lbc_item.shipping_total:
+        shipping_fee = lbc_item.shipping_total
 
+    total_amount += shipping_fee
 
-    return display_items, total_amount
+    return display_items, total_amount, shipping_fee
 
 
 def get_xendit_paid_amount(items):
@@ -604,7 +610,8 @@ def student_dashboard(request):
                     return redirect("student_dashboard")
 
                 found_any = True
-                delivery = request.POST.get(f"delivery_{base.id}", "PICKUP")
+                # Default to PICKUP - shipping details will be filled AFTER approval
+                delivery = "PICKUP"
 
                 # AUTO-FILL LBC PICKUP ADDRESS: When LBC is selected, use college address for rider pickup
                 if delivery == "LBC":
@@ -1216,7 +1223,7 @@ def cashier_dashboard(request):
 
             new_no = SystemCounter.get_next_receipt_no()
 
-            _, total = get_payment_summary(batch)
+            _, total, _ = get_payment_summary(batch)
 
             # Update all items in the batch to PAID
             batch.update(status="PAID", receipt_number=new_no)
@@ -1241,18 +1248,27 @@ def cashier_dashboard(request):
             )
             
         elif action == "issue_receipt":
-            # Issue and finalize summary - make it visible to student
+            # Issue and finalize summary - move to PROCESSING for Registrar to process
             batch = DocumentRequest.objects.filter(batch_id=doc_req.batch_id)
             batch.update(status="PROCESSING")
+            
+            # Notify student that documents are being processed
+            for item in batch:
+                create_notification(
+                    item.student,
+                    "Cashier",
+                    f"Your {item.document_type.name} request is now being processed by the Registrar. Please wait for updates."
+                )
             
             log_audit(
                 request.user,
                 "UPDATE",
                 "DocumentRequest",
                 doc_req.batch_id,
-                "Receipt issued and finalized by Cashier.",
+                "Receipt issued and finalized by Cashier. Moved to PROCESSING.",
             )
             
+            messages.success(request, f"Receipt issued! {batch.count()} document(s) moved to PROCESSING for Registrar.")
             return redirect("cashier_dashboard")
     return render(
         request,
@@ -1285,7 +1301,7 @@ def xendit_webhook(request):
         if items.exists():
             new_no = SystemCounter.get_next_receipt_no()
 
-            _, total = get_payment_summary(items)
+            _, total, _ = get_payment_summary(items)
 
             items.update(status="PENDING_CASHIER_APPROVAL")
             CollectionLog.objects.create(
@@ -1370,7 +1386,7 @@ def generate_receipt(request, req_id):
         student_id=doc_req.student.username
     ).first()
 
-    summary_items, total_amount = get_payment_summary(batch)
+    summary_items, total_amount, shipping_fee = get_payment_summary(batch)
     xendit_total_amount = get_xendit_paid_amount(batch)
     if xendit_total_amount is not None:
         total_amount = xendit_total_amount
@@ -2218,7 +2234,7 @@ def pay_with_xendit(request, batch_id):
             print(f"DEBUG: Batch {batch_id} does not exist")
         return redirect("student_dashboard")
 
-    _, total = get_payment_summary(batch)
+    _, total, _ = get_payment_summary(batch)
 
     # Handle FREE requests (total = 0)
     if total <= 0:

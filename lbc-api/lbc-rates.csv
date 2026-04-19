@@ -1,0 +1,493 @@
+Origin,Destination,Document Type,Service Type,Declared Value,Base Rate,Insurance,Handling Fee,Total,Estimated Delivery,Currency
+Legazpi City,"Manila","Courier Pouch Regular","Courier",100,180,10,50,240,"2-3",PHP
+Legazpi City,"Manila","Courier Pouch Regular","Courier",500,180,10,50,240,"2-3",PHP
+Legazpi City,"Manila","Courier Pouch Regular","Courier",1000,180,10,50,240,"2-3",PHP
+Legazpi City,"Manila","Courier Pouch Regular","Courier",2000,180,20,50,250,"2-3",PHP
+Legazpi City,"Manila","Courier Pouch Regular","Courier",3000,180,30,50,260,"2-3",PHP
+Legazpi City,"Manila","Courier Pouch Regular","Courier",5000,180,50,50,280,"2-3",PHP
+Legazpi City,"Quezon City","Courier Pouch Regular","Courier",100,180,10,50,240,"2-3",PHP
+Legazpi City,"Quezon City","Courier Pouch Regular","Courier",500,180,10,50,240,"2-3",PHP
+Legazpi City,"Quezon City","Courier Pouch Regular","Courier",1000,180,10,50,240,"2-3",PHP
+Legazpi City,"Quezon City","Courier Pouch Regular","Courier",2000,180,20,50,250,"2-3",PHP
+Legazpi City,"Quezon City","Courier Pouch Regular","Courier",3000,180,30,50,260,"2-3",PHP
+Legazpi City,"Quezon City","Courier Pouch Regular","Courier",5000,180,50,50,280,"2-3",PHP
+Legazpi City,"Makati","Courier Pouch Regular","Courier",100,180,10,50,240,"2-3",PHP
+Legazpi City,"Makati","Courier Pouch Regular","Courier",500,180,10,50,240,"2-3",PHP
+Legazpi City,"Makati","Courier Pouch Regular","Courier",1000,180,10,50,240,"2-3",PHP
+Legazpi City,"Makati","Courier Pouch Regular","Courier",2000,180,20,50,250,"2-3",PHP
+Legazpi City,"Makati","Courier Pouch Regular","Courier",3000,180,30,50,260,"2-3",PHP
+Legazpi City,"Makati","Courier Pouch Regular","Courier",5000,180,50,50,280,"2-3",PHP
+Legazpi City,"Pasig","Courier Pouch Regular","Courier",100,180,10,50,240,"2-3",PHP
+Legazpi City,"Pasig","Courier Pouch Regular","Courier",500,180,10,50,240,"2-3",PHP
+Legazpi City,"Pasig","Courier Pouch Regular","Courier",1000,180,10,50,240,"2-3",PHP
+Legazpi City,"Pasig","Courier Pouch Regular","Courier",2000,180,20,50,250,"2-3",PHP
+Legazpi City,"Pasig","Courier Pouch Regular","Courier",3000,180,30,50,260,"2-3",PHP
+Legazpi City,"Pasig","Courier Pouch Regular","Courier",5000,180,50,50,280,"2-3",PHP
+Legazpi City,"Taguig","Courier Pouch Regular","Courier",100,180,10,50,240,"2-3",PHP
+Legazpi City,"Taguig","Courier Pouch Regular","Courier",500,180,10,50,240,"2-3",PHP
+Legazpi City,"Taguig","Courier Pouch Regular","Courier",1000,180,10,50,240,"2-3",PHP
+Legazpi City,"Taguig","Courier Pouch Regular","Courier",2000,180,20,50,250,"2-3",PHP
+Legazpi City,"Taguig","Courier Pouch Regular","Courier",3000,180,30,50,260,"2-3",PHP
+Legazpi City,"Taguig","Courier Pouch Regular","Courier",5000,180,50,50,280,"2-3",PHP
+Legazpi City,"Mandaluyong","Courier Pouch Regular","Courier",100,180,10,50,240,"2-3",PHP
+Legazpi City,"Mandaluyong","Courier Pouch Regular","Courier",500,180,10,50,240,"2-3",PHP
+Legazpi City,"Mandaluyong","Courier Pouch Regular","Courier",1000,180,10,50,240,"2-3",PHP
+Legazpi City,"Mandaluyong","Courier Pouch Regular","Courier",2000,180,20,50,250,"2-3",PHP
+Legazpi City,"Mandaluyong","Courier Pouch Regular","Courier",3000,180,30,50,260,"2-3",PHP
+Legazpi City,"Mandaluyong","Courier Pouch Regular","Courier",5000,180,50,50,280,"2-3",PHP
+Legazpi City,"Pasay","Courier Pouch Regular","Courier",100,180,10,50,240,"2-3",PHP
+Legazpi City,"Pasay","Courier Pouch Regular","Courier",500,180,10,50,240,"2-3",PHP
+Legazpi City,"Pasay","Courier Pouch Regular","Courier",1000,180,10,50,240,"2-3",PHP
+Legazpi City,"Pasay","Courier Pouch Regular","Courier",2000,180,20,50,250,"2-3",PHP
+Legazpi City,"Pasay","Courier Pouch Regular","Courier",3000,180,30,50,260,"2-3",PHP
+Legazpi City,"Pasay","Courier Pouch Regular","Courier",5000,180,50,50,280,"2-3",PHP
+Legazpi City,"Caloocan","Courier Pouch Regular","Courier",100,180,10,50,240,"2-3",PHP
+Legazpi City,"Caloocan","Courier Pouch Regular","Courier",500,180,10,50,240,"2-3",PHP
+Legazpi City,"Caloocan","Courier Pouch Regular","Courier",1000,180,10,50,240,"2-3",PHP
+Legazpi City,"Caloocan","Courier Pouch Regular","Courier",2000,180,20,50,250,"2-3",PHP
+Legazpi City,"Caloocan","Courier Pouch Regular","Courier",3000,180,30,50,260,"2-3",PHP
+Legazpi City,"Caloocan","Courier Pouch Regular","Courier",5000,180,50,50,280,"2-3",PHP
+Legazpi City,"Las Piñas","Courier Pouch Regular","Courier",100,180,10,50,240,"2-3",PHP
+Legazpi City,"Las Piñas","Courier Pouch Regular","Courier",500,180,10,50,240,"2-3",PHP
+Legazpi City,"Las Piñas","Courier Pouch Regular","Courier",1000,180,10,50,240,"2-3",PHP
+Legazpi City,"Las Piñas","Courier Pouch Regular","Courier",2000,180,20,50,250,"2-3",PHP
+Legazpi City,"Las Piñas","Courier Pouch Regular","Courier",3000,180,30,50,260,"2-3",PHP
+Legazpi City,"Las Piñas","Courier Pouch Regular","Courier",5000,180,50,50,280,"2-3",PHP
+Legazpi City,"Makati","Courier Pouch Regular","Courier",100,180,10,50,240,"2-3",PHP
+Legazpi City,"Makati","Courier Pouch Regular","Courier",500,180,10,50,240,"2-3",PHP
+Legazpi City,"Makati","Courier Pouch Regular","Courier",1000,180,10,50,240,"2-3",PHP
+Legazpi City,"Makati","Courier Pouch Regular","Courier",2000,180,20,50,250,"2-3",PHP
+Legazpi City,"Makati","Courier Pouch Regular","Courier",3000,180,30,50,260,"2-3",PHP
+Legazpi City,"Makati","Courier Pouch Regular","Courier",5000,180,50,50,280,"2-3",PHP
+Legazpi City,"Malabon","Courier Pouch Regular","Courier",100,180,10,50,240,"2-3",PHP
+Legazpi City,"Malabon","Courier Pouch Regular","Courier",500,180,10,50,240,"2-3",PHP
+Legazpi City,"Malabon","Courier Pouch Regular","Courier",1000,180,10,50,240,"2-3",PHP
+Legazpi City,"Malabon","Courier Pouch Regular","Courier",2000,180,20,50,250,"2-3",PHP
+Legazpi City,"Malabon","Courier Pouch Regular","Courier",3000,180,30,50,260,"2-3",PHP
+Legazpi City,"Malabon","Courier Pouch Regular","Courier",5000,180,50,50,280,"2-3",PHP
+Legazpi City,"Muntinlupa","Courier Pouch Regular","Courier",100,180,10,50,240,"2-3",PHP
+Legazpi City,"Muntinlupa","Courier Pouch Regular","Courier",500,180,10,50,240,"2-3",PHP
+Legazpi City,"Muntinlupa","Courier Pouch Regular","Courier",1000,180,10,50,240,"2-3",PHP
+Legazpi City,"Muntinlupa","Courier Pouch Regular","Courier",2000,180,20,50,250,"2-3",PHP
+Legazpi City,"Muntinlupa","Courier Pouch Regular","Courier",3000,180,30,50,260,"2-3",PHP
+Legazpi City,"Muntinlupa","Courier Pouch Regular","Courier",5000,180,50,50,280,"2-3",PHP
+Legazpi City,"Navotas","Courier Pouch Regular","Courier",100,180,10,50,240,"2-3",PHP
+Legazpi City,"Navotas","Courier Pouch Regular","Courier",500,180,10,50,240,"2-3",PHP
+Legazpi City,"Navotas","Courier Pouch Regular","Courier",1000,180,10,50,240,"2-3",PHP
+Legazpi City,"Navotas","Courier Pouch Regular","Courier",2000,180,20,50,250,"2-3",PHP
+Legazpi City,"Navotas","Courier Pouch Regular","Courier",3000,180,30,50,260,"2-3",PHP
+Legazpi City,"Navotas","Courier Pouch Regular","Courier",5000,180,50,50,280,"2-3",PHP
+Legazpi City,"Parañaque","Courier Pouch Regular","Courier",100,180,10,50,240,"2-3",PHP
+Legazpi City,"Parañaque","Courier Pouch Regular","Courier",500,180,10,50,240,"2-3",PHP
+Legazpi City,"Parañaque","Courier Pouch Regular","Courier",1000,180,10,50,240,"2-3",PHP
+Legazpi City,"Parañaque","Courier Pouch Regular","Courier",2000,180,20,50,250,"2-3",PHP
+Legazpi City,"Parañaque","Courier Pouch Regular","Courier",3000,180,30,50,260,"2-3",PHP
+Legazpi City,"Parañaque","Courier Pouch Regular","Courier",5000,180,50,50,280,"2-3",PHP
+Legazpi City,"San Juan","Courier Pouch Regular","Courier",100,180,10,50,240,"2-3",PHP
+Legazpi City,"San Juan","Courier Pouch Regular","Courier",500,180,10,50,240,"2-3",PHP
+Legazpi City,"San Juan","Courier Pouch Regular","Courier",1000,180,10,50,240,"2-3",PHP
+Legazpi City,"San Juan","Courier Pouch Regular","Courier",2000,180,20,50,250,"2-3",PHP
+Legazpi City,"San Juan","Courier Pouch Regular","Courier",3000,180,30,50,260,"2-3",PHP
+Legazpi City,"San Juan","Courier Pouch Regular","Courier",5000,180,50,50,280,"2-3",PHP
+Legazpi City,"Valenzuela","Courier Pouch Regular","Courier",100,180,10,50,240,"2-3",PHP
+Legazpi City,"Valenzuela","Courier Pouch Regular","Courier",500,180,10,50,240,"2-3",PHP
+Legazpi City,"Valenzuela","Courier Pouch Regular","Courier",1000,180,10,50,240,"2-3",PHP
+Legazpi City,"Valenzuela","Courier Pouch Regular","Courier",2000,180,20,50,250,"2-3",PHP
+Legazpi City,"Valenzuela","Courier Pouch Regular","Courier",3000,180,30,50,260,"2-3",PHP
+Legazpi City,"Valenzuela","Courier Pouch Regular","Courier",5000,180,50,50,280,"2-3",PHP
+Legazpi City,"Marikina","Courier Pouch Regular","Courier",100,180,10,50,240,"2-3",PHP
+Legazpi City,"Marikina","Courier Pouch Regular","Courier",500,180,10,50,240,"2-3",PHP
+Legazpi City,"Marikina","Courier Pouch Regular","Courier",1000,180,10,50,240,"2-3",PHP
+Legazpi City,"Marikina","Courier Pouch Regular","Courier",2000,180,20,50,250,"2-3",PHP
+Legazpi City,"Marikina","Courier Pouch Regular","Courier",3000,180,30,50,260,"2-3",PHP
+Legazpi City,"Marikina","Courier Pouch Regular","Courier",5000,180,50,50,280,"2-3",PHP
+Legazpi City,"Baguio","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Baguio","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Baguio","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Baguio","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Baguio","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Baguio","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Angeles","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Angeles","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Angeles","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Angeles","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Angeles","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Angeles","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Olongapo","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Olongapo","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Olongapo","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Olongapo","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Olongapo","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Olongapo","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Batangas City","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Batangas City","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Batangas City","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Batangas City","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Batangas City","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Batangas City","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Lipa","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Lipa","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Lipa","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Lipa","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Lipa","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Lipa","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Lucena","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Lucena","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Lucena","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Lucena","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Lucena","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Lucena","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Naga","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Naga","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Naga","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Naga","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Naga","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Naga","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Legazpi","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Legazpi","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Legazpi","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Legazpi","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Legazpi","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Legazpi","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Sorsogon","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Sorsogon","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Sorsogon","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Sorsogon","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Sorsogon","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Sorsogon","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Masbate","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Masbate","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Masbate","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Masbate","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Masbate","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Masbate","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Tuguegarao","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Tuguegarao","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Tuguegarao","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Tuguegarao","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Tuguegarao","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Tuguegarao","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Laoag","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Laoag","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Laoag","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Laoag","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Laoag","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Laoag","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Vigan","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Vigan","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Vigan","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Vigan","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Vigan","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Vigan","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"San Fernando (La Union)","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"San Fernando (La Union)","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"San Fernando (La Union)","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"San Fernando (La Union)","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"San Fernando (La Union)","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"San Fernando (La Union)","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Dagupan","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Dagupan","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Dagupan","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Dagupan","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Dagupan","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Dagupan","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Urdaneta","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Urdaneta","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Urdaneta","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Urdaneta","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Urdaneta","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Urdaneta","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Cabanatuan","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Cabanatuan","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Cabanatuan","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Cabanatuan","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Cabanatuan","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Cabanatuan","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"San Jose del Monte","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"San Jose del Monte","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"San Jose del Monte","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"San Jose del Monte","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"San Jose del Monte","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"San Jose del Monte","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Malolos","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Malolos","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Malolos","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Malolos","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Malolos","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Malolos","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Meycauayan","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Meycauayan","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Meycauayan","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Meycauayan","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Meycauayan","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Meycauayan","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"San Pablo","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"San Pablo","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"San Pablo","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"San Pablo","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"San Pablo","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"San Pablo","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Calamba","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Calamba","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Calamba","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Calamba","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Calamba","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Calamba","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Santa Rosa","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Santa Rosa","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Santa Rosa","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Santa Rosa","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Santa Rosa","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Santa Rosa","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Biñan","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Biñan","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Biñan","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Biñan","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Biñan","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Biñan","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"San Pedro","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"San Pedro","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"San Pedro","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"San Pedro","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"San Pedro","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"San Pedro","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Dasmariñas","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Dasmariñas","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Dasmariñas","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Dasmariñas","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Dasmariñas","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Dasmariñas","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"General Trias","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"General Trias","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"General Trias","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"General Trias","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"General Trias","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"General Trias","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Imus","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Imus","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Imus","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Imus","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Imus","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Imus","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Bacoor","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Bacoor","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Bacoor","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Bacoor","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Bacoor","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Bacoor","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Trece Martires","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Trece Martires","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Trece Martires","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Trece Martires","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Trece Martires","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Trece Martires","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Tanauan","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Tanauan","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Tanauan","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Tanauan","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Tanauan","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Tanauan","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Talisay","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Talisay","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Talisay","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Talisay","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Talisay","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Talisay","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Toledo","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Toledo","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Toledo","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Toledo","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Toledo","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Toledo","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Cebu City","Courier Pouch Regular","Courier",100,250,10,50,310,"3-5",PHP
+Legazpi City,"Cebu City","Courier Pouch Regular","Courier",500,250,10,50,310,"3-5",PHP
+Legazpi City,"Cebu City","Courier Pouch Regular","Courier",1000,250,10,50,310,"3-5",PHP
+Legazpi City,"Cebu City","Courier Pouch Regular","Courier",2000,250,20,50,320,"3-5",PHP
+Legazpi City,"Cebu City","Courier Pouch Regular","Courier",3000,250,30,50,330,"3-5",PHP
+Legazpi City,"Cebu City","Courier Pouch Regular","Courier",5000,250,50,50,350,"3-5",PHP
+Legazpi City,"Mandaue","Courier Pouch Regular","Courier",100,250,10,50,310,"3-5",PHP
+Legazpi City,"Mandaue","Courier Pouch Regular","Courier",500,250,10,50,310,"3-5",PHP
+Legazpi City,"Mandaue","Courier Pouch Regular","Courier",1000,250,10,50,310,"3-5",PHP
+Legazpi City,"Mandaue","Courier Pouch Regular","Courier",2000,250,20,50,320,"3-5",PHP
+Legazpi City,"Mandaue","Courier Pouch Regular","Courier",3000,250,30,50,330,"3-5",PHP
+Legazpi City,"Mandaue","Courier Pouch Regular","Courier",5000,250,50,50,350,"3-5",PHP
+Legazpi City,"Lapu-Lapu","Courier Pouch Regular","Courier",100,250,10,50,310,"3-5",PHP
+Legazpi City,"Lapu-Lapu","Courier Pouch Regular","Courier",500,250,10,50,310,"3-5",PHP
+Legazpi City,"Lapu-Lapu","Courier Pouch Regular","Courier",1000,250,10,50,310,"3-5",PHP
+Legazpi City,"Lapu-Lapu","Courier Pouch Regular","Courier",2000,250,20,50,320,"3-5",PHP
+Legazpi City,"Lapu-Lapu","Courier Pouch Regular","Courier",3000,250,30,50,330,"3-5",PHP
+Legazpi City,"Lapu-Lapu","Courier Pouch Regular","Courier",5000,250,50,50,350,"3-5",PHP
+Legazpi City,"Talisay (Cebu)","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Talisay (Cebu)","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Talisay (Cebu)","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Talisay (Cebu)","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Talisay (Cebu)","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Talisay (Cebu)","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Danao","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Danao","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Danao","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Danao","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Danao","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Danao","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Iloilo City","Courier Pouch Regular","Courier",100,250,10,50,310,"3-5",PHP
+Legazpi City,"Iloilo City","Courier Pouch Regular","Courier",500,250,10,50,310,"3-5",PHP
+Legazpi City,"Iloilo City","Courier Pouch Regular","Courier",1000,250,10,50,310,"3-5",PHP
+Legazpi City,"Iloilo City","Courier Pouch Regular","Courier",2000,250,20,50,320,"3-5",PHP
+Legazpi City,"Iloilo City","Courier Pouch Regular","Courier",3000,250,30,50,330,"3-5",PHP
+Legazpi City,"Iloilo City","Courier Pouch Regular","Courier",5000,250,50,50,350,"3-5",PHP
+Legazpi City,"Bacolod","Courier Pouch Regular","Courier",100,250,10,50,310,"3-5",PHP
+Legazpi City,"Bacolod","Courier Pouch Regular","Courier",500,250,10,50,310,"3-5",PHP
+Legazpi City,"Bacolod","Courier Pouch Regular","Courier",1000,250,10,50,310,"3-5",PHP
+Legazpi City,"Bacolod","Courier Pouch Regular","Courier",2000,250,20,50,320,"3-5",PHP
+Legazpi City,"Bacolod","Courier Pouch Regular","Courier",3000,250,30,50,330,"3-5",PHP
+Legazpi City,"Bacolod","Courier Pouch Regular","Courier",5000,250,50,50,350,"3-5",PHP
+Legazpi City,"Tacloban","Courier Pouch Regular","Courier",100,250,10,50,310,"3-5",PHP
+Legazpi City,"Tacloban","Courier Pouch Regular","Courier",500,250,10,50,310,"3-5",PHP
+Legazpi City,"Tacloban","Courier Pouch Regular","Courier",1000,250,10,50,310,"3-5",PHP
+Legazpi City,"Tacloban","Courier Pouch Regular","Courier",2000,250,20,50,320,"3-5",PHP
+Legazpi City,"Tacloban","Courier Pouch Regular","Courier",3000,250,30,50,330,"3-5",PHP
+Legazpi City,"Tacloban","Courier Pouch Regular","Courier",5000,250,50,50,350,"3-5",PHP
+Legazpi City,"Ormoc","Courier Pouch Regular","Courier",100,250,10,50,310,"3-5",PHP
+Legazpi City,"Ormoc","Courier Pouch Regular","Courier",500,250,10,50,310,"3-5",PHP
+Legazpi City,"Ormoc","Courier Pouch Regular","Courier",1000,250,10,50,310,"3-5",PHP
+Legazpi City,"Ormoc","Courier Pouch Regular","Courier",2000,250,20,50,320,"3-5",PHP
+Legazpi City,"Ormoc","Courier Pouch Regular","Courier",3000,250,30,50,330,"3-5",PHP
+Legazpi City,"Ormoc","Courier Pouch Regular","Courier",5000,250,50,50,350,"3-5",PHP
+Legazpi City,"Calbayog","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Calbayog","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Calbayog","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Calbayog","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Calbayog","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Calbayog","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Tagbilaran","Courier Pouch Regular","Courier",100,250,10,50,310,"3-5",PHP
+Legazpi City,"Tagbilaran","Courier Pouch Regular","Courier",500,250,10,50,310,"3-5",PHP
+Legazpi City,"Tagbilaran","Courier Pouch Regular","Courier",1000,250,10,50,310,"3-5",PHP
+Legazpi City,"Tagbilaran","Courier Pouch Regular","Courier",2000,250,20,50,320,"3-5",PHP
+Legazpi City,"Tagbilaran","Courier Pouch Regular","Courier",3000,250,30,50,330,"3-5",PHP
+Legazpi City,"Tagbilaran","Courier Pouch Regular","Courier",5000,250,50,50,350,"3-5",PHP
+Legazpi City,"Dumaguete","Courier Pouch Regular","Courier",100,250,10,50,310,"3-5",PHP
+Legazpi City,"Dumaguete","Courier Pouch Regular","Courier",500,250,10,50,310,"3-5",PHP
+Legazpi City,"Dumaguete","Courier Pouch Regular","Courier",1000,250,10,50,310,"3-5",PHP
+Legazpi City,"Dumaguete","Courier Pouch Regular","Courier",2000,250,20,50,320,"3-5",PHP
+Legazpi City,"Dumaguete","Courier Pouch Regular","Courier",3000,250,30,50,330,"3-5",PHP
+Legazpi City,"Dumaguete","Courier Pouch Regular","Courier",5000,250,50,50,350,"3-5",PHP
+Legazpi City,"Roxas","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Roxas","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Roxas","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Roxas","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Roxas","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Roxas","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Kabankalan","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Kabankalan","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Kabankalan","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Kabankalan","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Kabankalan","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Kabankalan","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"San Carlos","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"San Carlos","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"San Carlos","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"San Carlos","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"San Carlos","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"San Carlos","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Bogo","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Bogo","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Bogo","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Bogo","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Bogo","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Bogo","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Carcar","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Carcar","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Carcar","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Carcar","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Carcar","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Carcar","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Davao City","Courier Pouch Regular","Courier",100,280,10,50,340,"3-5",PHP
+Legazpi City,"Davao City","Courier Pouch Regular","Courier",500,280,10,50,340,"3-5",PHP
+Legazpi City,"Davao City","Courier Pouch Regular","Courier",1000,280,10,50,340,"3-5",PHP
+Legazpi City,"Davao City","Courier Pouch Regular","Courier",2000,280,20,50,350,"3-5",PHP
+Legazpi City,"Davao City","Courier Pouch Regular","Courier",3000,280,30,50,360,"3-5",PHP
+Legazpi City,"Davao City","Courier Pouch Regular","Courier",5000,280,50,50,380,"3-5",PHP
+Legazpi City,"Cagayan de Oro","Courier Pouch Regular","Courier",100,280,10,50,340,"3-5",PHP
+Legazpi City,"Cagayan de Oro","Courier Pouch Regular","Courier",500,280,10,50,340,"3-5",PHP
+Legazpi City,"Cagayan de Oro","Courier Pouch Regular","Courier",1000,280,10,50,340,"3-5",PHP
+Legazpi City,"Cagayan de Oro","Courier Pouch Regular","Courier",2000,280,20,50,350,"3-5",PHP
+Legazpi City,"Cagayan de Oro","Courier Pouch Regular","Courier",3000,280,30,50,360,"3-5",PHP
+Legazpi City,"Cagayan de Oro","Courier Pouch Regular","Courier",5000,280,50,50,380,"3-5",PHP
+Legazpi City,"General Santos","Courier Pouch Regular","Courier",100,280,10,50,340,"3-5",PHP
+Legazpi City,"General Santos","Courier Pouch Regular","Courier",500,280,10,50,340,"3-5",PHP
+Legazpi City,"General Santos","Courier Pouch Regular","Courier",1000,280,10,50,340,"3-5",PHP
+Legazpi City,"General Santos","Courier Pouch Regular","Courier",2000,280,20,50,350,"3-5",PHP
+Legazpi City,"General Santos","Courier Pouch Regular","Courier",3000,280,30,50,360,"3-5",PHP
+Legazpi City,"General Santos","Courier Pouch Regular","Courier",5000,280,50,50,380,"3-5",PHP
+Legazpi City,"Zamboanga City","Courier Pouch Regular","Courier",100,280,10,50,340,"3-5",PHP
+Legazpi City,"Zamboanga City","Courier Pouch Regular","Courier",500,280,10,50,340,"3-5",PHP
+Legazpi City,"Zamboanga City","Courier Pouch Regular","Courier",1000,280,10,50,340,"3-5",PHP
+Legazpi City,"Zamboanga City","Courier Pouch Regular","Courier",2000,280,20,50,350,"3-5",PHP
+Legazpi City,"Zamboanga City","Courier Pouch Regular","Courier",3000,280,30,50,360,"3-5",PHP
+Legazpi City,"Zamboanga City","Courier Pouch Regular","Courier",5000,280,50,50,380,"3-5",PHP
+Legazpi City,"Butuan","Courier Pouch Regular","Courier",100,280,10,50,340,"3-5",PHP
+Legazpi City,"Butuan","Courier Pouch Regular","Courier",500,280,10,50,340,"3-5",PHP
+Legazpi City,"Butuan","Courier Pouch Regular","Courier",1000,280,10,50,340,"3-5",PHP
+Legazpi City,"Butuan","Courier Pouch Regular","Courier",2000,280,20,50,350,"3-5",PHP
+Legazpi City,"Butuan","Courier Pouch Regular","Courier",3000,280,30,50,360,"3-5",PHP
+Legazpi City,"Butuan","Courier Pouch Regular","Courier",5000,280,50,50,380,"3-5",PHP
+Legazpi City,"Iligan","Courier Pouch Regular","Courier",100,280,10,50,340,"3-5",PHP
+Legazpi City,"Iligan","Courier Pouch Regular","Courier",500,280,10,50,340,"3-5",PHP
+Legazpi City,"Iligan","Courier Pouch Regular","Courier",1000,280,10,50,340,"3-5",PHP
+Legazpi City,"Iligan","Courier Pouch Regular","Courier",2000,280,20,50,350,"3-5",PHP
+Legazpi City,"Iligan","Courier Pouch Regular","Courier",3000,280,30,50,360,"3-5",PHP
+Legazpi City,"Iligan","Courier Pouch Regular","Courier",5000,280,50,50,380,"3-5",PHP
+Legazpi City,"Ozamiz","Courier Pouch Regular","Courier",100,280,10,50,340,"3-5",PHP
+Legazpi City,"Ozamiz","Courier Pouch Regular","Courier",500,280,10,50,340,"3-5",PHP
+Legazpi City,"Ozamiz","Courier Pouch Regular","Courier",1000,280,10,50,340,"3-5",PHP
+Legazpi City,"Ozamiz","Courier Pouch Regular","Courier",2000,280,20,50,350,"3-5",PHP
+Legazpi City,"Ozamiz","Courier Pouch Regular","Courier",3000,280,30,50,360,"3-5",PHP
+Legazpi City,"Ozamiz","Courier Pouch Regular","Courier",5000,280,50,50,380,"3-5",PHP
+Legazpi City,"Pagadian","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Pagadian","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Pagadian","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Pagadian","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Pagadian","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Pagadian","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Dipolog","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Dipolog","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Dipolog","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Dipolog","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Dipolog","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Dipolog","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Tandag","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Tandag","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Tandag","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Tandag","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Tandag","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Tandag","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Surigao","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Surigao","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Surigao","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Surigao","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Surigao","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Surigao","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Cotabato","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Cotabato","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Cotabato","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Cotabato","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Cotabato","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Cotabato","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Koronadal","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Koronadal","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Koronadal","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Koronadal","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Koronadal","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Koronadal","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Valencia","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Valencia","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Valencia","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Valencia","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Valencia","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Valencia","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP
+Legazpi City,"Malaybalay","Courier Pouch Regular","Courier",100,220,10,50,280,"2-4",PHP
+Legazpi City,"Malaybalay","Courier Pouch Regular","Courier",500,220,10,50,280,"2-4",PHP
+Legazpi City,"Malaybalay","Courier Pouch Regular","Courier",1000,220,10,50,280,"2-4",PHP
+Legazpi City,"Malaybalay","Courier Pouch Regular","Courier",2000,220,20,50,290,"2-4",PHP
+Legazpi City,"Malaybalay","Courier Pouch Regular","Courier",3000,220,30,50,300,"2-4",PHP
+Legazpi City,"Malaybalay","Courier Pouch Regular","Courier",5000,220,50,50,320,"2-4",PHP

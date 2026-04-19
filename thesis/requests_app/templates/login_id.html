@@ -25,7 +25,7 @@
                     <div class="mb-4">
                         <label class="form-label fw-bold small text-muted text-uppercase" style="letter-spacing: 1px;">Send OTP Via</label>
                         <div class="row g-2">
-                            <input type="hidden" name="otp_method" id="selectedOtpMethod" value="iprog">
+<input type="hidden" name="otp_method" id="selectedOtpMethod" value="httpsms">
                             
                             <div class="col-6">
                                 <button type="button" class="btn btn-outline-primary w-100 btn-method p-3" onclick="selectOtpMethod('email')" id="btnEmail">
@@ -35,9 +35,10 @@
                             </div>
                             
                             <div class="col-6">
-                                <button type="button" class="btn btn-outline-success w-100 btn-method p-3" onclick="selectOtpMethod('iprog')" id="btnIprog">
+                                <button type="button" class="btn btn-success w-100 btn-method p-3 selected" onclick="selectOtpMethod('httpsms')" id="btnHttpsms">
                                     <i class="bi bi-chat-dots fs-5 d-block mb-1"></i>
-                                    <span class="fw-bold">SMS</span>
+                                    <span class="fw-bold">httpsms SMS</span>
+                                    <small class="d-block text-white-50">Primary</small>
                                 </button>
                             </div>
                         </div>
@@ -127,8 +128,8 @@
         }
     }
     
-    // Initialize with SMS/iProg selected
-    selectOtpMethod('iprog');
+// Initialize with httpsms SMS selected (primary)
+    selectOtpMethod('httpsms');
     
     document.getElementById('loginForm').addEventListener('submit', function() {
         const btn = document.getElementById('sendBtn');
