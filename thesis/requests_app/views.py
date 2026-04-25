@@ -1243,7 +1243,13 @@ def cashier_dashboard(request):
         elif action == "issue_receipt":
             # Issue and finalize summary - make it visible to student
             batch = DocumentRequest.objects.filter(batch_id=doc_req.batch_id)
-            batch.update(status="PROCESSING")
+            
+            # For PAID requests, keep status as PAID (don't revert to PROCESSING)
+            # For other statuses, set to PROCESSING for Registrar to mark as READY
+            for item in batch:
+                if item.status != "PAID":
+                    item.status = "PROCESSING"
+                item.save()
             
             log_audit(
                 request.user,
@@ -1921,7 +1927,7 @@ def tor_dashboard(request):
         )
         .exclude(document_type__name__icontains="Authentication")
         .select_related("document_type", "student")
-        .order_by("-created_at")
+        .order_by("created_at")
     )
 
     # Also get TRANSCRIPT requests in PENDING_TOR_COUNT status
@@ -2033,15 +2039,24 @@ def submit_tor_page_count(request):
             doc_request.tor_price_override = tor_base_price
             doc_request.save()
 
-            # Check if student has any previous TOR/Transcript requests in the permanent TORRequestHistory
-            # This cannot be deleted by students, so it serves as a permanent record
-            has_previous_tor = TORRequestHistory.objects.filter(student=doc_request.student).exists()
+            # Check if student has any previous COMPLETED/READY TOR/Transcript requests
+            # This checks DocumentRequest directly, not TORRequestHistory which is only created after mark_done
+            has_previous_tor = DocumentRequest.objects.filter(
+                Q(
+                    student=doc_request.student,
+                    status__in=['COMPLETED', 'READY'],
+                    is_deleted=False,
+                    document_type__name__icontains='TOR'
+                ) | Q(
+                    student=doc_request.student,
+                    status__in=['COMPLETED', 'READY'],
+                    is_deleted=False,
+                    document_type__name__icontains='TRANSCRIPT'
+                )
+            ).exclude(id=doc_request.id).exists()
 
-            # Check if this is a FREE TOR request (tor_price_override = 0 OR first TOR request)
-            is_free_tor = (
-                doc_request.tor_price_override is not None
-                and doc_request.tor_price_override == 0
-            ) or (not has_previous_tor)
+            # Check if this is a FREE TOR request (only free on first TOR/Transcript request)
+            is_free_tor = not has_previous_tor
 
             # Check if there's a batch with other requests
             if doc_request.batch_id:
@@ -2070,7 +2085,7 @@ def submit_tor_page_count(request):
                     # This is a FREE TOR request - no payment needed
                     doc_request.tor_price_override = 0
                     doc_request.status = (
-                        "PAID"  # Free TOR is considered paid immediately
+                        "PROCESSING"  # Changed from PAID to PROCESSING to avoid showing "PAYMENT RECEIVED" before actual processing
                     )
                     doc_request.save()
 
@@ -2079,7 +2094,7 @@ def submit_tor_page_count(request):
                         # This shouldn't happen since we set is_free_tor based on history, but just in case
                         message = f"Your TOR request ({doc_request.document_type.name}) has been processed. {page_count} pages. Total: ₱{tor_price}. Please proceed to payment."
                     else:
-                        message = f"Your TOR request ({doc_request.document_type.name}) has been processed. {page_count} pages. Your first TOR request is FREE!"
+                        message = f"Your TOR request ({doc_request.document_type.name}) has been processed. {page_count} pages. Your first TOR request is FREE! Your document is now being processed."
 
                     Notification.objects.create(
                         user=doc_request.student,
@@ -2093,13 +2108,13 @@ def submit_tor_page_count(request):
                         "UPDATE",
                         "DocumentRequest",
                         str(doc_request.id),
-                        f"TOR page count set to {page_count}. FREE request - marked as PAID.",
+                        f"TOR page count set to {page_count}. FREE request - marked as PROCESSING.",
                     )
 
                     return JsonResponse(
                         {
                             "success": True,
-                            "message": f"Page count submitted. FREE TOR - marked as PAID.",
+                            "message": f"Page count submitted. FREE TOR - marked as PROCESSING.",
                         }
                     )
                 else:
