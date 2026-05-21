@@ -1,44 +1,34 @@
-@startuml Login & OTP Verification Sequence
-skinparam dpi 300
-skinparam fontSize 14
-skinparam entityFontSize 14
-skinparam classFontSize 14
-skinparam noteFontSize 14
-skinparam actorFontSize 14
-skinparam rectangleFontSize 14
-skinparam participantFontSize 14
-skinparam collectionsFontSize 14
+@startuml Login and OTP Verification
 !theme plain
+autonumber
 
 actor Student
-participant ":LoginView" as Login
-participant ":OTPToken" as OTP
-participant "iProg SMS API" as SMS
-participant ":VerifyOTPView" as Verify
-participant ":User" as User
+participant "Web UI" as UI
+participant "Auth View" as Auth
+participant "StudentMasterList" as MasterList
+participant "User / OTPToken" as OTP
+participant "HTTPSMS API" as SMS
 
-Student -> Login: Enter Student ID
-Login -> Login: Validate Student ID
-Login -> OTP: Create OTP Token
-OTP -> OTP: Generate 6-digit code
-OTP -> OTP: Generate Google Auth Secret
-alt Email Delivery
-    Login -> Login: Send OTP via Email
-else SMS Delivery
-    Login -> SMS: Send OTP Code
-    SMS --> Student: OTP SMS
-end
-Student -> Verify: Enter OTP Code
-Verify -> OTP: Verify OTP Code
-alt Google Auth
-    OTP -> OTP: Verify TOTP Code
-end
-alt Success
-    OTP -> Verify: Mark Verified
-    Verify -> User: Login User
-    User -> Student: Redirect to Dashboard
-else Failed
-    Verify --> Student: Show Error
+Student -> UI : Enter student ID
+UI -> Auth : POST login request
+Auth -> MasterList : Validate student_id exists
+MasterList --> Auth : Student profile
+Auth -> OTP : Create or refresh OTPToken
+OTP --> Auth : OTP code and secret
+
+Auth -> SMS : Send OTP
+SMS --> Auth : delivery result
+
+Auth --> UI : Redirect to OTP verification page
+Student -> UI : Submit OTP
+UI -> Auth : POST verify OTP
+Auth -> OTP : verify_otp_code(code)
+OTP --> Auth : valid / invalid
+
+alt Valid OTP
+  Auth --> UI : Create session and open dashboard
+else Invalid OTP
+  Auth --> UI : Show error and retry
 end
 
 @enduml

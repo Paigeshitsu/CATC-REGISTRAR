@@ -1,0 +1,40 @@
+@startuml Login and OTP Verification
+!theme plain
+autonumber
+
+actor Student
+participant "Web UI" as UI
+participant "Auth View" as Auth
+participant "StudentMasterList" as MasterList
+participant "User / OTPToken" as OTP
+participant "SMS API" as SMS
+participant "SMTP Email Service" as Mail
+
+Student -> UI : Enter student ID and OTP channel
+UI -> Auth : POST login request
+Auth -> MasterList : Validate student_id exists
+MasterList --> Auth : Student profile
+Auth -> OTP : Create or refresh OTPToken
+OTP --> Auth : OTP code and secret
+
+alt OTP by SMS
+  Auth -> SMS : Send OTP
+  SMS --> Auth : delivery result
+else OTP by Email
+  Auth -> Mail : Send OTP email
+  Mail --> Auth : delivery result
+end
+
+Auth --> UI : Redirect to OTP verification page
+Student -> UI : Submit OTP
+UI -> Auth : POST verify OTP
+Auth -> OTP : verify_otp_code(code)
+OTP --> Auth : valid / invalid
+
+alt Valid OTP
+  Auth --> UI : Create session and open dashboard
+else Invalid OTP
+  Auth --> UI : Show error and retry
+end
+
+@enduml

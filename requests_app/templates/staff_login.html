@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    body { background-color: #e9ecef !important; }
+    .staff-card { border-radius: 12px; overflow: hidden; }
+    /* This makes the Django form field look like a Bootstrap input */
+    input[type="text"], input[type="password"] {
+        display: block;
+        width: 100%;
+        padding: 0.375rem 0.75rem;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #212529;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+        transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    }
+    .card-header{
+        background-color: #0D6EFD;
+        color: #fff;
+    }
+    .card-header h4{ 
+        text-align: center;
+        font-weight: bold;
+    }
+    .card-header h5{
+        text-align: center;
+        font-size: 15px;
+    }
+    .staff-login-btn {
+    width: 70%;
+    padding: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    background-color: #0D6EFD;
+    border-radius: 8px;
+    border: none;
+    color: #fff;
+    transition: all 0.3s ease;
+}
+
+.staff-login-btn:hover {
+    background-color: #0b5ed7;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(13, 110, 253, 0.35);
+}
+
+.staff-login-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 3px 8px rgba(13, 110, 253, 0.3);
+}
+
+
+</style>
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5 col-lg-4">
+        <div class="card shadow-lg staff-card border-0">
+            <div class="card-header">
+                <h4>Staff Login</h4>
+                <h5>Registrar & Cashier Access</h5>
+            </div>
+
+            <div class="card-body p-4 bg-white">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-danger py-2 small">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Cleaned Username Field -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-muted small">USERNAME</label>
+                        {{ form.username }}
+                    </div>
+
+                    <!-- Cleaned Password Field -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-muted small">PASSWORD</label>
+                        {{ form.password }}
+                    </div>
+
+                    <div class="d-flex justify-content-center">
+                        <button type="submit" class="btn staff-login-btn">
+                            LOGIN
+                        </button>
+                    </div>
+
+                </form>
+                
+                <div class="text-center mt-4">
+                    <a href="{% url 'login' %}" class="text-muted small text-decoration-none">← Switch to Student Portal</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block footer %}{% endblock %}

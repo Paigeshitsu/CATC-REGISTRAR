@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header Banner -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg overflow-hidden" style="border-radius: 20px; background: linear-gradient(135deg, #fd7e14, #d6331c);">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h3 class="fw-bold mb-1 text-white"><i class="bi bi-cash-coin"></i> Cashier Payment Terminal</h3>
+                            <p class="mb-0 text-white opacity-75">Process document payments and manage transactions.</p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <div class="text-white">
+                                <div class="fw-bold">{{ user.username }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-4">
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-secondary btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#collectionHistoryModal">
+                <i class="bi bi-clock-history"></i> Collection History
+            </button>
+        </div>
+    </div>
+
+    <!-- UNIFIED PAYMENT QUEUE -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-dark text-white py-3">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-list-check"></i> Payment Queue</h5>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light small text-uppercase">
+                    <tr>
+                        <th class="ps-4">Student ID</th>
+                        <th>Documents</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in all_payments %}
+                    <tr>
+                        <td class="ps-4 fw-bold">{{ r.student.username }}</td>
+                        <td>
+                            <div>{{ r.document_type.name }}</div>
+                            {% if r.rush_processing %}
+                            <span class="badge bg-warning text-dark small">RUSH</span>
+                            {% endif %}
+                            {% if r.batch_id %}
+                            <span class="badge bg-secondary small">Batch</span>
+                            {% endif %}
+                        </td>
+                        <td class="fw-bold">₱{{ r.display_amount }}</td>
+                        <td>
+                            {% if r.status == 'PAYMENT_REQUIRED' %}
+                            <span class="badge bg-danger">UNPAID</span>
+                            {% elif r.status == 'PENDING_CASHIER_APPROVAL' %}
+                            <span class="badge bg-warning text-dark">ONLINE PENDING</span>
+                            {% elif r.status == 'PAID' %}
+                            <span class="badge bg-success">PAID</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ r.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if r.status == 'PAYMENT_REQUIRED' %}
+                            <!-- Unpaid - Confirm Payment -->
+                            <form method="POST" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="request_id" value="{{ r.id }}">
+                                <button name="action" value="confirm_payment" class="btn btn-success btn-sm px-3">
+                                    <i class="bi bi-check-circle"></i> Confirm Payment
+                                </button>
+                            </form>
+                            {% elif r.status == 'PENDING_CASHIER_APPROVAL' %}
+                            <!-- Online Payment - Verify -->
+                            <form method="POST" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="request_id" value="{{ r.id }}">
+                                <button name="action" value="confirm_payment" class="btn btn-primary btn-sm px-3">
+                                    <i class="bi bi-check-circle"></i> Verify & Approve
+                                </button>
+                            </form>
+                            {% elif r.status == 'PAID' %}
+                            <!-- Paid - Issue Receipt -->
+                            <div class="d-flex justify-content-center gap-2">
+                                <form method="POST" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="request_id" value="{{ r.id }}">
+                                    <button name="action" value="issue_receipt" class="btn btn-dark btn-sm">
+                                        <i class="bi bi-receipt"></i> Issue Summary
+                                    </button>
+                                </form>
+                                <a href="{% url 'generate_receipt' r.id %}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-eye"></i> View Receipt
+                                </a>
+                            </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">No payment requests at this time.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- COLLECTION HISTORY MODAL -->
+    <div class="modal fade" id="collectionHistoryModal" tabindex="-1" aria-labelledby="collectionHistoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title fw-bold" id="collectionHistoryModalLabel"><i class="bi bi-clock-history me-2"></i> Collection History</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <form method="GET" class="border-bottom bg-light p-3">
+                        <input type="hidden" name="show_collection_history" value="1">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-lg-4">
+                                <label class="form-label small fw-bold text-muted mb-1">Search</label>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                    <input type="text" name="collection_search" class="form-control" value="{{ collection_filters.search }}" placeholder="Receipt, student, or document">
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-lg-2">
+                                <label class="form-label small fw-bold text-muted mb-1">Method</label>
+                                <select name="collection_method" class="form-select form-select-sm">
+                                    <option value="all" {% if collection_filters.method == 'all' %}selected{% endif %}>All Methods</option>
+                                    <option value="CASH" {% if collection_filters.method == 'CASH' %}selected{% endif %}>Cash</option>
+                                    <option value="ONLINE" {% if collection_filters.method == 'ONLINE' %}selected{% endif %}>Online</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 col-lg-2">
+                                <label class="form-label small fw-bold text-muted mb-1">Date Filter</label>
+                                <select name="collection_filter_type" class="form-select form-select-sm">
+                                    <option value="all" {% if collection_filters.filter_type == 'all' %}selected{% endif %}>All Dates</option>
+                                    <option value="daily" {% if collection_filters.filter_type == 'daily' %}selected{% endif %}>Daily</option>
+                                    <option value="weekly" {% if collection_filters.filter_type == 'weekly' %}selected{% endif %}>Weekly</option>
+                                    <option value="monthly" {% if collection_filters.filter_type == 'monthly' %}selected{% endif %}>Monthly</option>
+                                    <option value="yearly" {% if collection_filters.filter_type == 'yearly' %}selected{% endif %}>Yearly</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 col-lg-2">
+                                <label class="form-label small fw-bold text-muted mb-1">Target Date</label>
+                                <input type="date" name="collection_target_date" class="form-control form-control-sm" value="{{ collection_filters.target_date }}">
+                            </div>
+                            <div class="col-md-3 col-lg-2 d-flex gap-2">
+                                <button type="submit" class="btn btn-dark btn-sm flex-fill">
+                                    <i class="bi bi-funnel"></i> Filter
+                                </button>
+                                <a href="{% url 'cashier_dashboard' %}" class="btn btn-outline-secondary btn-sm">Clear</a>
+                            </div>
+                        </div>
+                        <div class="small text-muted mt-2">
+                            Showing <span class="fw-bold">{{ collection_history_count }}</span> collection record{{ collection_history_count|pluralize }}.
+                        </div>
+                    </form>
+                    <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-dark small text-uppercase">
+                            <tr>
+                                <th class="ps-4">Receipt №</th>
+                                <th>Student ID</th>
+                                <th>Student Name</th>
+                                <th>Amount</th>
+                                <th>Documents</th>
+                                <th>Method</th>
+                                <th>Date & Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for h in collection_history %}
+                            <tr>
+                                <td class="ps-4"><span class="badge bg-dark">№ {{ h.receipt_number }}</span></td>
+                                <td>{{ h.student_id }}</td>
+                                <td>{{ h.student_name }}</td>
+                                <td class="fw-bold">₱{{ h.amount_paid }}</td>
+                                <td class="small">{{ h.documents_included }}</td>
+                                <td><span class="badge bg-info text-dark">{{ h.get_payment_method_display }}</span></td>
+                                <td class="small">{{ h.created_at|date:"M d, Y H:i" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="7" class="text-center py-3 text-muted">No collection history found.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% if collection_filters.is_active %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var modalElement = document.getElementById('collectionHistoryModal');
+        if (modalElement && window.bootstrap) {
+            var collectionModal = new bootstrap.Modal(modalElement);
+            collectionModal.show();
+        }
+    });
+</script>
+{% endif %}
+{% endblock %}

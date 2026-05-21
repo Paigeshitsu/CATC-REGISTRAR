@@ -5,6 +5,7 @@ from .models import DocumentRequest, StudentMasterList, DocumentType
 class StudentIDLoginForm(forms.Form):
     OTP_METHOD_CHOICES = [
         ('email', 'Email'),
+        ('httpsms', 'SMS (HTTPSMS)'),
         ('iprog', 'SMS (iProg)'),
     ]
     

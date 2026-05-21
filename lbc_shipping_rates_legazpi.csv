@@ -1,0 +1,66 @@
+Document_Type,Product_Code,Origin_Region,Origin_Province,Origin_City,Destination_Region,Destination_Province,Destination_City,Price_PHP,Delivery_Days,Notes
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,LUZON,Albay,Legazpi City,70,0-1,Intra-province
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,LUZON,Albay,Tabaco,75,1,Intra-region
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,LUZON,Albay,Daraga,75,1,Intra-region
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,LUZON,Camarines Sur,Naga,85,1-2,Intra-region
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,LUZON,Sorsogon,Sorsogon City,90,2-3,Intra-region
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,LUZON,Masbate,Masbate City,95,2-3,Island
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,LUZON,Camarines Norte,Daet,90,2,Intra-region
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,LUZON,Catanduanes,Virac,100,3-4,Island
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,NCR,NCR,Manila (NCR),100,1-2,From South Luzon
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,NCR,NCR,Quezon City,100,1-2,From South Luzon
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,NCR,NCR,Caloocan,105,1-2,From South Luzon
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,NCR,NCR,Makati,105,1-2,From South Luzon
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,LUZON,Rizal,Antipolo,105,1-2,From South Luzon
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,LUZON,Cavite,Tagaytay,105,1-2,From South Luzon
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,LUZON,Cavite,Imus,110,1-2,From South Luzon
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,LUZON,Laguna,San Pedro,110,1-2,From South Luzon
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,LUZON,Laguna,San Pablo,110,1-2,From South Luzon
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,LUZON,Batangas,Batangas City,110,1-2,From South Luzon
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,LUZON,Batangas,Lipa,115,1-2,From South Luzon
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,LUZON,Quezon,Lucena,110,1-2,From South Luzon
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,LUZON,Pampanga,San Fernando,115,2,From South Luzon
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,LUZON,Bulanan,Malolos,120,2,From South Luzon
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,LUZON,Tarlac,Tarlac City,120,2,From South Luzon
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,LUZON,Zambales,Olongapo,125,2-3,From South Luzon
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,LUZON,Pangasinan,Dagupan,125,2-3,From North Luzon
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,LUZON,Ilocos Sur,Vigan,130,2-3,From North Luzon
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,LUZON,Ilocos Norte,Laoag,135,2-3,From North Luzon
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,LUZON,Cagayan,Tuguegarao,135,2-3,From North Luzon
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,LUZON,Isabela,Cauayan,130,2-3,From North Luzon
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,LUZON,Marinduque,Boac,100,2-3,Island
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,LUZON,Romblon,Romblon,105,3-4,Island
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,LUZON,Mindoro Oriental,Calapan,105,3,Island
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,LUZON,Mindoro Occidental,San Jose,110,3,Island
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,VISAYAS,Iloilo,Iloilo City,120,2-4,From Visayas origin
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,VISAYAS,Iloilo,Passi,115,2-3,From Visayas origin
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,VISAYAS,Negros Occidental,Bacolod,125,2-4,From Visayas origin
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,VISAYAS,Negros Oriental,Dumaguete,130,3-4,From Visayas origin
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,VISAYAS,Cebu,Cebu City,130,3-4,From Visayas origin
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,VISAYAS,Cebu,Mactan,130,3-4,From Visayas origin
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,VISAYAS,Bohol,Tagbilaran,135,3-5,From Visayas origin
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,VISAYAS,Samar,Catbalogan,135,3-5,From Visayas origin
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,VISAYAS,Leyte,Tacloban,135,3-5,From Visayas origin
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,VISAYAS,Leyte,Ormoc,130,3-4,From Visayas origin
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,VISAYAS,Eastern Samar,Borongan,140,4-5,From Visayas origin
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,VISAYAS,Antique,San Jose,130,3-4,From Visayas origin
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,VISAYAS,Aklan,Kalibo,130,3-4,From Visayas origin
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,VISAYAS,Capiz,Roxas,125,3-4,From Visayas origin
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,VISAYAS,Guimaras,Jordan,130,3-4,From Visayas origin
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,MINDANAO,Misamis Occidental,Oroquieta,140,3-5,From Mindanao origin
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,MINDANAO,Misamis Oriental,Cagayan de Oro,145,3-5,From Mindanao origin
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,MINDANAO,Bukidnon,Malaybalay,150,4-5,From Mindanao origin
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,MINDANAO,Lanao del Norte,Iligan,145,4-5,From Mindanao origin
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,MINDANAO,Lanao del Sur,Marawi,150,4-5,From Mindanao origin
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,MINDANAO,Maguindanao,Cotabato City,155,4-5,From Mindanao origin
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,MINDANAO,Sultan Kudarat,Isulan,160,5-6,From Mindanao origin
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,MINDANAO,Davao del Sur,Davao City,155,4-5,From Mindanao origin
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,MINDANAO,Davao del Norte,Tagum,160,5-6,From Mindanao origin
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,MINDANAO,Davao Oriental,Mati,165,5-6,From Mindanao origin
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,MINDANAO,Compostela Valley,Nabunturan,165,5-6,From Mindanao origin
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,MINDANAO,South Cotabato,General Santos,160,4-5,From Mindanao origin
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,MINDANAO,Sultan Kudarat,Koronadal,165,5-6,From Mindanao origin
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,MINDANAO,Cotabato,Cotabato City,155,4-5,From Mindanao origin
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,MINDANAO,Zamboanga del Norte,Dipolog,150,4-5,From Mindanao origin
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,MINDANAO,Zamboanga del Sur,Zamboanga City,155,4-5,From Mindanao origin
+N-Pouch Regular,Document,LUZON,Albay,Legazpi City,MINDANAO,Zamboanga Sibugay,Ipil,160,5-6,From Mindanao origin

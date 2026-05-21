@@ -12,9 +12,11 @@ urlpatterns = [
     path('api/mark-delivered/', views.mark_as_delivered, name='mark_as_delivered'),
     path('api/trackingmore/webhook/', views.trackingmore_webhook, name='trackingmore_webhook'),
     path('dashboard/', views.student_dashboard, name='student_dashboard'),
+    path('tracking/', views.system_tracking_page, name='system_tracking_page'),
     path('tor/dashboard/', views.tor_dashboard, name='tor_dashboard'),
     path('tor/submit-count/', views.submit_tor_page_count, name='submit_tor_page_count'),
     path('registrar/inbox/', views.registrar_dashboard, name='registrar_dashboard'),
+    path('courier/dashboard/', views.courier_dashboard, name='courier_dashboard'),
     
     path('cashier/terminal/', views.cashier_dashboard, name='cashier_dashboard'),
     path('cashier/receipt/<int:req_id>/', views.generate_receipt, name='generate_receipt'),

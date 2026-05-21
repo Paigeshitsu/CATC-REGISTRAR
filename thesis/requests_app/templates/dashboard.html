@@ -90,77 +90,14 @@
             </div>
         </div>
     </div>
-
-    <!-- Live Shipment Tracking Panel -->
-     {% comment %} REMOVED AUTO LIVE TRACKING BANNER - NOW ONLY MANUAL TRACKING IS DISPLAYED {% endcomment %}
-     {% comment %} Live tracking banner no longer automatically displays tracking numbers {% endcomment %}
-    <!-- Manual Tracking Search -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card border-0 shadow-lg" style="border-radius: 16px;">
-                <div class="card-body p-4">
-                    <div class="row align-items-center">
-                        <div class="col-md-6">
-                            <h5 class="fw-bold text-dark mb-1"><i class="bi bi-geo-alt-fill me-2 text-success"></i>Track Your Shipment</h5>
-                            <p class="text-muted mb-0">Enter your LBC tracking number to see live status</p>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="input-group">
-                                <input type="text" id="manualTrackingNumber" class="form-control form-control-lg" placeholder="Enter LBC Tracking Number" style="font-size: 1.1rem;">
-                                <button class="btn btn-success btn-lg fw-bold" type="button" onclick="manualTrack()">
-                                    <i class="bi bi-search"></i> TRACK
-                                </button>
-                            </div>
-                            <small class="text-muted mt-1 d-block">Your tracking number is saved automatically</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
     <script>
-    // Load saved tracking number from localStorage on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        var savedTracking = localStorage.getItem('manualTrackingNumber');
-        if (savedTracking) {
-            document.getElementById('manualTrackingNumber').value = savedTracking;
-        }
-    });
-
-    function manualTrack() {
-        var trackingNum = document.getElementById('manualTrackingNumber').value.trim();
-        if (trackingNum) {
-            // Save to localStorage so it persists
-            localStorage.setItem('manualTrackingNumber', trackingNum);
-            // Show modal explicitly first (prevent race condition)
-            var modalEl = document.getElementById('liveTrackingModal');
-            var modal = bootstrap.Modal.getOrCreateInstance(modalEl, {
-                backdrop: 'static',
-                keyboard: false
-            });
-            modal.show();
-            // Then fetch tracking
-            viewLiveTracking(trackingNum, false);
-        } else {
-            alert('Please enter a tracking number');
-        }
-    }
-     // Allow Enter key to trigger tracking
-     document.getElementById('manualTrackingNumber').addEventListener('keypress', function(e) {
-         if (e.key === 'Enter') {
-             e.preventDefault();
-             e.stopPropagation();
-             manualTrack();
-         }
-     });
-     
      function setTrackingNumber(trackingNum) {
-         // Set tracking number in the manual tracking input field
-         document.getElementById('manualTrackingNumber').value = trackingNum;
-         // Save to localStorage
-         localStorage.setItem('manualTrackingNumber', trackingNum);
-         // Automatically open live tracking modal
-         manualTrack();
+         var trackingPageBaseUrl = "{{ system_tracking_page_url|escapejs }}";
+         if (!trackingPageBaseUrl || !trackingNum) {
+             return;
+         }
+         var separator = trackingPageBaseUrl.indexOf('?') === -1 ? '?' : '&';
+         window.location.href = trackingPageBaseUrl + separator + 'tracking_number=' + encodeURIComponent(trackingNum);
       }
      </script>
 
@@ -377,9 +314,11 @@
             {% endif %}
                                               <!-- View Summary Button - Only available after cashier issues it -->
                                               {% if first_item.status == 'PROCESSING' or first_item.status == 'READY' or first_item.status == 'COMPLETED' %}
+                                                  {% if first_item.delivery_method != 'PICKUP' or first_item.receipt_number %}
                                                   <a href="{% url 'generate_receipt' first_item.id %}" target="_blank" class="btn btn-primary btn-sm fw-bold mb-1 me-1">
                                                       <i class="bi bi-receipt"></i> SUMMARY
                                                   </a>
+                                                  {% endif %}
                                               {% endif %}
                                               
                                               <!-- Tracking Number Button - Shows tracking number, click to view live tracking -->
@@ -443,7 +382,7 @@
                     <input type="hidden" name="action" value="update_tracking">
                     <input type="hidden" name="batch_id" value="{{ batch.grouper }}">
                     <div class="modal-body p-4">
-                        <p class="text-muted mb-3">Please book your shipping on LBC Express and enter the tracking number provided.</p>
+                        <p class="text-muted mb-3">Please book your shipping on LBC Express, then enter the tracking number so we can import it into TrackingMore.</p>
                         <div class="mb-3">
                             <a href="https://lbconline.lbcexpress.com/booknow" target="_blank" class="btn btn-outline-primary w-100 mb-3">
                                 <i class="bi bi-box-seam"></i> Book on LBC Express
@@ -1233,116 +1172,9 @@ receiver: {
         return cookieValue;
     }
 
-    // View Live Tracking from request history
-     function viewLiveTracking(trackingNumber, saveNotification) {
-        // Update modal with tracking number
-        document.getElementById('modal-tracking-number').textContent = trackingNumber;
-        document.getElementById('modal-tracking-status').textContent = 'LOADING...';
-        document.getElementById('modal-tracking-status').className = 'badge bg-warning';
-        document.getElementById('modal-tracking-timeline').innerHTML = '<div class="text-center py-3"><div class="spinner-border text-primary"></div></div>';
-
-        // Show modal FIRST, then fetch data (prevent race condition)
-        var modalEl = document.getElementById('liveTrackingModal');
-        var modal = bootstrap.Modal.getOrCreateInstance(modalEl, {
-            backdrop: 'static',
-            keyboard: false
-        });
-        modal.show();
-        
-         // Determine API endpoint
-         var apiEndpoint = saveNotification ? '/api/track/notify/' : '/api/track/';
-         var apiUrl = apiEndpoint + encodeURIComponent(trackingNumber) + '/';
-         
-         var fetchOptions = {
-             method: saveNotification ? 'POST' : 'GET',
-             headers: {
-                 'Content-Type': 'application/json',
-                 'X-CSRFToken': getCsrfToken()
-             }
-         };
-        
-        // Use fetch with proper error handling
-        fetch(apiUrl, fetchOptions)
-            .then(function(response) {
-                if (!response.ok) {
-                    throw new Error('HTTP error! status: ' + response.status);
-                }
-                return response.json();
-            })
-            .then(function(data) {
-                var trackingData = data.success ? data.data : data;
-                
-                // Update status
-                var statusBadge = document.getElementById('modal-tracking-status');
-                var markDeliveredBtn = document.getElementById('markDeliveredBtn');
-                if (trackingData && trackingData.status) {
-                    statusBadge.textContent = trackingData.status.toUpperCase();
-                    
-                    var statusLower = trackingData.status.toLowerCase();
-                    if (statusLower.includes('delivered')) {
-                        statusBadge.className = 'badge bg-success';
-                        markDeliveredBtn.style.display = 'none';
-                    } else if (statusLower.includes('transit') || statusLower.includes('shipment')) {
-                        statusBadge.className = 'badge bg-primary';
-                        markDeliveredBtn.style.display = 'inline-block';
-                    } else if (statusLower.includes('pending')) {
-                        statusBadge.className = 'badge bg-warning text-dark';
-                        markDeliveredBtn.style.display = 'inline-block';
-                    } else {
-                        statusBadge.className = 'badge bg-info';
-                        markDeliveredBtn.style.display = 'inline-block';
-                    }
-                } else {
-                    statusBadge.textContent = 'UNKNOWN';
-                    statusBadge.className = 'badge bg-secondary';
-                    markDeliveredBtn.style.display = 'inline-block';
-                }
-                
-                // Update timeline
-                var timelineEl = document.getElementById('modal-tracking-timeline');
-                if (trackingData && trackingData.timeline && trackingData.timeline.length > 0) {
-                    var timelineHTML = '';
-                    trackingData.timeline.forEach(function(item, index) {
-                        timelineHTML += '<div class="tracking-item">' +
-                            '<div class="small text-muted">' + (item.dateTime || 'Pending...') + '</div>' +
-                            '<div class="fw-bold text-' + (index === 0 ? 'success' : 'dark') + '">' + (item.status || 'Update') + '</div>' +
-                            '<div class="small text-info"><i class="bi bi-geo-alt"></i> ' + (item.location || 'Unknown') + '</div>' +
-                        '</div>';
-                    });
-                    timelineEl.innerHTML = timelineHTML;
-                } else {
-                    timelineEl.innerHTML = '<div class="text-center text-muted py-3">No tracking updates available yet.</div>';
-                }
-                
-                // Show notification saved message if applicable
-                if (saveNotification && data.notification_saved) {
-                    console.log('Notification saved successfully');
-                }
-            })
-             .catch(function(error) {
-                 console.error('Tracking API error:', error);
-                 // Fallback to show mock data when API fails
-                 document.getElementById('modal-tracking-status').textContent = 'AVAILABLE';
-                 document.getElementById('modal-tracking-status').className = 'badge bg-info';
-                 
-                 // Always show the tracking number and at least initial timeline
-                 document.getElementById('modal-tracking-timeline').innerHTML = 
-                     '<div class="tracking-item">' +
-                         '<div class="small text-muted">' + new Date().toLocaleString() + '</div>' +
-                         '<div class="fw-bold text-success">Tracking number available</div>' +
-                         '<div class="small text-info"><i class="bi bi-geo-alt"></i> Shipment pending processing</div>' +
-                     '</div>' +
-                     '<div class="tracking-item">' +
-                         '<div class="small text-muted">Pending...</div>' +
-                         '<div class="fw-bold text-dark">Awaiting LBC pickup</div>' +
-                         '<div class="small text-info"><i class="bi bi-geo-alt"></i> Legazpi City, Albay</div>' +
-                     '</div>' +
-                     '<div class="tracking-item">' +
-                         '<div class="small text-muted">Pending...</div>' +
-                         '<div class="fw-bold text-muted">In transit to destination</div>' +
-                         '<div class="small text-info"><i class="bi bi-geo-alt"></i> --</div>' +
-                     '</div>';
-             });
+    // View tracking from request history
+    function viewLiveTracking(trackingNumber, saveNotification) {
+        setTrackingNumber(trackingNumber);
     }
     
     // Refresh tracking in modal

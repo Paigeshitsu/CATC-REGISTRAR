@@ -27,14 +27,21 @@
                         <div class="row g-2">
                             <input type="hidden" name="otp_method" id="selectedOtpMethod" value="iprog">
                             
-                            <div class="col-6">
+                            <div class="col-4">
                                 <button type="button" class="btn btn-outline-primary w-100 btn-method p-3" onclick="selectOtpMethod('email')" id="btnEmail">
                                     <i class="bi bi-envelope fs-5 d-block mb-1"></i>
                                     <span class="fw-bold">Email</span>
                                 </button>
                             </div>
                             
-                            <div class="col-6">
+                            <div class="col-4">
+                                <button type="button" class="btn btn-outline-info w-100 btn-method p-3" onclick="selectOtpMethod('httpsms')" id="btnHttpsms">
+                                    <i class="bi bi-broadcast fs-5 d-block mb-1"></i>
+                                    <span class="fw-bold">HTTPSMS</span>
+                                </button>
+                            </div>
+
+                            <div class="col-4">
                                 <button type="button" class="btn btn-outline-success w-100 btn-method p-3" onclick="selectOtpMethod('iprog')" id="btnIprog">
                                     <i class="bi bi-chat-dots fs-5 d-block mb-1"></i>
                                     <span class="fw-bold">SMS</span>
@@ -91,6 +98,12 @@
         color: white;
         border-color: #0d6efd;
     }
+
+    #btnHttpsms.selected {
+        background-color: #0dcaf0;
+        color: white;
+        border-color: #0dcaf0;
+    }
     
     #btnIprog.selected {
         background-color: #198754;
@@ -122,6 +135,8 @@
         document.querySelectorAll('.btn-method').forEach(btn => btn.classList.remove('selected'));
         if (method === 'email') {
             document.getElementById('btnEmail').classList.add('selected');
+        } else if (method === 'httpsms') {
+            document.getElementById('btnHttpsms').classList.add('selected');
         } else if (method === 'iprog') {
             document.getElementById('btnIprog').classList.add('selected');
         }

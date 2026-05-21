@@ -1,0 +1,63 @@
+@startuml DFD Level 1 - Major Process Decomposition
+!theme plain
+
+skinparam rectangle {
+    BackgroundColor white
+    BorderColor black
+    FontName Arial
+}
+
+skinparam database {
+    BackgroundColor white
+    BorderColor black
+}
+
+actor Student
+actor Registrar
+actor Accounting
+actor Cashier
+actor Admin
+
+rectangle "CATC Document Request Portal" #lightblue {
+
+    rectangle "P1: Authentication\n& OTP Verification" as P1
+    rectangle "P2: Document Request\nSubmission" as P2
+    rectangle "P3: Payment\nProcessing" as P3
+    rectangle "P4: Request Status\nTracking" as P4
+    rectangle "P5: Request\nProcessing" as P5
+    rectangle "P6: Finance\nManagement" as P6
+    rectangle "P7: System\nAdministration" as P7
+
+    database "Database" as DB
+    
+    P1 --> DB : Read/Write User Data
+    P2 --> DB : Read/Write Document Requests
+    P3 --> DB : Read/Write Payments
+    P4 --> DB : Read Request Status
+    P5 --> DB : Update Status
+    P6 --> DB : Read/Write Transactions
+    P7 --> DB : Read/Write System Config
+}
+
+Student --> P1 : Login Request
+Student --> P2 : Submit Document Request
+Student --> P3 : Make Payment
+Student --> P4 : Track Status
+
+Registrar --> P5 : Process Request
+
+Accounting --> P6 : Manage Finances
+
+Cashier --> P3 : Process Cash Payment
+
+Admin --> P7 : System Administration
+
+P1 --> Student : OTP/Session Token
+P2 --> Student : Request Confirmation
+P3 --> Student : Payment Receipt
+P4 --> Student : Status Updates
+P5 --> Student : Notification
+P6 --> Student : Balance Info (optional)
+P7 --> Student : System Feedback
+
+@enduml

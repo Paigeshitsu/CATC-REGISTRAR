@@ -1,10 +1,9 @@
 # Business Model Canvas - CATC Document Request Portal
 
 ## Key Partners
-- iProg SMS API - OTP delivery
-- LBC Express - Document delivery/tracking
+- HTTPSMS - OTP and SMS notifications
+- TrackingMore - Shipment tracking integration
 - Xendit - Payment processing
-- Email/SMTP services - Notifications
 
 ## Key Activities
 - Document request processing
@@ -17,18 +16,19 @@
 - Student database (MasterList)
 - Document templates
 - Payment integration
-- SMS/Email services
+- HTTPSMS integration
+- TrackingMore integration
 
 ## Value Propositions
 - 24/7 online document requests
-- Fast OTP verification via SMS/email
-- Real-time tracking via LBC
+- Fast OTP verification via SMS
+- Real-time tracking via TrackingMore
 - Secure payment via Xendit
 - Rush processing option
 
 ## Customer Relationships
 - Self-service portal
-- SMS/Email notifications
+- SMS notifications
 - Real-time status updates
 
 ## Channels
@@ -46,7 +46,8 @@
 
 ## Cost Structure
 - Server hosting (PostgreSQL)
-- SMS API costs (iProg)
+- SMS API costs (HTTPSMS)
+- Tracking service costs (TrackingMore)
 - Payment processing fees (Xendit)
 - Domain/SSL certificates
 

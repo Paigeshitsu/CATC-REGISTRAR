@@ -139,13 +139,13 @@
                                     <span class="badge bg-warning text-dark small"><i class="bi bi-lightning-fill"></i> RUSH (1 Day)</span>
                                     {% endif %}
                                 </div>
-                                <!-- LBC TRACKING INPUT (Optional - auto-generated if empty) -->
+                                <!-- LBC TRACKING INPUT -->
                                 {% if first_item.delivery_method == 'LBC' %}
                                 <div class="d-flex align-items-center gap-2 me-2">
                                     <input type="text" name="tracking_number_input" class="form-control form-control-sm" 
-                                        placeholder="Auto-generate" style="width: 140px;"
+                                        placeholder="Enter LBC tracking # to import" style="width: 190px;"
                                         value="{{ first_item.tracking_number|default:'' }}">
-                                    <small class="text-muted" style="font-size: 0.65rem;">(Optional)</small>
+                                    <small class="text-muted" style="font-size: 0.65rem;">(Imported into TrackingMore)</small>
                                 </div>
                                 {% endif %}
 

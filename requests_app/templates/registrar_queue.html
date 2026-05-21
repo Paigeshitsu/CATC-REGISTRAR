@@ -1,0 +1,23 @@
+{% extends "base.html" %} <!-- Assuming you have a base.html, or just use standard HTML tags -->
+<body class="container mt-5">
+    <h2>Registrar Inbox: Document Requests</h2>
+    <table class="table table-striped mt-4">
+        <thead><tr><th>Student</th><th>Document</th><th>Reason</th><th>Action</th></tr></thead>
+        <tbody>
+            {% for req in requests %}
+            <tr>
+                <td>{{ req.student.username }}</td>
+                <td>{{ req.document_type.name }}</td>
+                <td>{{ req.reason }}</td>
+                <td>
+                    <form method="POST"> {% csrf_token %}
+                        <input type="hidden" name="req_id" value="{{ req.id }}">
+                        <button name="action" value="approve" class="btn btn-primary">Needs Payment</button>
+                        <button name="action" value="reject" class="btn btn-danger">Reject</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>

@@ -1,0 +1,33 @@
+@startuml Manage Finances and Balances
+!theme plain
+autonumber
+
+actor Accounting
+participant "Accounting Dashboard" as UI
+participant "Finance Service" as Finance
+participant "CollectionLog" as CollectionLog
+participant "StudentBalance" as Balance
+participant "AuditLog" as Audit
+participant "SMTP Email Service" as Mail
+
+Accounting -> UI : Open finance dashboard
+UI -> Finance : Load collections, balances, audit data
+Finance -> CollectionLog : Query payment history
+Finance -> Balance : Query outstanding balances
+Finance -> Audit : Query audit trail
+Finance --> UI : Render dashboard metrics
+
+alt Notify student of balance
+  Accounting -> UI : Click notify balance
+  UI -> Finance : notify_balance(balance_id)
+  Finance -> Mail : Send balance notice
+  Finance -> Balance : Update last_notified
+  Finance -> Audit : Record balance action
+else Clear student balance
+  Accounting -> UI : Click clear balance
+  UI -> Finance : clear_balance(balance_id)
+  Finance -> Balance : Set outstanding_amount = 0
+  Finance -> Audit : Record clearance
+end
+
+@enduml

@@ -1,45 +1,59 @@
 @startuml CATC Document Request Portal - Deployment Diagram
-skinparam fontSize 12
 !theme plain
+skinparam shadowing false
 top to bottom direction
 
-skinparam node {
-    BackgroundColor white
-    BorderColor #333
+node "Student Device" as StudentDevice {
+  artifact "Browser UI"
 }
 
-cloud "Internet" {
-    [Browser]
-    [Mobile App]
+node "Staff Device" as StaffDevice {
+  artifact "Browser UI"
 }
 
-node "Web Server" {
-    [Gunicorn]
-    [Nginx]
-    [Python]
-    [Django]
+cloud Internet
+
+node "Web / App Host" as AppHost {
+  node "Reverse Proxy" as Proxy {
+    artifact "Nginx / equivalent"
+  }
+
+  node "Django Runtime" as DjangoNode {
+    artifact "Gunicorn / Django Server"
+    artifact "Django Templates"
+    artifact "REST Endpoints"
+    artifact "Business Logic"
+  }
+
+  folder "Static / Media Storage" as FileStore
 }
 
-cloud "External Services" {
-    [iProg SMS]
-    [LBC]
-    [Email]
-    [Xendit]
+database "Relational Database" as DB
+
+cloud "External API Services" {
+  node "HTTPSMS Platform" as SMS
+  node "Xendit Platform" as Xendit
+  node "TrackingMore Platform" as TrackingMore
 }
 
-database "PostgreSQL"
+StudentDevice --> Internet
+StaffDevice --> Internet
+Internet --> Proxy
+Proxy --> DjangoNode
+DjangoNode --> DB
+DjangoNode --> FileStore
+DjangoNode --> SMS
+DjangoNode --> Xendit
+DjangoNode --> TrackingMore
 
-node "Admin" {
-    [Django Admin]
-}
-
-Browser -> Web_Server
-Mobile_App -> Web_Server
-Web_Server -> PostgreSQL
-Web_Server -> iProg_SMS
-Web_Server -> LBC
-Web_Server -> Email
-Web_Server -> Xendit
-Admin -> Web_Server
+note right of DjangoNode
+Main hosted modules:
+- student dashboard
+- registrar / TOR / cashier dashboards
+- accounting dashboard
+- courier dashboard
+- internal tracking page
+- webhook endpoints
+end note
 
 @enduml

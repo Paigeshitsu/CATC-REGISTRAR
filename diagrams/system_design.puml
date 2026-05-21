@@ -1,50 +1,115 @@
 @startuml CATC Document Request Portal - System Design
-skinparam fontSize 12
 !theme plain
+skinparam componentStyle rectangle
+skinparam shadowing false
+left to right direction
 
-rectangle "Client (Browser)" {
-    [Django Templates]
+actor Student
+actor Registrar
+actor "TOR Desk" as TORDesk
+actor Cashier
+actor Accounting
+actor Courier
+actor Admin
+
+rectangle "Presentation Layer" {
+  [Student Dashboard]
+  [Registrar Dashboard]
+  [TOR Dashboard]
+  [Cashier Dashboard]
+  [Accounting Dashboard]
+  [Courier Dashboard]
+  [System Tracking Page]
+  [Django Admin]
+  [REST Endpoints]
 }
+
+rectangle "Application Layer" {
+  [Authentication Service]
+  [Request Management Service]
+  [TOR Pricing Service]
+  [Payment Service]
+  [Courier Tracking Service]
+  [Notification Service]
+  [Reporting Service]
+  [Audit Service]
+}
+
+rectangle "Domain Layer" {
+  [User and Roles]
+  [Student Registry]
+  [Document Catalog]
+  [Document Requests]
+  [Payments and Receipts]
+  [Balances]
+  [Notifications]
+  [TOR History]
+}
+
+database "Relational Database\n(SQLite dev / PostgreSQL deployable)" as DB
 
 cloud "External Services" {
-    [iProg SMS API]
-    [LBC Express]
-    [Email Service]
+  [HTTPSMS API]
+  [Xendit API]
+  [TrackingMore API]
 }
 
-rectangle "Application Server" {
-    component "Django" {
-        [Routing]
-        [Views]
-        [Forms]
-    }
-    component "Services" {
-        [Auth]
-        [Request]
-        [Payment]
-        [Notification]
-    }
-    component "ORM" {
-        [Models]
-    }
-}
+Student --> [Student Dashboard]
+Student --> [System Tracking Page]
+Registrar --> [Registrar Dashboard]
+TORDesk --> [TOR Dashboard]
+Cashier --> [Cashier Dashboard]
+Accounting --> [Accounting Dashboard]
+Courier --> [Courier Dashboard]
+Admin --> [Django Admin]
 
-rectangle "Database" {
-    database "PostgreSQL"
-}
+[Student Dashboard] --> [Authentication Service]
+[Student Dashboard] --> [Request Management Service]
+[Student Dashboard] --> [Payment Service]
+[Student Dashboard] --> [Courier Tracking Service]
 
-Client -> Django
-Django -> Services
-Django -> ORM
-ORM -> PostgreSQL
-Services -> "External Services"
+[Registrar Dashboard] --> [Request Management Service]
+[Registrar Dashboard] --> [TOR Pricing Service]
+[TOR Dashboard] --> [TOR Pricing Service]
+[Cashier Dashboard] --> [Payment Service]
+[Accounting Dashboard] --> [Reporting Service]
+[Accounting Dashboard] --> [Audit Service]
+[Courier Dashboard] --> [Courier Tracking Service]
+[System Tracking Page] --> [Courier Tracking Service]
+[Django Admin] --> [User and Roles]
+[REST Endpoints] --> [Payment Service]
+[REST Endpoints] --> [Courier Tracking Service]
 
-note right of Django
-  Technology Stack:
-  - Django 4.x
-  - Python 3.x
-  - PostgreSQL
-  - Bootstrap 5
+[Authentication Service] --> [User and Roles]
+[Request Management Service] --> [Student Registry]
+[Request Management Service] --> [Document Catalog]
+[Request Management Service] --> [Document Requests]
+[TOR Pricing Service] --> [Document Requests]
+[TOR Pricing Service] --> [TOR History]
+[Payment Service] --> [Payments and Receipts]
+[Payment Service] --> [Balances]
+[Courier Tracking Service] --> [Document Requests]
+[Notification Service] --> [Notifications]
+[Audit Service] --> [Notifications]
+
+[User and Roles] --> DB
+[Student Registry] --> DB
+[Document Catalog] --> DB
+[Document Requests] --> DB
+[Payments and Receipts] --> DB
+[Balances] --> DB
+[Notifications] --> DB
+[TOR History] --> DB
+
+[Authentication Service] --> [HTTPSMS API]
+[Payment Service] --> [Xendit API]
+[Courier Tracking Service] --> [TrackingMore API]
+[Notification Service] --> [HTTPSMS API]
+
+note bottom of [Courier Tracking Service]
+Own-system tracking numbers are generated internally.
+Courier dashboard updates live statuses:
+Awaiting Courier Pickup -> Picked Up -> In Transit -> Delivered.
 end note
 
 @enduml

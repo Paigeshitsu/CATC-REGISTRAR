@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg overflow-hidden" style="border-radius: 20px; background: linear-gradient(135deg, #0dcaf0, #0d6efd);">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h3 class="fw-bold mb-1 text-white"><i class="bi bi-truck"></i> Courier Dashboard</h3>
+                            <p class="mb-0 text-white opacity-75">Manage LBC pickups and move shipments into the delivery pipeline.</p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <div class="text-white fw-bold">{{ user.username }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-12 col-xl-7">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-dark text-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-box-seam me-2"></i>Awaiting Courier Pickup</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% regroup pickup_queue by batch_id as pickup_batches %}
+                    {% if pickup_batches %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light small text-uppercase">
+                                <tr>
+                                    <th class="ps-4">Batch</th>
+                                    <th>Student</th>
+                                    <th>Tracking</th>
+                                    <th class="text-center">Pickup Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for batch in pickup_batches %}
+                                {% with first_item=batch.list.0 %}
+                                <tr>
+                                    <td class="ps-4">
+                                        <span class="badge bg-secondary">{{ batch.grouper }}</span>
+                                        <div class="small text-muted mt-1">{{ batch.list|length }} item(s)</div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold">{{ first_item.get_student_name }}</div>
+                                        <div class="small text-muted">{{ first_item.created_at|date:"M d, Y h:i A" }}</div>
+                                    </td>
+                                    <td>
+                                        {% if first_item.tracking_number %}
+                                        <code class="fw-bold text-primary">{{ first_item.tracking_number }}</code>
+                                        {% else %}
+                                        <span class="text-muted small">Pending courier assignment</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <form method="POST" class="d-inline-flex align-items-center gap-2 flex-wrap justify-content-center">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="mark_picked_up">
+                                            <input type="hidden" name="batch_id" value="{{ batch.grouper }}">
+                                            <select name="pickup_option" class="form-select form-select-sm" required>
+                                                <option value="">Pickup Option</option>
+                                                {% for value, label in pickup_option_choices %}
+                                                <option value="{{ value }}">{{ label }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <button type="submit" class="btn btn-primary btn-sm fw-bold">
+                                                Mark Picked Up
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endwith %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-inbox fs-1 opacity-25"></i>
+                        <p class="mt-2 mb-0 fw-bold">No LBC batches are waiting for courier pickup.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-5">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-signpost-split me-2"></i>Active Delivery Handoffs</h5>
+                </div>
+                <div class="card-body">
+                    {% regroup active_deliveries by batch_id as active_batches %}
+                    {% if active_batches %}
+                        {% for batch in active_batches %}
+                        {% with first_item=batch.list.0 %}
+                        <div class="border rounded p-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="badge bg-secondary">{{ batch.grouper }}</span>
+                                {% if first_item.status == 'IN_TRANSIT' %}
+                                <span class="badge bg-info">IN TRANSIT</span>
+                                {% else %}
+                                <span class="badge bg-warning text-dark">PICKED UP</span>
+                                {% endif %}
+                            </div>
+                            <div class="fw-bold">{{ first_item.get_student_name }}</div>
+                            <div class="small text-muted">{{ first_item.document_type.name }}</div>
+                            <div class="small mt-2">
+                                <strong>Tracking:</strong> <code>{{ first_item.tracking_number }}</code>
+                            </div>
+                            {% if first_item.courier_pickup_option %}
+                            <div class="small mt-1">
+                                <strong>Pickup Option:</strong> {{ first_item.get_courier_pickup_option_display }}
+                            </div>
+                            {% endif %}
+                            <form method="POST" class="mt-3">
+                                {% csrf_token %}
+                                <input type="hidden" name="batch_id" value="{{ batch.grouper }}">
+                                {% if first_item.status == 'PICKED_UP_AWAITING_DELIVERY' %}
+                                <input type="hidden" name="action" value="mark_in_delivery">
+                                <button type="submit" class="btn btn-primary btn-sm fw-bold">
+                                    Mark In Delivery
+                                </button>
+                                {% else %}
+                                <input type="hidden" name="action" value="mark_delivered">
+                                <button type="submit" class="btn btn-success btn-sm fw-bold">
+                                    Mark Delivered
+                                </button>
+                                {% endif %}
+                            </form>
+                        </div>
+                        {% endwith %}
+                        {% endfor %}
+                    {% else %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-truck fs-1 opacity-25"></i>
+                        <p class="mt-2 mb-0 fw-bold">No active courier handoffs yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Payment Summary - {{ student.student_id }}</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #333; line-height: 1.6; background-color: #f8f9fa; }
+        .container { max-width: 600px; margin: auto; border: 1px solid #dee2e6; padding: 30px; border-radius: 12px; background-color: #ffffff; }
+        .header { border-bottom: 3px solid #0d6efd; padding-bottom: 15px; margin-bottom: 25px; }
+        .header h2 { color: #0d6efd; margin: 0; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; }
+        th { background-color: #f8f9fa; font-size: 0.85rem; text-transform: uppercase; color: #666; }
+        .total-row { font-size: 1.2rem; font-weight: bold; color: #198754; }
+        
+        .btn-back {
+            display: inline-block;
+            padding: 12px 25px;
+            background-color: #0d6efd;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-back:hover { background-color: #0b5ed7; }
+        
+        .no-print { margin-bottom: 30px; }
+        
+        @media print {
+            .no-print { display: none; }
+            body { background-color: white; padding: 0; }
+            .container { border: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print">
+    <button onclick="window.close()" class="btn-back">
+        &larr; CLOSE AND RETURN TO DASHBOARD
+    </button>
+</div>
+
+    <div class="container">
+        <div class="header">
+            <h2>Payment Summary</h2>
+            <p style="margin-top: 10px;">
+                <strong>Student ID:</strong> {{ student.student_id }}<br>
+                <strong>Name:</strong> {{ student.full_name }}<br>
+                <strong>Date:</strong> {{ today|date:"M d, Y" }}<br>
+                <strong>Receipt No:</strong> {{ display_receipt_no }}
+                {% if receipt_tracking_id %}<br><strong>Tracking ID:</strong> {{ receipt_tracking_id }}{% elif is_lbc_delivery %}<br><strong>Tracking ID:</strong> Pending courier assignment{% endif %}
+                {% if trackingmore_tracking_url %}<br><strong>Tracking Link:</strong> <a href="{{ trackingmore_tracking_url }}" target="_blank" rel="noopener noreferrer">Open Tracking Status</a>{% endif %}
+            </p>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Document Type</th>
+                    <th style="text-align: right;">Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in summary_items %}
+                    <tr>
+                        <td>{{ item.name }}</td>
+                        <td style="text-align: right;">&#8369;{{ item.base_amount }}</td>
+                    </tr>
+                    {% if item.is_rush %}
+                    <tr>
+                        <td style="padding-left: 20px; color: #dc3545; font-size: 0.8rem;">Rush Processing (x2)</td>
+                        <td style="text-align: right;"></td>
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if is_lbc_delivery %}
+                    <tr>
+                        <td>LBC Shipping Fee</td>
+                        <td style="text-align: right;">&#8369;{{ lbc_charges.shipping_fee }}</td>
+                    </tr>
+                    <tr>
+                        <td>LBC Valuation Fee</td>
+                        <td style="text-align: right;">&#8369;{{ lbc_charges.valuation_fee }}</td>
+                    </tr>
+                {% endif %}
+                <tr class="total-row">
+                    <td>TOTAL AMOUNT</td>
+                    <td style="text-align: right;">&#8369;{{ total_amount }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

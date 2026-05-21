@@ -1,0 +1,61 @@
+@startuml CATC Document Request Portal - Deployment Diagram
+!theme plain
+skinparam shadowing false
+top to bottom direction
+
+node "Student Device" as StudentDevice {
+  artifact "Browser UI"
+}
+
+node "Staff Device" as StaffDevice {
+  artifact "Browser UI"
+}
+
+cloud Internet
+
+node "Web / App Host" as AppHost {
+  node "Reverse Proxy" as Proxy {
+    artifact "Nginx / equivalent"
+  }
+
+  node "Django Runtime" as DjangoNode {
+    artifact "Gunicorn / Django Server"
+    artifact "Django Templates"
+    artifact "REST Endpoints"
+    artifact "Business Logic"
+  }
+
+  folder "Static / Media Storage" as FileStore
+}
+
+database "Relational Database" as DB
+
+cloud "External API Services" {
+  node "SMS Gateway" as SMS
+  node "SMTP Mail Service" as Mail
+  node "Xendit Platform" as Xendit
+  node "TrackingMore Platform" as TrackingMore
+}
+
+StudentDevice --> Internet
+StaffDevice --> Internet
+Internet --> Proxy
+Proxy --> DjangoNode
+DjangoNode --> DB
+DjangoNode --> FileStore
+DjangoNode --> SMS
+DjangoNode --> Mail
+DjangoNode --> Xendit
+DjangoNode --> TrackingMore
+
+note right of DjangoNode
+Main hosted modules:
+- student dashboard
+- registrar / TOR / cashier dashboards
+- accounting dashboard
+- courier dashboard
+- internal tracking page
+- webhook endpoints
+end note
+
+@enduml

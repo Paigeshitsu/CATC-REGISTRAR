@@ -23,6 +23,8 @@ def role_required(allowed_roles=[]):
                     return redirect('cashier_dashboard')
                 elif 'Accounting' in user_groups:
                     return redirect('accounting_dashboard')
+                elif 'Courier' in user_groups:
+                    return redirect('courier_dashboard')
                 
                 # If they have no recognized role
                 messages.error(request, "Access Denied: Invalid Role.")

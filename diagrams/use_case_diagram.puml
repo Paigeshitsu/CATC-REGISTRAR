@@ -1,45 +1,76 @@
 @startuml CATC Document Request Portal - Use Case Diagram
-skinparam dpi 300
-skinparam fontSize 14
-skinparam actorFontSize 14
-skinparam usecaseFontSize 14
 !theme plain
 left to right direction
+skinparam shadowing false
 
-actor "Student" as Student
-actor "Registrar" as Registrar
-actor "Accounting" as Accounting
-actor "Cashier" as Cashier
-actor "Admin" as Admin
+actor Student
+actor Registrar
+actor "TOR Desk" as TORDesk
+actor Cashier
+actor Accounting
+actor Courier
+actor Admin
 
-package "CATC Document Request Portal" {
-    usecase "Login & OTP Verification" as UC1
-    usecase "Submit Document Request" as UC2
-    usecase "Make Payment" as UC3
-    usecase "Track Request Status" as UC4
-    usecase "Process Request\n(Approve/Mark Ready/Complete)" as UC5
-    usecase "Manage Finances\n(Transactions/Balances)" as UC6
-    usecase "Manage System\n(Document Prices/Users)" as UC7
+actor "HTTPSMS API" as SMSAPI
+actor "Xendit API" as XenditAPI
+actor "TrackingMore API" as TrackingMoreAPI
+
+rectangle "CATC Document Request Portal" {
+  usecase "Login and Verify OTP" as UC_Login
+  usecase "Submit Document Request" as UC_Submit
+  usecase "Book LBC Shipping Details" as UC_BookShipping
+  usecase "Pay Request Fees" as UC_Pay
+  usecase "Track Request and Shipment Status" as UC_Track
+  usecase "Review and Approve Requests" as UC_Approve
+  usecase "Set TOR Page Count" as UC_TOR
+  usecase "Mark Request Ready" as UC_Ready
+  usecase "Verify Payment and Issue Receipt" as UC_Receipt
+  usecase "Manage Collections and Balances" as UC_Finance
+  usecase "Update Courier Delivery Status" as UC_Courier
+  usecase "Manage Users, Prices, and Signatures" as UC_Admin
+  usecase "Send Notifications" as UC_Notify
+  usecase "Sync Payment Confirmation" as UC_XenditSync
+  usecase "Sync Tracking Updates" as UC_TrackingSync
 }
 
-actor "iProg SMS API" as SMS
-actor "LBC Express" as LBC
+Student --> UC_Login
+Student --> UC_Submit
+Student --> UC_BookShipping
+Student --> UC_Pay
+Student --> UC_Track
 
-Student --> UC1
-Student --> UC2
-Student --> UC3
-Student --> UC4
+Registrar --> UC_Approve
+Registrar --> UC_Ready
 
-Registrar --> UC5
+TORDesk --> UC_TOR
 
-Accounting --> UC6
+Cashier --> UC_Receipt
 
-Cashier --> UC3
-Cashier --> UC6
+Accounting --> UC_Finance
 
-Admin --> UC7
+Courier --> UC_Courier
 
-UC1 --> SMS : sends/verifies OTP
-UC4 --> LBC : provides tracking
+Admin --> UC_Admin
+
+UC_Submit .> UC_Notify : <<include>>
+UC_Approve .> UC_Notify : <<include>>
+UC_TOR .> UC_Notify : <<include>>
+UC_Ready .> UC_Notify : <<include>>
+UC_Receipt .> UC_Notify : <<include>>
+UC_Courier .> UC_Notify : <<include>>
+UC_Pay .> UC_XenditSync : <<include>>
+UC_Track .> UC_TrackingSync : <<include>>
+
+UC_Login --> SMSAPI : send OTP
+UC_Pay --> XenditAPI : create invoice
+UC_XenditSync --> XenditAPI : webhook confirmation
+UC_TrackingSync --> TrackingMoreAPI : register / receive updates
+UC_Track --> TrackingMoreAPI : optional live lookup
+UC_Notify --> SMSAPI : send status notice
+
+note bottom of UC_Courier
+Courier dashboard is the source of truth
+for live delivery status transitions.
+end note
 
 @enduml

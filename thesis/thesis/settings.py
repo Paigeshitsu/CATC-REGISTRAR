@@ -7,6 +7,13 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
+def _split_env_list(name, default=""):
+    raw_value = os.getenv(name, default)
+    if not raw_value:
+        return []
+    return [item.strip() for item in raw_value.split(",") if item.strip()]
+
 # 2. Security Settings from Env
 SECRET_KEY = os.getenv('SECRET_KEY')
 
@@ -15,8 +22,15 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 # Pull list from env, split by comma
 # This tells Django to split the string by the comma
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
+ALLOWED_HOSTS = _split_env_list('ALLOWED_HOSTS', '*')
 ALLOWED_HOSTS.append('127.0.0.1')  # Ensure localhost is always allowed
+ALLOWED_HOSTS.append('localhost')
+
+public_base_url = os.getenv('PUBLIC_BASE_URL', '').strip().rstrip('/')
+if public_base_url:
+    public_host = public_base_url.replace('https://', '').replace('http://', '').split('/')[0]
+    if public_host and public_host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(public_host)
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
@@ -51,6 +65,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://76.13.220.96",
     "https://catcreg.online",
 ]
+if public_base_url and public_base_url not in CORS_ALLOWED_ORIGINS:
+    CORS_ALLOWED_ORIGINS.append(public_base_url)
 
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
@@ -135,6 +151,11 @@ CSRF_TRUSTED_ORIGINS = [
     'https://catcreg.online',
     'https://www.catcreg.online'
 ]
+for origin in _split_env_list('CSRF_TRUSTED_ORIGINS'):
+    if origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(origin)
+if public_base_url and public_base_url not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append(public_base_url)
 
 # Only use Secure Cookies if not in Debug mode (Production)
 if not DEBUG:

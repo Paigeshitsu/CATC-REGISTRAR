@@ -1,0 +1,112 @@
+{"lvl":"info","msg":"no configuration paths supplied","t":"2026-04-26T12:15:07.3047311+08:00"}
+{"lvl":"info","msg":"using configuration at default config path","path":"C:\\Users\\User\\AppData\\Local\\ngrok\\ngrok.yml","t":"2026-04-26T12:15:07.3565079+08:00"}
+{"err":"\u003cnil\u003e","lvl":"info","msg":"open config file","path":"C:\\Users\\User\\AppData\\Local\\ngrok\\ngrok.yml","t":"2026-04-26T12:15:07.3573084+08:00"}
+{"enabled":false,"lvl":"info","msg":"FIPS 140 mode","t":"2026-04-26T12:15:07.3584542+08:00"}
+{"addr":"127.0.0.1:4040","allow_hosts":null,"lvl":"info","msg":"starting web service","obj":"web","t":"2026-04-26T12:15:07.3910712+08:00"}
+{"lvl":"info","msg":"client session established","obj":"tunnels.session","t":"2026-04-26T12:15:07.9492686+08:00"}
+{"lvl":"info","msg":"tunnel session started","obj":"tunnels.session","t":"2026-04-26T12:15:07.9553549+08:00"}
+{"addr":"http://localhost:8000","lvl":"info","msg":"started tunnel","name":"command_line","obj":"tunnels","t":"2026-04-26T12:15:08.5970092+08:00","url":"https://lexie-electroneutral-inconsiderately.ngrok-free.dev"}
+{"id":"ce12b62f6cf196c9","lvl":"info","msg":"start","pg":"/api/tunnels","t":"2026-04-26T12:15:22.1073667+08:00"}
+{"dur":"6.0666ms","id":"ce12b62f6cf196c9","lvl":"info","msg":"end","pg":"/api/tunnels","status":200,"t":"2026-04-26T12:15:22.1134333+08:00"}
+{"err":"read EOF from remote peer","id":"707a014d2a28","lvl":"eror","msg":"session closed, starting reconnect loop","obj":"csess","t":"2026-04-26T12:16:36.2484891+08:00"}
+{"clientid":"3e1c10e4d2a12cd9db2d524e3c71e922","id":"308a73e8ed5c","lvl":"eror","msg":"heartbeat timeout, terminating session","obj":"csess","t":"2026-04-26T12:16:36.2764377+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: i/o timeout","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T12:16:46.2560933+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: no such host","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T12:16:47.7998958+08:00"}
+{"err":"failed to send authentication request: session closed","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T12:17:11.6811525+08:00"}
+{"lvl":"info","msg":"client session established","obj":"tunnels.session","t":"2026-04-26T12:17:14.9552266+08:00"}
+{"lvl":"info","msg":"tunnel session started","obj":"tunnels.session","t":"2026-04-26T12:17:14.9613145+08:00"}
+{"id":"250de732ed253fb0","lvl":"info","msg":"start","pg":"/api/tunnels","t":"2026-04-26T12:20:02.3182645+08:00"}
+{"dur":"6.7753ms","id":"250de732ed253fb0","lvl":"info","msg":"end","pg":"/api/tunnels","status":200,"t":"2026-04-26T12:20:02.3250398+08:00"}
+{"clientid":"3e1c10e4d2a12cd9db2d524e3c71e922","id":"c4b4a2812c8e","lvl":"eror","msg":"heartbeat timeout, terminating session","obj":"csess","t":"2026-04-26T12:32:01.1400953+08:00"}
+{"err":"session closed","id":"707a014d2a28","lvl":"eror","msg":"session closed, starting reconnect loop","obj":"csess","t":"2026-04-26T12:32:01.1457521+08:00"}
+{"lvl":"info","msg":"client session established","obj":"tunnels.session","t":"2026-04-26T12:32:03.281155+08:00"}
+{"lvl":"info","msg":"tunnel session started","obj":"tunnels.session","t":"2026-04-26T12:32:03.2879421+08:00"}
+{"id":"b2496c4dbe6d0a8c","lvl":"info","msg":"start","pg":"/api/tunnels","t":"2026-04-26T12:33:23.4595503+08:00"}
+{"dur":"6.472ms","id":"b2496c4dbe6d0a8c","lvl":"info","msg":"end","pg":"/api/tunnels","status":200,"t":"2026-04-26T12:33:23.4660223+08:00"}
+{"id":"90da853c4934","l":"127.0.0.1:8000","lvl":"info","msg":"join connections","obj":"join","r":"111.90.199.69:36201","t":"2026-04-26T12:34:16.7050292+08:00"}
+{"id":"5d4a96bcc588c73c","lvl":"info","msg":"start","pg":"/api/tunnels","t":"2026-04-26T12:36:41.4237007+08:00"}
+{"dur":"1.1648ms","id":"5d4a96bcc588c73c","lvl":"info","msg":"end","pg":"/api/tunnels","status":200,"t":"2026-04-26T12:36:41.4248655+08:00"}
+{"err":"write tcp 10.48.27.188:53807-\u003e3.1.87.213:443: wsasend: An existing connection was forcibly closed by the remote host.","id":"707a014d2a28","lvl":"eror","msg":"session closed, starting reconnect loop","obj":"csess","t":"2026-04-26T12:39:22.0423038+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: no such host","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T12:39:22.4906997+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: no such host","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T12:39:22.9942646+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: no such host","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T12:39:23.9980137+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: no such host","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T12:39:25.9998895+08:00"}
+{"clientid":"3e1c10e4d2a12cd9db2d524e3c71e922","id":"ebf04fd8fcda","lvl":"eror","msg":"heartbeat timeout, terminating session","obj":"csess","t":"2026-04-26T12:39:27.739943+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: no such host","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T12:39:30.0135267+08:00"}
+{"lvl":"info","msg":"client session established","obj":"tunnels.session","t":"2026-04-26T12:39:44.2784749+08:00"}
+{"lvl":"info","msg":"tunnel session started","obj":"tunnels.session","t":"2026-04-26T12:39:44.2790861+08:00"}
+{"clientid":"3e1c10e4d2a12cd9db2d524e3c71e922","id":"f321a6e529a3","lvl":"eror","msg":"heartbeat timeout, terminating session","obj":"csess","t":"2026-04-26T12:40:17.2511224+08:00"}
+{"err":"session closed","id":"707a014d2a28","lvl":"eror","msg":"session closed, starting reconnect loop","obj":"csess","t":"2026-04-26T12:40:17.2511224+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: no such host","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T12:40:17.258691+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: no such host","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T12:40:17.7709959+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: no such host","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T12:40:18.7793287+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: no such host","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T12:40:20.7933481+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: no such host","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T12:40:24.8000079+08:00"}
+{"lvl":"info","msg":"client session established","obj":"tunnels.session","t":"2026-04-26T12:40:33.6806729+08:00"}
+{"lvl":"info","msg":"tunnel session started","obj":"tunnels.session","t":"2026-04-26T12:40:33.6826411+08:00"}
+{"clientid":"3e1c10e4d2a12cd9db2d524e3c71e922","id":"26c3f641f17b","lvl":"eror","msg":"heartbeat timeout, terminating session","obj":"csess","t":"2026-04-26T12:55:04.8091332+08:00"}
+{"err":"session closed","id":"707a014d2a28","lvl":"eror","msg":"session closed, starting reconnect loop","obj":"csess","t":"2026-04-26T12:55:04.895887+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: no such host","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T12:55:46.4834372+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: i/o timeout","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T12:55:57.0023422+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: no such host","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T12:55:59.0554342+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: i/o timeout","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T12:56:11.0590936+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: i/o timeout","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T12:56:25.0694827+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: no such host","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T12:56:33.0808873+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: no such host","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T12:56:49.1053095+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: i/o timeout","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T12:57:29.1131682+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: i/o timeout","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T12:58:09.1242463+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: no such host","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T12:58:39.1413358+08:00"}
+{"id":"d3e52853e9cf13ac","lvl":"info","msg":"start","pg":"/api/tunnels","t":"2026-04-26T12:59:07.9709847+08:00"}
+{"dur":"508.6µs","id":"d3e52853e9cf13ac","lvl":"info","msg":"end","pg":"/api/tunnels","status":200,"t":"2026-04-26T12:59:07.9714933+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: i/o timeout","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T12:59:19.1452421+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: no such host","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T12:59:49.1650356+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: i/o timeout","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T13:00:29.1720124+08:00"}
+{"id":"09becae3fd5906ba","lvl":"info","msg":"start","pg":"/api/tunnels","t":"2026-04-26T13:00:49.1135194+08:00"}
+{"dur":"3.061ms","id":"09becae3fd5906ba","lvl":"info","msg":"end","pg":"/api/tunnels","status":200,"t":"2026-04-26T13:00:49.1165804+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: i/o timeout","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T13:01:09.1783447+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: i/o timeout","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T13:01:49.1856016+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: i/o timeout","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T13:02:29.1945716+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: i/o timeout","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T13:03:09.2030989+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: no such host","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T13:03:39.2341547+08:00"}
+{"lvl":"info","msg":"client session established","obj":"tunnels.session","t":"2026-04-26T13:04:10.2757623+08:00"}
+{"lvl":"info","msg":"tunnel session started","obj":"tunnels.session","t":"2026-04-26T13:04:10.2819222+08:00"}
+{"id":"6d306742150b","l":"127.0.0.1:8000","lvl":"info","msg":"join connections","obj":"join","r":"111.90.199.69:62546","t":"2026-04-26T13:05:06.9894083+08:00"}
+{"id":"bd3c671f6a6a","l":"127.0.0.1:8000","lvl":"info","msg":"join connections","obj":"join","r":"111.90.199.69:62590","t":"2026-04-26T13:05:20.3824523+08:00"}
+{"id":"2d832b83d6c9","l":"127.0.0.1:8000","lvl":"info","msg":"join connections","obj":"join","r":"111.90.199.69:36351","t":"2026-04-26T13:06:39.1013683+08:00"}
+{"id":"41580c9341513bcc","lvl":"info","msg":"start","pg":"/api/tunnels","t":"2026-04-26T13:06:44.1541332+08:00"}
+{"dur":"2.364ms","id":"41580c9341513bcc","lvl":"info","msg":"end","pg":"/api/tunnels","status":200,"t":"2026-04-26T13:06:44.1564972+08:00"}
+{"id":"508a2966e8e4","l":"127.0.0.1:8000","lvl":"info","msg":"join connections","obj":"join","r":"111.90.199.69:8197","t":"2026-04-26T13:11:24.383497+08:00"}
+{"err":"read tcp 10.48.27.188:61485-\u003e54.255.3.198:443: wsarecv: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.","id":"707a014d2a28","lvl":"eror","msg":"session closed, starting reconnect loop","obj":"csess","t":"2026-04-26T13:44:50.8541811+08:00"}
+{"clientid":"3e1c10e4d2a12cd9db2d524e3c71e922","id":"d62062df898f","lvl":"eror","msg":"heartbeat timeout, terminating session","obj":"csess","t":"2026-04-26T13:44:51.5943247+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: i/o timeout","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T13:45:00.87216+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: no such host","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T13:45:02.1022838+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: i/o timeout","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T13:45:13.110008+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: i/o timeout","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T13:45:25.1260346+08:00"}
+{"lvl":"info","msg":"client session established","obj":"tunnels.session","t":"2026-04-26T13:45:32.5504592+08:00"}
+{"lvl":"info","msg":"tunnel session started","obj":"tunnels.session","t":"2026-04-26T13:45:32.5517434+08:00"}
+{"err":"read EOF from remote peer","id":"707a014d2a28","lvl":"eror","msg":"session closed, starting reconnect loop","obj":"csess","t":"2026-04-26T14:40:58.3745715+08:00"}
+{"clientid":"3e1c10e4d2a12cd9db2d524e3c71e922","id":"b8dc3b2cc791","lvl":"eror","msg":"heartbeat timeout, terminating session","obj":"csess","t":"2026-04-26T14:40:58.4018653+08:00"}
+{"err":"failed to send authentication request: EOF","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T14:41:13.4842709+08:00"}
+{"err":"failed to send authentication request: session closed","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T14:41:30.7016576+08:00"}
+{"lvl":"info","msg":"client session established","obj":"tunnels.session","t":"2026-04-26T14:41:38.2056074+08:00"}
+{"lvl":"info","msg":"tunnel session started","obj":"tunnels.session","t":"2026-04-26T14:41:38.2063008+08:00"}
+{"clientid":"3e1c10e4d2a12cd9db2d524e3c71e922","id":"8e6976308e66","lvl":"eror","msg":"heartbeat timeout, terminating session","obj":"csess","t":"2026-04-26T15:05:11.9069202+08:00"}
+{"err":"session closed","id":"707a014d2a28","lvl":"eror","msg":"session closed, starting reconnect loop","obj":"csess","t":"2026-04-26T15:05:11.9605029+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: i/o timeout","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T15:05:21.9700598+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: no such host","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T15:05:22.4968336+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: no such host","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T15:05:23.4988745+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: no such host","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T15:05:25.5079141+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: no such host","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T15:05:29.5448468+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: i/o timeout","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T15:05:47.5460906+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: no such host","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T15:06:03.5737985+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: no such host","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T15:08:07.3547476+08:00"}
+{"err":"failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com: no such host","lvl":"eror","msg":"failed to reconnect session","obj":"tunnels.session","t":"2026-04-26T15:20:57.6247668+08:00"}
+{"lvl":"info","msg":"client session established","obj":"tunnels.session","t":"2026-04-26T15:21:29.7725253+08:00"}
+{"lvl":"info","msg":"tunnel session started","obj":"tunnels.session","t":"2026-04-26T15:21:29.773084+08:00"}
+{"clientid":"3e1c10e4d2a12cd9db2d524e3c71e922","id":"12479a01f8c2","lvl":"eror","msg":"heartbeat timeout, terminating session","obj":"csess","t":"2026-04-26T15:53:48.8209373+08:00"}
+{"err":"write tcp 192.168.0.39:62218-\u003e54.64.15.12:443: wsasend: An existing connection was forcibly closed by the remote host.","id":"707a014d2a28","lvl":"eror","msg":"session closed, starting reconnect loop","obj":"csess","t":"2026-04-26T15:53:52.5335113+08:00"}
+{"lvl":"info","msg":"client session established","obj":"tunnels.session","t":"2026-04-26T15:53:54.8406351+08:00"}
+{"lvl":"info","msg":"tunnel session started","obj":"tunnels.session","t":"2026-04-26T15:53:54.8432289+08:00"}
+{"lvl":"info","msg":"received stop request","obj":"app","stopReq":{},"t":"2026-04-26T16:09:05.4096243+08:00"}
+{"err":"\u003cnil\u003e","lvl":"info","msg":"session closing","obj":"tunnels.session","t":"2026-04-26T16:09:05.4237279+08:00"}
+{"err":"reconnecting session closed","id":"707a014d2a28","lvl":"info","msg":"accept failed","obj":"csess","t":"2026-04-26T16:09:05.4295363+08:00"}

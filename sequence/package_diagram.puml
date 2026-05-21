@@ -1,0 +1,73 @@
+@startuml CATC Document Request Portal - Package Diagram
+!theme plain
+skinparam shadowing false
+left to right direction
+
+package "thesis project" {
+  package "presentation" {
+    [templates]
+    [static assets]
+    [Django admin UI]
+  }
+
+  package "application" {
+    [views.py]
+    [forms.py]
+    [serializers.py]
+    [decorators.py]
+    [urls.py]
+  }
+
+  package "domain" {
+    [models.py]
+  }
+
+  package "integration" {
+    [tracking_service.py]
+    [send_sms.py]
+  }
+
+  package "configuration" {
+    [settings.py]
+    [wsgi.py]
+    [asgi.py]
+  }
+
+  package "operations" {
+    [management commands]
+    [seed scripts]
+    [tests.py]
+  }
+}
+
+package "External APIs" {
+  [HTTPSMS / iProg]
+  [SMTP Email]
+  [Xendit]
+  [TrackingMore]
+}
+
+database "Application Database" as DB
+
+[templates] --> [views.py]
+[Django admin UI] --> [models.py]
+[views.py] --> [forms.py]
+[views.py] --> [serializers.py]
+[views.py] --> [decorators.py]
+[views.py] --> [models.py]
+[views.py] --> [tracking_service.py]
+[views.py] --> [send_sms.py]
+[urls.py] --> [views.py]
+[tracking_service.py] --> [TrackingMore]
+[send_sms.py] --> [HTTPSMS / iProg]
+[views.py] --> [SMTP Email]
+[views.py] --> [Xendit]
+[models.py] --> DB
+[management commands] --> [models.py]
+[seed scripts] --> [models.py]
+[tests.py] --> [views.py]
+[tests.py] --> [models.py]
+[settings.py] --> [views.py]
+[settings.py] --> [tracking_service.py]
+
+@enduml

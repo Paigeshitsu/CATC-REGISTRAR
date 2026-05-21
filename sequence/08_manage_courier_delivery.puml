@@ -1,0 +1,38 @@
+@startuml Manage Courier Delivery
+!theme plain
+autonumber
+
+actor Courier
+participant "Courier Dashboard" as UI
+participant "Courier Service" as CourierService
+participant "DocumentRequest" as Request
+participant "Notification Service" as Notify
+participant "TrackingMore API" as TrackingMore
+
+Courier -> UI : Open courier dashboard
+UI -> CourierService : Load LBC pickup queue
+CourierService -> Request : Query requests in\nAWAITING_COURIER_PICKUP / PROCESSING
+Request --> CourierService : Pickup batches
+CourierService --> UI : Awaiting Pickup list
+
+Courier -> UI : Mark batch picked up
+UI -> CourierService : mark_picked_up(batch_id, pickup_option)
+CourierService -> Request : Set status=PICKED_UP_AWAITING_DELIVERY
+CourierService -> Notify : Notify student
+
+Courier -> UI : Mark batch in delivery
+UI -> CourierService : mark_in_delivery(batch_id)
+CourierService -> Request : Set status=IN_TRANSIT
+CourierService -> Notify : Notify student
+
+Courier -> UI : Mark batch delivered
+UI -> CourierService : mark_delivered(batch_id)
+CourierService -> Request : Set status=DELIVERED
+CourierService -> Notify : Notify student
+
+opt Tracking registration / external sync
+  CourierService -> TrackingMore : Register or refresh shipment
+  TrackingMore --> CourierService : Sync response
+end
+
+@enduml

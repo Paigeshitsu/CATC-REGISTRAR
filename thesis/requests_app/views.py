@@ -14,6 +14,7 @@ from django.http import JsonResponse, HttpResponse
 from django.db.models import Sum, Q
 from django.core.cache import cache
 from django.views.decorators.csrf import csrf_exempt
+from django.urls import reverse
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -132,7 +133,14 @@ def get_xendit_paid_amount(items):
     return None
 
 
-def send_otp_sms(phone_number, otp_code, provider="iprog"):
+def normalize_lbc_tracking_number(tracking_number):
+    normalized = "".join(ch for ch in tracking_number.upper() if ch.isalnum())
+    if normalized.isdigit():
+        return f"LBC{normalized}"
+    return normalized
+
+
+def send_otp_sms(phone_number, otp_code, provider="iprog", return_details=False):
     """
     Send OTP via SMS. Supports multiple providers.
     
@@ -152,26 +160,47 @@ def send_otp_sms(phone_number, otp_code, provider="iprog"):
         clean_phone = "+" + clean_phone
 
     if provider == "httpsms":
-        return _send_httpsms_sms(clean_phone, message)
+        result = _send_httpsms_sms(clean_phone, message)
+        result["requested_provider"] = provider
     else:
-        return _send_iprog_sms(clean_phone, message)
+        result = _send_iprog_sms(clean_phone, message)
+        result["requested_provider"] = provider
+
+    if return_details:
+        return result
+    return result["sent"]
 
 
 def _send_httpsms_sms(clean_phone, message):
     """Send SMS via HTTP SMS API."""
     if not settings.HTTPSMS_API_KEY or not settings.HTTPSMS_FROM_NUMBER:
         print("HTTP SMS API key or from number not configured")
-        return False
+        return {
+            "sent": False,
+            "provider": "httpsms",
+            "error_code": "httpsms_not_configured",
+            "error_message": "HTTP SMS API key or sender number is not configured.",
+        }
 
     try:
+        # HTTPSMS requires E.164 format WITH + prefix for both from and to
+        from_num = settings.HTTPSMS_FROM_NUMBER.strip()
+        if not from_num.startswith("+"):
+            from_num = "+" + from_num
+
+        api_key = settings.HTTPSMS_API_KEY
+        
+        print(f"HTTPSMS: from={from_num}, to={clean_phone}")
+        print(f"HTTPSMS: API key prefix={api_key[:10]}...")
+
         headers = {
-            "x-api-key": settings.HTTPSMS_API_KEY,
+            "x-api-key": api_key,
             "Content-Type": "application/json",
         }
 
         data = {
             "content": message,
-            "from": settings.HTTPSMS_FROM_NUMBER,
+            "from": from_num,
             "to": clean_phone,
         }
 
@@ -182,22 +211,62 @@ def _send_httpsms_sms(clean_phone, message):
             timeout=15,
         )
 
+        print(f"HTTPSMS Response: {response.status_code}")
+        print(f"HTTPSMS Body: {response.text}")
+
         if response.status_code == 200:
             print(f"HTTP SMS sent successfully to {clean_phone}")
-            return True
-        else:
-            print(f"HTTP SMS API error: {response.status_code} - {response.text}")
-            return False
+            return {
+                "sent": True,
+                "provider": "httpsms",
+                "fallback_used": False,
+            }
+
+        print(f"HTTP SMS API error: {response.status_code} - {response.text}")
+        error_message = "HTTP SMS provider rejected the request."
+        error_code = f"httpsms_http_{response.status_code}"
+        try:
+            payload = response.json()
+        except ValueError:
+            payload = {}
+
+        provider_message = payload.get("message") or response.text
+        if provider_message:
+            error_message = provider_message
+        if response.status_code == 402:
+            error_code = "httpsms_quota_exceeded"
+        elif response.status_code == 401:
+            error_code = "httpsms_auth_failed"
+        elif response.status_code == 429:
+            error_code = "httpsms_rate_limited"
+
+        return {
+            "sent": False,
+            "provider": "httpsms",
+            "error_code": error_code,
+            "error_message": error_message,
+            "http_status": response.status_code,
+        }
     except Exception as e:
         print(f"HTTP SMS API exception: {e}")
-        return False
+        return {
+            "sent": False,
+            "provider": "httpsms",
+            "error_code": "httpsms_exception",
+            "error_message": str(e),
+        }
 
 
 def _send_iprog_sms(clean_phone, message):
     """Send SMS via iProg SMS API."""
     if not settings.IPROG_SMS_API_TOKEN:
         print("iProg SMS API token not configured")
-        return False
+        return {
+            "sent": False,
+            "provider": "iprog",
+            "error_code": "iprog_not_configured",
+            "error_message": "iProg SMS API token is not configured.",
+        }
 
     try:
         # iProg expects format: 63917... not +63917...
@@ -226,20 +295,105 @@ def _send_iprog_sms(clean_phone, message):
             print(f"[IPROG] Result: {result}")
             if result.get("status") == 200:
                 print(f"iProg SMS sent successfully to {clean_phone}")
-                return True
+                return {
+                    "sent": True,
+                    "provider": "iprog",
+                    "fallback_used": False,
+                }
             else:
                 print(f"iProg SMS API error: {result}")
-                return False
+                return {
+                    "sent": False,
+                    "provider": "iprog",
+                    "error_code": "iprog_rejected",
+                    "error_message": result.get("message", "iProg rejected the SMS request."),
+                }
         else:
             print(f"iProg SMS API error: {response.status_code} - {response.text}")
-            return False
+            return {
+                "sent": False,
+                "provider": "iprog",
+                "error_code": f"iprog_http_{response.status_code}",
+                "error_message": response.text or "iProg request failed.",
+                "http_status": response.status_code,
+            }
     except Exception as e:
         print(f"iProg SMS API exception: {e}")
-        return False
+        return {
+            "sent": False,
+            "provider": "iprog",
+            "error_code": "iprog_exception",
+            "error_message": str(e),
+        }
+
+
+def get_sms_failure_message(sms_result):
+    if sms_result.get("error_code") == "httpsms_quota_exceeded":
+        return "HTTPSMS quota has been reached. Please use email or renew the HTTPSMS plan."
+    return "Failed to send OTP via SMS. Please try again or use email."
 
 
 def create_notification(user, role, message):
     Notification.objects.create(user=user, sender_role=role, message=message)
+
+
+def get_tracking_stage_definitions():
+    return [
+        {
+            "key": "PROCESSING",
+            "label": "Awaiting for Pickup",
+            "description": "Your document is prepared and waiting for courier handoff.",
+        },
+        {
+            "key": "READY",
+            "label": "Document Picked Up",
+            "description": "The courier has picked up your document from the office.",
+        },
+        {
+            "key": "DELIVERING",
+            "label": "In delivery",
+            "description": "Your document is already on the way to the destination.",
+        },
+        {
+            "key": "DELIVERED",
+            "label": "Delivered",
+            "description": "Your document has been delivered successfully.",
+        },
+    ]
+
+
+def get_tracking_stage_index(status):
+    return {
+        "PROCESSING": 0,
+        "READY": 1,
+        "DELIVERING": 2,
+        "DELIVERED": 3,
+        "COMPLETED": 3,
+    }.get(status, 0)
+
+
+def build_tracking_timeline(status):
+    current_index = get_tracking_stage_index(status)
+    timeline = []
+
+    for index, stage in enumerate(get_tracking_stage_definitions()):
+        if index < current_index:
+            state = "completed"
+        elif index == current_index:
+            state = "current"
+        else:
+            state = "upcoming"
+
+        timeline.append(
+            {
+                "key": stage["key"],
+                "label": stage["label"],
+                "description": stage["description"],
+                "state": state,
+            }
+        )
+
+    return timeline
 
 
 # --- 2. LOGIN FLOW ---
@@ -306,34 +460,32 @@ Or scan this QR code in the Google Authenticator app.
                             f"OTP sent to your email: {master_student.masked_email}",
                         )
                     elif otp_method in ["httpsms", "iprog"]:
-                        sms_sent = send_otp_sms(
-                            master_student.phone_number, otp_obj.otp_code, provider=otp_method
+                        sms_result = send_otp_sms(
+                            master_student.phone_number,
+                            otp_obj.otp_code,
+                            provider=otp_method,
+                            return_details=True,
                         )
-                        if sms_sent:
-                            print(f"[SMS] OTP sent via {otp_method} to {master_student.phone_number}")
-                            messages.success(
-                                request,
-                                f"OTP sent to your phone: {master_student.masked_phone}",
+                        if sms_result["sent"]:
+                            provider_used = sms_result["provider"]
+                            print(
+                                f"[SMS] OTP sent via {provider_used} to {master_student.phone_number}"
                             )
+                            success_message = (
+                                f"OTP sent to your phone: {master_student.masked_phone}"
+                            )
+                            messages.success(request, success_message)
                         else:
                             print(
-                                f"[SMS] OTP sending failed for {master_student.phone_number}"
+                                f"[SMS] OTP sending failed for {master_student.phone_number}: "
+                                f"{sms_result.get('error_message')}"
                             )
-                            messages.error(
-                                request,
-                                "Failed to send OTP via SMS. Please try again or use email.",
-                            )
+                            messages.error(request, get_sms_failure_message(sms_result))
+                            return render(request, "login_id.html", {"form": form})
                 except Exception as e:
                     print(f"OTP sending failed: {e}")
                     messages.error(request, "Failed to send OTP. Please try again.")
-
-                    print(
-                        f"[LOGIN DEBUG] Phone number from DB: '{master_student.phone_number}'"
-                    )
-                    request.session["masked_email"], request.session["masked_phone"] = (
-                        master_student.masked_email,
-                        master_student.masked_phone,
-                    )
+                    return render(request, "login_id.html", {"form": form})
                 request.session["otp_last_sent"], request.session["otp_user_id"] = (
                     time.time(),
                     user.id,
@@ -743,6 +895,69 @@ def student_dashboard(request):
                 "-created_at"
             )[:10],
             "active_shipment": active_shipment,
+            "system_tracking_page_url": reverse("system_tracking_page"),
+        },
+    )
+
+
+@login_required
+def system_tracking_page(request):
+    tracking_number = (request.GET.get("tracking_number") or "").strip()
+    tracking_summary = None
+    tracking_error = None
+
+    if tracking_number:
+        batch_items = list(
+            DocumentRequest.objects.filter(
+                student=request.user,
+                is_deleted=False,
+                delivery_method="LBC",
+                tracking_number=tracking_number,
+            )
+            .select_related("document_type")
+            .order_by("created_at")
+        )
+
+        if batch_items:
+            sample = batch_items[0]
+            current_status = batch_items[-1].status
+            display_status = {
+                "PROCESSING": "Awaiting for Pickup",
+                "READY": "Document Picked Up",
+                "DELIVERING": "In delivery",
+                "DELIVERED": "Delivered",
+                "COMPLETED": "Delivered",
+            }.get(current_status, current_status)
+
+            tracking_summary = {
+                "tracking_number": tracking_number,
+                "display_status": display_status,
+                "timeline": build_tracking_timeline(current_status),
+                "batch_id": sample.batch_id,
+                "created_at": sample.created_at,
+                "documents": [item.document_type.name for item in batch_items],
+                "destination": ", ".join(
+                    part
+                    for part in [
+                        sample.shipping_floor or "",
+                        sample.shipping_street or "",
+                        sample.shipping_barangay or "",
+                        sample.shipping_city or "",
+                        sample.shipping_province or "",
+                    ]
+                    if part
+                ),
+            }
+        else:
+            tracking_error = "No shipment was found for that tracking number in your account."
+
+    return render(
+        request,
+        "system_tracking_page.html",
+        {
+            "tracking_number": tracking_number,
+            "tracking_summary": tracking_summary,
+            "tracking_error": tracking_error,
         },
     )
 
@@ -861,24 +1076,35 @@ def registrar_dashboard(request):
             except ValueError:
                 processing_days = None
             
-            # Auto-generate tracking number if not provided
+            is_lbc_batch = bool(batch_sample and batch_sample.delivery_method == "LBC")
+
+            if is_lbc_batch and not t_no:
+                messages.error(
+                    request,
+                    "Enter the actual LBC tracking number before marking an LBC request as ready.",
+                )
+                return redirect("registrar_dashboard")
+            if is_lbc_batch:
+                t_no = normalize_lbc_tracking_number(t_no)
+
+            # Auto-generate an internal reference only for office pickup requests
             if not t_no:
                 t_no = f"CATC-{uuid.uuid4().hex[:8].upper()}"
             
             # Update each item with tracking number and processing days
-            # For LBC delivery: mark as COMPLETED (LBC will notify student)
+            # For LBC delivery: mark as PROCESSING while waiting for courier pickup
             # For Pickup: mark as READY (student needs to claim)
             for item in batch:
                 item.tracking_number = t_no
                 item.processing_days = processing_days
                 if item.delivery_method == "LBC":
-                    item.status = "COMPLETED"  # LBC handles notification
+                    item.status = "PROCESSING"
                 else:
                     item.status = "READY"  # Student comes to claim
                 item.save()
 
             # Register tracking with TrackingMore only for LBC delivery requests
-            if t_no and batch_sample and batch_sample.delivery_method == "LBC":
+            if t_no and is_lbc_batch:
                 try:
                     tracker = LBCTracker()
                     result = tracker.register_lbc_tracking(t_no)
@@ -902,18 +1128,30 @@ def registrar_dashboard(request):
             
             # Show success message with generated tracking number
             if lbc_count > 0:
-                messages.success(request, f"{lbc_count} LBC document(s) marked as COMPLETED (LBC will notify student). Tracking: {t_no}")
+                messages.success(
+                    request,
+                    f"{lbc_count} LBC document(s) registered for courier pickup and imported into TrackingMore. Tracking: {t_no}",
+                )
             if pickup_count > 0:
                 messages.success(request, f"{pickup_count} pickup document(s) marked as READY - waiting for student to claim. Tracking: {t_no}")
-            log_audit(request.user, 'UPDATE', 'DocumentRequest', batch_id, f"Marked as READY. Tracking: {t_no}, Days: {processing_days}")
+            log_audit(
+                request.user,
+                'UPDATE',
+                'DocumentRequest',
+                batch_id,
+                f"Marked for dispatch. Tracking: {t_no}, Days: {processing_days}",
+            )
             
             print(f"[DEBUG] mark_ready completed. Batch ID: {batch_id}, Items updated: {ready_count}")
             
             # Notify student about status
             for item in batch:
                 if item.delivery_method == 'LBC':
-                    create_notification(item.student, 'Registrar', 
-                        f"Your {item.document_type.name} has been shipped via LBC. Tracking: {t_no}. LBC will notify you when package arrives.")
+                    create_notification(
+                        item.student,
+                        'Registrar',
+                        f"Your {item.document_type.name} is registered with LBC and awaiting courier pickup. Tracking: {t_no}.",
+                    )
                 else:
                     if processing_days:
                         create_notification(item.student, 'Registrar', 
@@ -1271,6 +1509,82 @@ def cashier_dashboard(request):
     )
 
 
+@role_required(allowed_roles=["Courier"])
+def courier_dashboard(request):
+    pickup_queue = (
+        DocumentRequest.objects.filter(
+            is_deleted=False,
+            delivery_method="LBC",
+            status__in=["PROCESSING", "AWAITING_COURIER_PICKUP"],
+        )
+        .exclude(tracking_number__isnull=True)
+        .exclude(tracking_number__exact="")
+        .order_by("-created_at")
+    )
+    active_deliveries = DocumentRequest.objects.filter(
+        is_deleted=False,
+        delivery_method="LBC",
+        status__in=["READY", "DELIVERING"],
+    ).order_by("-created_at")
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+        batch_id = (request.POST.get("batch_id") or "").strip()
+        batch = DocumentRequest.objects.filter(
+            batch_id=batch_id,
+            is_deleted=False,
+            delivery_method="LBC",
+        )
+
+        if not batch.exists():
+            messages.error(request, "No courier batch found.")
+            return redirect("courier_dashboard")
+
+        batch_items = list(batch)
+
+        if action == "mark_picked_up":
+            batch.filter(status__in=["PROCESSING", "AWAITING_COURIER_PICKUP"]).update(status="READY")
+            for item in batch_items:
+                create_notification(
+                    item.student,
+                    "Courier",
+                    f"Your {item.document_type.name} has been picked up by the courier. Tracking: {item.tracking_number}.",
+                )
+            messages.success(request, f"Batch {batch_id} marked as picked up.")
+            return redirect("courier_dashboard")
+
+        if action == "mark_in_delivery":
+            batch.filter(status="READY").update(status="DELIVERING")
+            for item in batch_items:
+                create_notification(
+                    item.student,
+                    "Courier",
+                    f"Your {item.document_type.name} is now in delivery. Tracking: {item.tracking_number}.",
+                )
+            messages.success(request, f"Batch {batch_id} marked as in delivery.")
+            return redirect("courier_dashboard")
+
+        if action == "mark_delivered":
+            batch.filter(status__in=["READY", "DELIVERING"]).update(status="DELIVERED")
+            for item in batch_items:
+                create_notification(
+                    item.student,
+                    "Courier",
+                    f"Your {item.document_type.name} has been delivered. Tracking: {item.tracking_number}.",
+                )
+            messages.success(request, f"Batch {batch_id} marked as delivered.")
+            return redirect("courier_dashboard")
+
+    return render(
+        request,
+        "courier_dashboard.html",
+        {
+            "pickup_queue": pickup_queue,
+            "active_deliveries": active_deliveries,
+        },
+    )
+
+
 # --- 7. PAYMENTS & MISC ---
 
 
@@ -1372,6 +1686,14 @@ def generate_receipt(request, req_id):
         raise PermissionDenied()
     # ALWAYS load the FULL batch by batch_id, not just individual item
     batch = DocumentRequest.objects.filter(batch_id=doc_req.batch_id)
+    has_receipt = batch.filter(receipt_number__isnull=False).exclude(receipt_number="").exists()
+
+    if doc_req.delivery_method == "PICKUP" and not has_receipt:
+        messages.error(request, "Receipt is only available after payment has been confirmed.")
+        if request.user.groups.filter(name="Cashier").exists():
+            return redirect("cashier_dashboard")
+        return redirect("student_dashboard")
+
     student = StudentMasterList.objects.filter(
         student_id=doc_req.student.username
     ).first()
@@ -1396,6 +1718,7 @@ def generate_receipt(request, req_id):
             "total_amount": total_amount,
             "display_receipt_no": doc_req.receipt_number or "PENDING",
             "is_lbc_delivery": is_lbc_delivery,
+            "has_receipt": has_receipt,
         },
     )
 
@@ -1411,7 +1734,7 @@ def staff_login(request):
             if (
                 any(
                     role in user_groups
-                    for role in ["Registrar", "Cashier", "Accounting", "TOR Desk"]
+                    for role in ["Registrar", "Cashier", "Accounting", "TOR Desk", "Courier"]
                 )
                 or user.is_superuser
                 or user.username == "Lotivio01"
@@ -1421,6 +1744,8 @@ def staff_login(request):
                     return redirect("registrar_dashboard")
                 if "Cashier" in user_groups:
                     return redirect("cashier_dashboard")
+                if "Courier" in user_groups:
+                    return redirect("courier_dashboard")
                 if "TOR Desk" in user_groups or user.username == "Lotivio01":
                     return redirect("tor_dashboard")
                 return redirect("accounting_dashboard")
@@ -1432,7 +1757,7 @@ def staff_login(request):
 def logout_view(request):
     is_staff = request.user.is_authenticated and (
         request.user.groups.filter(
-            name__in=["Registrar", "Cashier", "Accounting", "TOR"]
+            name__in=["Registrar", "Cashier", "Accounting", "TOR", "Courier"]
         ).exists()
         or request.user.is_superuser
     )
@@ -1503,9 +1828,23 @@ Or scan this QR code in the Google Authenticator app.
                 )
                 print(f"[API EMAIL] OTP sent to {master_student.email}")
             elif otp_method in ["httpsms", "iprog"]:
-                # Send SMS with OTP via specified provider
-                send_otp_sms(master_student.phone_number, otp.otp_code, provider=otp_method)
-                print(f"[API SMS] OTP sent via {otp_method} to {master_student.phone_number}")
+                sms_result = send_otp_sms(
+                    master_student.phone_number,
+                    otp.otp_code,
+                    provider=otp_method,
+                    return_details=True,
+                )
+                if not sms_result["sent"]:
+                    return Response(
+                        {
+                            "status": "error",
+                            "message": get_sms_failure_message(sms_result),
+                        },
+                        status=502,
+                    )
+                print(
+                    f"[API SMS] OTP sent via {sms_result['provider']} to {master_student.phone_number}"
+                )
         except Exception as e:
             print(f"API OTP sending failed: {e}")
 

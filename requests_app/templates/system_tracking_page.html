@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .tracking-shell {
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+    .tracking-stage {
+        position: relative;
+        padding-left: 64px;
+        padding-bottom: 24px;
+    }
+    .tracking-stage:last-child {
+        padding-bottom: 0;
+    }
+    .tracking-stage::before {
+        content: '';
+        position: absolute;
+        left: 23px;
+        top: 0;
+        bottom: -8px;
+        width: 2px;
+        background: #d9e2ef;
+    }
+    .tracking-stage:last-child::before {
+        display: none;
+    }
+    .tracking-stage-marker {
+        position: absolute;
+        left: 8px;
+        top: 2px;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        border: 2px solid #c6d4e1;
+        background: #fff;
+        color: #6c757d;
+    }
+    .tracking-stage.completed .tracking-stage-marker {
+        background: #198754;
+        border-color: #198754;
+        color: #fff;
+    }
+    .tracking-stage.current .tracking-stage-marker {
+        background: #0d6efd;
+        border-color: #0d6efd;
+        color: #fff;
+    }
+    .tracking-stage.current .tracking-stage-title {
+        color: #0d6efd;
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="tracking-shell">
+        <div class="card border-0 shadow-lg overflow-hidden mb-4" style="border-radius: 20px; background: linear-gradient(135deg, #0d6efd, #003366);">
+            <div class="card-body p-4 text-white">
+                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                    <div>
+                        <h3 class="fw-bold mb-1"><i class="bi bi-geo-alt-fill me-2"></i>System Tracking</h3>
+                        <p class="mb-0 opacity-75">Track your document delivery using the system-generated tracking number.</p>
+                    </div>
+                    <a href="{% url 'student_dashboard' %}" class="btn btn-light fw-bold">Back to Dashboard</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-4" style="border-radius: 18px;">
+            <div class="card-body p-4">
+                <form method="GET" class="row g-3 align-items-end">
+                    <div class="col-12 col-lg-9">
+                        <label for="tracking_number" class="form-label fw-bold text-muted small">TRACKING NUMBER</label>
+                        <input
+                            type="text"
+                            id="tracking_number"
+                            name="tracking_number"
+                            value="{{ tracking_number }}"
+                            class="form-control form-control-lg"
+                            placeholder="Enter your tracking number"
+                        >
+                    </div>
+                    <div class="col-12 col-lg-3 d-grid">
+                        <button type="submit" class="btn btn-success btn-lg fw-bold">
+                            <i class="bi bi-search me-1"></i> Track
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% if tracking_error %}
+        <div class="alert alert-warning shadow-sm">{{ tracking_error }}</div>
+        {% endif %}
+
+        {% if tracking_summary %}
+        <div class="row g-4">
+            <div class="col-12 col-xl-4">
+                <div class="card border-0 shadow-sm h-100" style="border-radius: 18px;">
+                    <div class="card-header bg-dark text-white py-3" style="border-radius: 18px 18px 0 0;">
+                        <h5 class="mb-0 fw-bold">Shipment Details</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="mb-3">
+                            <div class="small text-muted">Tracking Number</div>
+                            <div class="fw-bold fs-5 text-primary">{{ tracking_summary.tracking_number }}</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="small text-muted">Current Status</div>
+                            <span class="badge bg-success fs-6">{{ tracking_summary.display_status }}</span>
+                        </div>
+                        <div class="mb-3">
+                            <div class="small text-muted">Batch</div>
+                            <div class="fw-bold">{{ tracking_summary.batch_id }}</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="small text-muted">Requested On</div>
+                            <div class="fw-bold">{{ tracking_summary.created_at|date:"M d, Y h:i A" }}</div>
+                        </div>
+                        {% if tracking_summary.pickup_option %}
+                        <div class="mb-3">
+                            <div class="small text-muted">Courier Handoff</div>
+                            <div class="fw-bold">{{ tracking_summary.pickup_option }}</div>
+                        </div>
+                        {% endif %}
+                        {% if tracking_summary.receiver_name %}
+                        <div class="mb-3">
+                            <div class="small text-muted">Receiver</div>
+                            <div class="fw-bold">{{ tracking_summary.receiver_name }}</div>
+                        </div>
+                        {% endif %}
+                        {% if tracking_summary.destination %}
+                        <div class="mb-0">
+                            <div class="small text-muted">Destination</div>
+                            <div class="fw-bold">{{ tracking_summary.destination }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-xl-8">
+                <div class="card border-0 shadow-sm mb-4" style="border-radius: 18px;">
+                    <div class="card-header bg-primary text-white py-3" style="border-radius: 18px 18px 0 0;">
+                        <h5 class="mb-0 fw-bold">Live Tracking Status</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        {% for stage in tracking_summary.timeline %}
+                        <div class="tracking-stage {{ stage.state }}">
+                            <div class="tracking-stage-marker">
+                                {% if stage.state == 'completed' %}
+                                <i class="bi bi-check-lg"></i>
+                                {% else %}
+                                {{ forloop.counter }}
+                                {% endif %}
+                            </div>
+                            <div class="tracking-stage-title fw-bold fs-5 mb-1">{{ stage.label }}</div>
+                            <div class="text-muted">{{ stage.description }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm" style="border-radius: 18px;">
+                    <div class="card-header bg-light py-3" style="border-radius: 18px 18px 0 0;">
+                        <h5 class="mb-0 fw-bold">Included Documents</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            {% for document_name in tracking_summary.documents %}
+                            <div class="col-12 col-md-6">
+                                <div class="border rounded p-3 h-100">
+                                    <div class="fw-bold">{{ document_name }}</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% elif tracking_number and not tracking_error %}
+        <div class="alert alert-secondary shadow-sm">No tracking details are available yet.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

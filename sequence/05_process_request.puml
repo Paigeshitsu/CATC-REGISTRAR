@@ -1,0 +1,48 @@
+@startuml Process Request
+!theme plain
+autonumber
+
+actor Registrar
+actor "TOR Desk" as TORDesk
+actor Courier
+participant "Registrar Dashboard" as RegistrarUI
+participant "TOR Dashboard" as TORUI
+participant "Courier Dashboard" as CourierUI
+participant "Request Management Service" as RequestService
+participant "DocumentRequest" as Request
+participant "Notification Service" as Notify
+participant "TrackingMore API" as TrackingMore
+
+Registrar -> RegistrarUI : Review pending request batch
+RegistrarUI -> RequestService : approve / reject / send_to_tor
+
+alt TOR requires page count
+  RequestService -> Request : Set status=PENDING_TOR_COUNT
+  RequestService -> Notify : Notify TOR Desk and student
+  TORDesk -> TORUI : Submit TOR page count
+  TORUI -> RequestService : submit_tor_page_count()
+  RequestService -> Request : Update price and status
+else Non-TOR request approved
+  RequestService -> Request : Set status=PAYMENT_REQUIRED
+  RequestService -> Notify : Notify student for payment
+end
+
+Registrar -> RegistrarUI : Mark paid request ready
+RegistrarUI -> RequestService : mark_ready(batch_id)
+RequestService -> Request : Generate internal tracking no.
+
+alt LBC delivery
+  RequestService -> Request : Set status=AWAITING_COURIER_PICKUP
+  RequestService -> TrackingMore : Register tracking number
+  RequestService -> Notify : Notify student shipment is awaiting pickup
+else Office pickup
+  RequestService -> Request : Set status=READY
+  RequestService -> Notify : Notify student ready for pickup
+end
+
+Courier -> CourierUI : Mark batch picked up / in delivery / delivered
+CourierUI -> RequestService : update courier status
+RequestService -> Request : Update delivery status
+RequestService -> Notify : Notify student of shipment progress
+
+@enduml

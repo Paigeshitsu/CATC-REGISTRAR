@@ -229,13 +229,80 @@ class SystemCounter(models.Model):
     last_value = models.IntegerField(default=0)
 
     @classmethod
-    def get_next_receipt_no(cls):
+    def get_next_value(cls, name):
         from django.db import transaction
         with transaction.atomic():
-            counter, _ = cls.objects.get_or_create(name="receipt")
+            counter, _ = cls.objects.get_or_create(name=name)
             counter.last_value += 1
             counter.save()
-            return f"{counter.last_value:07d}"
+            return counter.last_value
+
+    @classmethod
+    def get_next_receipt_no(cls):
+        return f"{cls.get_next_value('receipt'):07d}"
+
+
+class Shipment(models.Model):
+    STATUS_AWAITING_PICKUP = "AWAITING_PICKUP"
+    STATUS_PICKED_UP = "COURIER_PICKED_UP"
+    STATUS_IN_TRANSIT = "IN_TRANSIT"
+    STATUS_OUT_FOR_DELIVERY = "OUT_FOR_DELIVERY"
+    STATUS_DELIVERED = "DELIVERED"
+
+    STATUS_CHOICES = [
+        (STATUS_AWAITING_PICKUP, "Awaiting Courier Pickup"),
+        (STATUS_PICKED_UP, "Courier Picked Up Package"),
+        (STATUS_IN_TRANSIT, "Package In Delivery"),
+        (STATUS_OUT_FOR_DELIVERY, "Out For Delivery"),
+        (STATUS_DELIVERED, "Package Delivered"),
+    ]
+
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="shipments")
+    batch_id = models.CharField(max_length=100, unique=True)
+    tracking_number = models.CharField(max_length=30, unique=True)
+    courier_name = models.CharField(max_length=100, default="CATC Courier")
+    status = models.CharField(
+        max_length=30,
+        choices=STATUS_CHOICES,
+        default=STATUS_AWAITING_PICKUP,
+    )
+    latest_note = models.CharField(max_length=255, blank=True, null=True)
+    latest_location = models.CharField(max_length=255, blank=True, null=True)
+    delivered_at = models.DateTimeField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-updated_at"]
+
+    @classmethod
+    def generate_tracking_number(cls):
+        date_part = timezone.now().strftime("%Y%m%d")
+        sequence = SystemCounter.get_next_value(f"shipment-{date_part}")
+        return f"CATC-SHP-{date_part}-{sequence:04d}"
+
+    def __str__(self):
+        return f"{self.tracking_number} - {self.student.username}"
+
+
+class ShipmentEvent(models.Model):
+    shipment = models.ForeignKey(
+        Shipment, on_delete=models.CASCADE, related_name="events"
+    )
+    status = models.CharField(max_length=30, choices=Shipment.STATUS_CHOICES)
+    title = models.CharField(max_length=100)
+    note = models.CharField(max_length=255, blank=True, null=True)
+    location = models.CharField(max_length=255, blank=True, null=True)
+    changed_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="shipment_events"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.shipment.tracking_number} - {self.title}"
 
 class StudentBalance(models.Model):
     student = models.OneToOneField(StudentMasterList, on_delete=models.CASCADE, related_name='balance_record')

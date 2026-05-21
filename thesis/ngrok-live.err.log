@@ -1,0 +1,38 @@
+Traceback (most recent call last):
+  File "C:\Users\User\AppData\Local\Programs\Python\Python311\Lib\site-packages\pyngrok\installer.py", line 176, in install_ngrok
+    download_path = _download_file(url, **kwargs)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\User\AppData\Local\Programs\Python\Python311\Lib\site-packages\pyngrok\installer.py", line 378, in _download_file
+    raise e
+  File "C:\Users\User\AppData\Local\Programs\Python\Python311\Lib\site-packages\pyngrok\installer.py", line 356, in _download_file
+    buffer = response.read(chunk_size)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\User\AppData\Local\Programs\Python\Python311\Lib\http\client.py", line 473, in read
+    s = self.fp.read(amt)
+        ^^^^^^^^^^^^^^^^^
+  File "C:\Users\User\AppData\Local\Programs\Python\Python311\Lib\socket.py", line 706, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\User\AppData\Local\Programs\Python\Python311\Lib\ssl.py", line 1314, in recv_into
+    return self.read(nbytes, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\User\AppData\Local\Programs\Python\Python311\Lib\ssl.py", line 1166, in read
+    return self._sslobj.read(len, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TimeoutError: The read operation timed out
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\User\AppData\Local\Programs\Python\Python311\Scripts\ngrok.exe\__main__.py", line 7, in <module>
+  File "C:\Users\User\AppData\Local\Programs\Python\Python311\Lib\site-packages\pyngrok\ngrok.py", line 617, in main
+    run(sys.argv[1:])
+  File "C:\Users\User\AppData\Local\Programs\Python\Python311\Lib\site-packages\pyngrok\ngrok.py", line 603, in run
+    install_ngrok(pyngrok_config)
+  File "C:\Users\User\AppData\Local\Programs\Python\Python311\Lib\site-packages\pyngrok\ngrok.py", line 128, in install_ngrok
+    installer.install_ngrok(pyngrok_config.ngrok_path, ngrok_version=pyngrok_config.ngrok_version)
+  File "C:\Users\User\AppData\Local\Programs\Python\Python311\Lib\site-packages\pyngrok\installer.py", line 180, in install_ngrok
+    raise PyngrokNgrokInstallError(f"An error occurred while downloading ngrok from {url}: {e}")
+pyngrok.exception.PyngrokNgrokInstallError: An error occurred while downloading ngrok from https://bin.ngrok.com/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip: The read operation timed out

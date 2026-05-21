@@ -1,0 +1,709 @@
+/* CATC Admin Custom Styles - Matching Dashboard Theme with Animations */
+
+/* Import Bootstrap Icons and Animate.css */
+@import url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
+
+/* =====================
+   CUSTOM ANIMATIONS
+   ===================== */
+
+/* Page load fade in animation */
+@keyframes adminFadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Smooth dropdown animation */
+@keyframes dropDownSmooth {
+    from { opacity: 0; transform: translateY(-15px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* =====================
+   BODY & BACKGROUND WITH ANIMATION
+   ===================== */
+
+body {
+    background: #f0f2f5;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    animation: adminFadeIn 0.6s ease-out;
+}
+
+/* =====================
+   HEADER & NAVBAR STYLES
+   ===================== */
+
+/* Main header with blue gradient and gold accent */
+#header {
+    background: linear-gradient(135deg, #0d6efd, #003399) !important;
+    color: white !important;
+    box-shadow: 0 4px 20px rgba(0, 51, 153, 0.3);
+    border-bottom: 3px solid #FFD700 !important;
+    animation: adminFadeIn 0.8s ease-out;
+    transition: all 0.3s ease;
+}
+
+#header a:link,
+#header a:visited {
+    color: white !important;
+    transition: color 0.3s ease;
+}
+
+#header .user-tools a:link,
+#header .user-tools a:visited {
+    color: white !important;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+#header .user-tools a:hover {
+    color: #ffd700 !important;
+    transform: scale(1.05);
+}
+
+/* =====================
+   LOGIN PAGE STYLES
+   ===================== */
+
+.login {
+    background: linear-gradient(135deg, #0d6efd, #003399) !important;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login #header {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 20px;
+    text-align: center;
+}
+
+.login #container {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    animation: dropDownSmooth 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.login #content {
+    padding: 40px;
+}
+
+.login .form-row {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+}
+
+.login label {
+    font-weight: 600;
+    color: #003399;
+}
+
+.login input[type="text"],
+.login input[type="password"] {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 12px 15px;
+    transition: all 0.3s ease;
+}
+
+.login input[type="text"]:focus,
+.login input[type="password"]:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15);
+    transform: translateY(-2px);
+}
+
+.login .submit-row {
+    padding: 20px 0 0 0;
+}
+
+.login .submit-row input {
+    width: 100%;
+    padding: 14px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #0d6efd, #003399);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.login .submit-row input:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(13, 110, 253, 0.4);
+}
+
+/* =====================
+   BREADCRUMBS WITH ANIMATION
+   ===================== */
+
+.breadcrumbs {
+    background: white;
+    padding: 15px 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+    animation: adminFadeIn 0.5s ease-out;
+}
+
+.breadcrumbs a {
+    color: #0d6efd !important;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.breadcrumbs a:hover {
+    color: #003399 !important;
+    transform: translateX(3px);
+}
+
+/* =====================
+   CONTENT WRAPPER WITH ANIMATION
+   ===================== */
+
+#content-main {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    margin: 20px;
+    animation: adminFadeIn 0.6s ease-out;
+}
+
+/* =====================
+   MODULES & APP LIST WITH HOVER EFFECTS
+   ===================== */
+
+.module {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: 25px;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.module:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.module h3,
+.module caption {
+    background: linear-gradient(135deg, #0d6efd, #003399);
+    color: white;
+    padding: 18px 24px;
+    margin: 0;
+    font-weight: 600;
+    border-bottom: 3px solid #FFD700;
+}
+
+.module table thead th {
+    background: #f8f9fa;
+    color: #003399;
+    font-weight: 600;
+    padding: 15px;
+    border-bottom: 2px solid #0d6efd;
+}
+
+.module table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.module table tbody tr:hover {
+    background-color: #f0f7ff !important;
+    transform: translateX(5px);
+}
+
+/* =====================
+   CHANGE LIST STYLES WITH ANIMATION
+   ===================== */
+
+#changelist {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    padding: 25px;
+    margin: 20px;
+    animation: adminFadeIn 0.6s ease-out;
+}
+
+#changelist thead th {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    color: #003399;
+    font-weight: 700;
+    padding: 15px;
+    border-bottom: 3px solid #0d6efd;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+}
+
+#changelist thead th a {
+    color: #003399 !important;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+#changelist thead th a:hover {
+    color: #0d6efd !important;
+}
+
+#changelist tbody tr {
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+#changelist tbody tr:hover {
+    background-color: #f0f7ff !important;
+    transform: translateX(5px);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* =====================
+   BUTTONS WITH ANIMATIONS
+   ===================== */
+
+.button, 
+input[type="submit"], 
+input[type="reset"], 
+input[type="button"],
+.button-default,
+.button-primary {
+    background: linear-gradient(135deg, #0d6efd, #003399) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 10px !important;
+    padding: 12px 24px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.3px;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);
+}
+
+.button:hover, 
+input[type="submit"]:hover, 
+input[type="reset"]:hover, 
+input[type="button"]:hover,
+.button-default:hover,
+.button-primary:hover {
+    background: linear-gradient(135deg, #003399, #0d6efd) !important;
+    color: white !important;
+    transform: translateY(-3px) !important;
+    box-shadow: 0 8px 25px rgba(13, 110, 253, 0.5) !important;
+}
+
+/* Green success button */
+.button.default,
+input[type="submit"].default {
+    background: linear-gradient(135deg, #198754, #146c43) !important;
+    box-shadow: 0 4px 15px rgba(25, 133, 84, 0.3) !important;
+}
+
+.button.default:hover {
+    background: linear-gradient(135deg, #146c43, #198754) !important;
+    box-shadow: 0 8px 25px rgba(25, 133, 84, 0.5) !important;
+}
+
+/* Red danger button */
+.button.danger,
+.button.deletelink {
+    background: linear-gradient(135deg, #dc3545, #bb2d3b) !important;
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3) !important;
+}
+
+.button.danger:hover {
+    background: linear-gradient(135deg, #bb2d3b, #dc3545) !important;
+    box-shadow: 0 8px 25px rgba(220, 53, 69, 0.5) !important;
+}
+
+/* Add button (green) */
+.add-another,
+.object-tools a {
+    background: linear-gradient(135deg, #198754, #146c43) !important;
+    color: white !important;
+    border-radius: 10px !important;
+    padding: 10px 18px !important;
+    font-weight: 600 !important;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+.add-another:hover,
+.object-tools a:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 8px 25px rgba(25, 133, 84, 0.5) !important;
+}
+
+/* =====================
+   FORM STYLES WITH ANIMATIONS
+   ===================== */
+
+.form-row, 
+.formset-row {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    border-left: 4px solid #0d6efd;
+    transition: all 0.3s ease;
+    animation: adminFadeIn 0.5s ease-out;
+}
+
+.form-row:hover {
+    background: #ffffff;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.form-row label {
+    color: #003399;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+input[type="text"], 
+input[type="email"],
+input[type="password"],
+input[type="number"],
+select, 
+textarea {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 12px 16px;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+select:focus,
+textarea:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15);
+    outline: none;
+    transform: translateY(-2px);
+}
+
+/* =====================
+   MESSAGES WITH ANIMATIONS
+   ===================== */
+
+.messagelist {
+    margin: 0 20px 20px 20px;
+    animation: adminFadeIn 0.5s ease-out;
+}
+
+.messagelist li {
+    border-radius: 12px;
+    padding: 16px 24px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    animation: dropDownSmooth 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.messagelist li.success {
+    background: linear-gradient(135deg, #d1e7dd, #a3cfbb);
+    color: #0f5132;
+    border-left: 5px solid #198754;
+}
+
+.messagelist li.warning {
+    background: linear-gradient(135deg, #fff3cd, #ffecb5);
+    color: #664d03;
+    border-left: 5px solid #ffc107;
+}
+
+.messagelist li.error {
+    background: linear-gradient(135deg, #f8d7da, #f1aeb5);
+    color: #842029;
+    border-left: 5px solid #dc3545;
+}
+
+.messagelist li.info {
+    background: linear-gradient(135deg, #cff4fc, #9eeaf9);
+    color: #055160;
+    border-left: 5px solid #0dcaf0;
+}
+
+/* =====================
+   ADMIN ACTIONS
+   ===================== */
+
+.actions {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 20px;
+    animation: adminFadeIn 0.5s ease-out;
+    border-left: 4px solid #0d6efd;
+}
+
+.actions select {
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+    padding: 10px 15px;
+    transition: all 0.3s ease;
+}
+
+.actions select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+}
+
+/* =====================
+   OBJECT TOOLS WITH ANIMATION
+   ===================== */
+
+.object-tools {
+    background: transparent;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 20px;
+    animation: adminFadeIn 0.5s ease-out;
+}
+
+.object-tools a:link,
+.object-tools a:visited {
+    background: linear-gradient(135deg, #198754, #146c43) !important;
+    color: white !important;
+    border-radius: 10px;
+    padding: 12px 20px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+.object-tools a:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 8px 25px rgba(25, 133, 84, 0.5) !important;
+}
+
+/* =====================
+   ADD/CHANGE FORM
+   ===================== */
+
+#content-form {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    padding: 30px;
+    margin: 20px;
+    animation: adminFadeIn 0.6s ease-out;
+}
+
+#content-form fieldset {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-left: 4px solid #0d6efd;
+}
+
+#content-form fieldset:hover {
+    background: #ffffff;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+#content-form legend {
+    background: linear-gradient(135deg, #0d6efd, #003399);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);
+}
+
+/* =====================
+   FILTER SIDEBAR
+   ===================== */
+
+#changelist-filter {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    padding: 20px;
+    animation: adminFadeIn 0.5s ease-out;
+}
+
+#changelist-filter h3 {
+    background: linear-gradient(135deg, #0d6efd, #003399);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin: -20px -20px 20px -20px;
+    font-size: 0.9rem;
+}
+
+#changelist-filter ul {
+    list-style: none;
+    padding: 0;
+}
+
+#changelist-filter li a {
+    color: #0d6efd;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    display: block;
+    transition: all 0.3s ease;
+}
+
+#changelist-filter li a:hover {
+    background: #f0f7ff;
+    color: #003399;
+    transform: translateX(5px);
+}
+
+#changelist-filter li.selected a {
+    background: linear-gradient(135deg, #0d6efd, #003399);
+    color: white;
+}
+
+/* =====================
+   PAGINATOR
+   ===================== */
+
+.paginator {
+    background: white;
+    border-radius: 12px;
+    padding: 15px 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    margin-top: 20px;
+}
+
+.paginator a,
+.paginator span {
+    padding: 8px 14px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.paginator a:hover {
+    background: #f0f7ff;
+    color: #003399;
+    transform: translateY(-2px);
+}
+
+.paginator span.this-page {
+    background: linear-gradient(135deg, #0d6efd, #003399);
+    color: white;
+}
+
+/* =====================
+   DASHBOARD / INDEX
+   ===================== */
+
+#dashboard {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    padding: 30px;
+    margin: 20px;
+    animation: adminFadeIn 0.6s ease-out;
+}
+
+#dashboard .module {
+    animation: dropDownSmooth 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* App icons in dashboard */
+.app-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #0d6efd, #003399);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.app-icon:hover {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 8px 25px rgba(13, 110, 253, 0.4);
+}
+
+/* =====================
+   DELETE CONFIRMATION
+   ===================== */
+
+#content-form.delete-confirmation {
+    max-width: 600px;
+    margin: 40px auto;
+}
+
+#content-form.delete-confirmation .module {
+    border-left: 5px solid #dc3545;
+}
+
+#content-form.delete-confirmation .module caption {
+    background: linear-gradient(135deg, #dc3545, #bb2d3b);
+}
+
+/* =====================
+   SEARCH BAR
+   ===================== */
+
+#searchbar {
+    border: 2px solid #e9ecef !important;
+    border-radius: 12px !important;
+    padding: 12px 16px !important;
+    transition: all 0.3s ease !important;
+}
+
+#searchbar:focus {
+    border-color: #0d6efd !important;
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15) !important;
+    transform: translateY(-2px);
+}
+
+/* =====================
+   RESPONSIVE
+   ===================== */
+
+@media (max-width: 1024px) {
+    #content-main,
+    #changelist,
+    #content-form {
+        margin: 15px;
+        padding: 20px;
+    }
+    
+    .module {
+        margin-bottom: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    #header {
+        padding: 15px;
+    }
+    
+    #content-main,
+    #changelist,
+    #content-form {
+        margin: 10px;
+        padding: 15px;
+        border-radius: 15px;
+    }
+    
+    .form-row,
+    .formset-row {
+        padding: 15px;
+    }
+    
+    .actions {
+        padding: 12px;
+    }
+}

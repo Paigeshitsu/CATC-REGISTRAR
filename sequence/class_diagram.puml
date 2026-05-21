@@ -1,0 +1,170 @@
+@startuml CATC Document Request Portal - Class Diagram
+!theme plain
+skinparam shadowing false
+hide empty members
+
+class User {
+  +username: string
+  +email: string
+  +is_staff: bool
+}
+
+class Group {
+  +name: string
+}
+
+class StudentMasterList {
+  +student_id: string
+  +full_name: string
+  +course: string
+  +major: string
+  +email: string
+  +phone_number: string
+  +is_graduated: bool
+  +masked_email()
+  +masked_phone()
+  +get_tor_request_count()
+}
+
+class OTPToken {
+  +otp_code: string
+  +created_at: datetime
+  +is_verified: bool
+  +google_auth_secret: string
+  +google_auth_enabled: bool
+  +generate_code()
+  +get_google_auth_uri()
+  +verify_google_auth_code(code)
+  +verify_otp_code(code)
+}
+
+class DocumentType {
+  +name: string
+  +price: decimal
+}
+
+class DocumentRequest {
+  +status: string
+  +batch_id: string
+  +delivery_method: string
+  +tracking_number: string
+  +receipt_number: string
+  +payment_reference: string
+  +reason: text
+  +processing_days: int
+  +rush_processing: bool
+  +tor_page_count: int
+  +tor_price_override: decimal
+  +courier_pickup_option: string
+  +shipping_city: string
+  +shipping_phone: string
+  +shipping_fee: decimal
+  +valuation_fee: decimal
+  +declared_value: decimal
+  +lbc_total_fee: decimal
+  +get_base_price()
+  +get_rush_fee()
+  +get_unit_price()
+  +get_quantity()
+  +get_price()
+  +get_shipping_fee()
+  +get_valuation_fee()
+  +get_lbc_total_fee()
+  +get_student_name()
+}
+
+class SystemCounter {
+  +name: string
+  +last_value: int
+  +get_next_receipt_no()
+}
+
+class StudentBalance {
+  +outstanding_amount: decimal
+  +last_notified: datetime
+  +clear_balance()
+}
+
+class Notification {
+  +message: text
+  +sender_role: string
+  +created_at: datetime
+  +is_read: bool
+}
+
+class CollectionLog {
+  +receipt_number: string
+  +student_name: string
+  +student_id: string
+  +amount_paid: decimal
+  +documents_included: text
+  +payment_method: string
+}
+
+class AuditLog {
+  +action: string
+  +resource_type: string
+  +resource_id: string
+  +details: text
+  +timestamp: datetime
+}
+
+class Profile {
+  +must_change_password: bool
+  +printed_name: string
+  +signature_data: text
+}
+
+class TORRequestHistory {
+  +document_type: string
+  +page_count: int
+  +price: decimal
+  +is_free: bool
+  +requested_at: datetime
+  +completed_at: datetime
+  +batch_id: string
+}
+
+class TrackingMoreTracker {
+  +api_key: string
+  +detect_courier(tracking_number)
+  +create_tracking(tracking_number, courier_code, title, extra_fields)
+  +get_tracking(courier_code, tracking_number)
+  +get_realtime_tracking(courier_code, tracking_number)
+}
+
+class LBCTracker {
+  +courier_code: string
+  +register_lbc_tracking(tracking_number, document_request)
+  +get_status(tracking_number)
+}
+
+User "1" -- "0..*" OTPToken
+User "1" -- "0..*" DocumentRequest
+User "1" -- "0..*" Notification
+User "1" -- "0..*" AuditLog
+User "1" -- "1" Profile
+User "1" -- "0..*" CollectionLog : collected_by
+User "1" -- "0..*" TORRequestHistory : student
+User "0..*" -- "0..*" Group
+
+StudentMasterList "1" -- "0..1" StudentBalance
+StudentMasterList .. User : username = student_id
+
+DocumentType "1" -- "0..*" DocumentRequest
+DocumentRequest ..> SystemCounter
+DocumentRequest ..> Notification
+DocumentRequest ..> AuditLog
+DocumentRequest ..> TORRequestHistory
+LBCTracker --> TrackingMoreTracker
+LBCTracker ..> DocumentRequest
+
+note right of DocumentRequest
+LBC delivery flow:
+AWAITING_COURIER_PICKUP
+PICKED_UP_AWAITING_DELIVERY
+IN_TRANSIT
+DELIVERED
+end note
+
+@enduml
